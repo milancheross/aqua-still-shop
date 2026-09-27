@@ -166,6 +166,33 @@ model DiscountCode {
   @@map("discount_codes")
 }
 
+model MediaAsset {
+  id        String   @id @default(cuid())
+  filename  String
+  url       String
+  mimeType  String   @map("mime_type")
+  size      Int
+  altText   String?  @map("alt_text")
+  folder    String   @default("general") // logo, hero, products, categories, etc.
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("media_assets")
+}
+
+model Page {
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  contentJson    Json     @default("[]")
+  seoTitle       String?  @map("seo_title")
+  seoDescription String?  @map("seo_description")
+  isPublished    Boolean  @default(false) @map("is_published")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("pages")
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -173,7 +200,7 @@ model User {
   password      String?
   emailVerified DateTime? @map("email_verified")
   image         String?
-  role          String    @default("editor") // editor, admin (explicit creation required)
+  role          String    @default("editor") // editor, admin
   accounts      Account[]
   sessions      Session[]
   cart          Cart?

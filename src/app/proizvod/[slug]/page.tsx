@@ -6,6 +6,7 @@ import { ShoppingCart, Check, Truck, ShieldCheck, ArrowLeft, Star, Wrench, MapPi
 import { getDbProductBySlug, getDbProducts } from "@/services/product-service";
 import { formatPrice } from "@/lib/utils";
 import ProductCard from "@/components/catalog/ProductCard";
+import AddToCartBox from "@/components/catalog/AddToCartBox";
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -107,6 +108,9 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 )}
               </div>
             </div>
+
+            {/* Add to Cart Component */}
+            <AddToCartBox product={product} />
 
             {/* Short Description */}
             {product.shortDescription && (

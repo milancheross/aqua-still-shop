@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Search, ShoppingCart, Menu, X, Droplets, User, Heart, Globe, Share2 } from "lucide-react";
+import Image from "next/image";
+import { Search, ShoppingCart, Menu, X, User, Heart, Globe, Share2 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { CATEGORIES } from "@/lib/mock-data";
 import { formatPrice } from "@/lib/utils";
@@ -41,18 +42,16 @@ export default function Header() {
       {/* Main Header */}
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4 md:gap-8">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3 shrink-0">
-            <div className="relative w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
-              <Droplets className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <span className="text-2xl font-black tracking-tighter text-slate-900 block leading-none">
-                AQUA STILL <span className="text-cyan-500">SHOP</span>
-              </span>
-              <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase block mt-1">
-                Deo Aqua Still Group
-              </span>
+          {/* Logo Image */}
+          <Link href="/" className="flex items-center shrink-0">
+            <div className="relative h-10 sm:h-12 w-[150px] sm:w-[200px]">
+              <Image 
+                src="/images/aqua-still-logo.png" 
+                alt="Aqua Still Zlatibor Logo" 
+                fill
+                className="object-contain object-left"
+                priority
+              />
             </div>
           </Link>
 

@@ -18,19 +18,34 @@ export async function getDbProducts(options?: {
   sort?: "price-asc" | "price-desc" | "name" | "popular";
 }): Promise<Product[]> {
   if (!process.env.DATABASE_URL) {
+    if (options?.categorySlug === "akcija") {
+      const mockAll = getMockProducts(options);
+      return mockAll.filter(p => p.salePrice != null || p.isPromo);
+    }
     return getMockProducts(options);
   }
 
   try {
     const count = await db.product.count();
     if (count === 0) {
+      if (options?.categorySlug === "akcija") {
+        const mockAll = getMockProducts(options);
+        return mockAll.filter(p => p.salePrice != null || p.isPromo);
+      }
       return getMockProducts(options);
     }
 
     const where: any = {};
 
     if (options?.categorySlug) {
-      where.categorySlug = options.categorySlug;
+      if (options.categorySlug === "akcija") {
+        where.OR = [
+          { salePrice: { not: null } },
+          { isPromo: true },
+        ];
+      } else {
+        where.categorySlug = options.categorySlug;
+      }
     }
 
     if (options?.subcategorySlug) {
@@ -88,7 +103,6 @@ export async function getDbProducts(options?: {
       },
     });
 
-    // Map Prisma Decimal to number and format to Product interface
     return products.map((p) => ({
       id: p.id,
       sku: p.sku,
@@ -117,6 +131,10 @@ export async function getDbProducts(options?: {
     }));
   } catch (error) {
     console.warn("DB product fetch failed, falling back to mock data:", error);
+    if (options?.categorySlug === "akcija") {
+      const mockAll = getMockProducts(options);
+      return mockAll.filter(p => p.salePrice != null || p.isPromo);
+    }
     return getMockProducts(options);
   }
 }
