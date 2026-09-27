@@ -1,10 +1,13 @@
 "use server";
 
+
+import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 // --- CATEGORIES ACTIONS ---
 export async function getAdminCategories() {
+  await requireAdmin();
   try {
     if (!process.env.DATABASE_URL) return [];
     return await db.category.findMany({
@@ -18,6 +21,7 @@ export async function getAdminCategories() {
 }
 
 export async function createAdminCategory(data: { name: string; slug: string; description?: string; iconName?: string }) {
+  await requireAdmin();
   if (!process.env.DATABASE_URL) {
     throw new Error("Baza podataka nije povezana (nedostaje DATABASE_URL).");
   }
@@ -41,6 +45,7 @@ export async function createAdminCategory(data: { name: string; slug: string; de
 }
 
 export async function deleteAdminCategory(id: string) {
+  await requireAdmin();
   try {
     if (!process.env.DATABASE_URL) throw new Error("Baza nije povezana.");
     await db.category.delete({ where: { id } });
@@ -54,6 +59,7 @@ export async function deleteAdminCategory(id: string) {
 
 // --- BRANDS ACTIONS ---
 export async function getAdminBrands() {
+  await requireAdmin();
   try {
     if (!process.env.DATABASE_URL) return [];
     return await db.brand.findMany({
@@ -66,6 +72,7 @@ export async function getAdminBrands() {
 }
 
 export async function createAdminBrand(data: { name: string; slug: string }) {
+  await requireAdmin();
   if (!process.env.DATABASE_URL) {
     throw new Error("Baza podataka nije povezana (nedostaje DATABASE_URL).");
   }
@@ -87,6 +94,7 @@ export async function createAdminBrand(data: { name: string; slug: string }) {
 }
 
 export async function deleteAdminBrand(id: string) {
+  await requireAdmin();
   try {
     if (!process.env.DATABASE_URL) throw new Error("Baza nije povezana.");
     await db.brand.delete({ where: { id } });
@@ -100,6 +108,7 @@ export async function deleteAdminBrand(id: string) {
 
 // --- ORDERS ACTIONS ---
 export async function getAdminOrders() {
+  await requireAdmin();
   try {
     if (!process.env.DATABASE_URL) return [];
     const orders = await db.order.findMany({
@@ -123,6 +132,7 @@ export async function getAdminOrders() {
 }
 
 export async function updateOrderStatusAction(orderId: string, status: string) {
+  await requireAdmin();
   try {
     if (!process.env.DATABASE_URL) throw new Error("Baza nije povezana.");
     await db.order.update({
