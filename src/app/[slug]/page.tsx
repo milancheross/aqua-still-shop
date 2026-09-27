@@ -2,7 +2,24 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getPageBySlug, getPublishedPageSlugs } from "@/actions/page-cms-actions";
-import { CanvasBlock } from "@/app/admin/editor/page";
+import type { CanvasBlock } from "@/app/admin/editor/page";
+
+function isCanvasBlock(value: unknown): value is CanvasBlock {
+  if (typeof value !== "object" || value === null) return false;
+
+  const block = value as Record<string, unknown>;
+  const validTypes = ["heading", "text", "image", "button", "container", "spacer"];
+
+  return (
+    typeof block.id === "string" &&
+    typeof block.type === "string" &&
+    validTypes.includes(block.type) &&
+    typeof block.props === "object" &&
+    block.props !== null &&
+    typeof block.styles === "object" &&
+    block.styles !== null
+  );
+}
 
 interface DynamicPageProps {
   params: Promise<{ slug: string }>;
@@ -27,7 +44,7 @@ export async function generateMetadata({ params }: DynamicPageProps): Promise<Me
 export async function generateStaticParams() {
   try {
     return await getPublishedPageSlugs();
-  } catch (e) {
+  } catch {
     return [];
   }
 }
@@ -40,7 +57,9 @@ export default async function DynamicRenderPage({ params }: DynamicPageProps) {
     notFound();
   }
 
-  const blocks = (page.contentJson as CanvasBlock[]) || [];
+  const blocks: CanvasBlock[] = Array.isArray(page.contentJson)
+    ? page.contentJson.filter(isCanvasBlock)
+    : [];
 
   return (
     <div className="bg-white min-h-screen py-12">
