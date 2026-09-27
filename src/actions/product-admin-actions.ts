@@ -1,5 +1,7 @@
 "use server";
 
+
+import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
@@ -32,6 +34,7 @@ export async function getAdminProducts(filters?: {
   brand?: string;
   status?: string;
 }) {
+  await requireAdmin();
   try {
     if (!process.env.DATABASE_URL) return [];
 
@@ -84,6 +87,7 @@ export async function getAdminProducts(filters?: {
 }
 
 export async function getAdminProductById(id: string) {
+  await requireAdmin();
   try {
     if (!process.env.DATABASE_URL) return null;
     const p = await db.product.findUnique({ where: { id } });
@@ -103,6 +107,7 @@ export async function getAdminProductById(id: string) {
 }
 
 export async function createAdminProduct(input: ProductAdminInput) {
+  await requireAdmin();
   if (!input.name || !input.sku || !input.slug || !input.brand || !input.categorySlug) {
     throw new Error("Molimo popunite sva obavezna polja (naziv, SKU, slug, brend, kategorija).");
   }
@@ -171,6 +176,7 @@ export async function createAdminProduct(input: ProductAdminInput) {
 }
 
 export async function updateAdminProduct(id: string, input: ProductAdminInput) {
+  await requireAdmin();
   if (!input.name || !input.sku || !input.slug) {
     throw new Error("Naziv, SKU i slug su obavezni.");
   }
@@ -230,6 +236,7 @@ export async function updateAdminProduct(id: string, input: ProductAdminInput) {
 }
 
 export async function duplicateAdminProduct(id: string) {
+  await requireAdmin();
   const original = await db.product.findUnique({ where: { id } });
   if (!original) throw new Error("Proizvod nije pronađen.");
 
@@ -269,6 +276,7 @@ export async function duplicateAdminProduct(id: string) {
 }
 
 export async function deleteAdminProduct(id: string) {
+  await requireAdmin();
   try {
     await db.product.delete({ where: { id } });
     revalidatePath("/admin/products");
