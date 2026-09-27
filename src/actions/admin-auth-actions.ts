@@ -10,7 +10,7 @@ export async function loginAdminAction(formData: FormData) {
   const configuredEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const passwordHash = process.env.ADMIN_PASSWORD_HASH;
 
-  if (!configuredEmail || !passwordHash || !process.env.ADMIN_SESSION_SECRET) {
+  if (!configuredEmail || !passwordHash || (!process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_SESSION_SECRET.length < 32)) {
     redirect("/admin-login?error=configuration");
   }
 
