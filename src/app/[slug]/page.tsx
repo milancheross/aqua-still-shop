@@ -1,7 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { getPageBySlug, getPages } from "@/actions/page-cms-actions";
+import { getPageBySlug, getPublishedPageSlugs } from "@/actions/page-cms-actions";
 import { CanvasBlock } from "@/app/admin/editor/page";
 
 interface DynamicPageProps {
@@ -26,10 +26,7 @@ export async function generateMetadata({ params }: DynamicPageProps): Promise<Me
 
 export async function generateStaticParams() {
   try {
-    const pages = await getPages();
-    return pages.filter((p: any) => p.isPublished).map((p: any) => ({
-      slug: p.slug,
-    }));
+    return await getPublishedPageSlugs();
   } catch (e) {
     return [];
   }
