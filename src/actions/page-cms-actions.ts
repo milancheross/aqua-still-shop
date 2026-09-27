@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
@@ -14,6 +15,7 @@ export interface PageInput {
 }
 
 export async function getPages() {
+  await requireAdmin();
   try {
     if (!process.env.DATABASE_URL) return [];
     const pages = await db.page.findMany({
@@ -30,11 +32,14 @@ export async function getPages() {
   }
 }
 
+/**
+ * Publicly readable page lookup. Drafts must never be returned by this action.
+ */
 export async function getPageBySlug(slug: string) {
   try {
     if (!process.env.DATABASE_URL) return null;
-    const p = await db.page.findUnique({
-      where: { slug },
+    const p = await db.page.findFirst({
+      where: { slug, isPublished: true },
     });
     if (!p) return null;
     return {
@@ -48,7 +53,25 @@ export async function getPageBySlug(slug: string) {
   }
 }
 
+/**
+ * Returns only public slugs for Next.js static generation.
+ * This is intentionally separate from getPages(), which is admin-only.
+ */
+export async function getPublishedPageSlugs() {
+  try {
+    if (!process.env.DATABASE_URL) return [];
+    return await db.page.findMany({
+      where: { isPublished: true },
+      select: { slug: true },
+    });
+  } catch (e) {
+    console.error("Error fetching published page slugs:", e);
+    return [];
+  }
+}
+
 export async function savePage(input: PageInput) {
+  await requireAdmin();
   if (!input.title || !input.slug) {
     throw new Error("Naslov i slug stranice su obavezni.");
   }
@@ -91,6 +114,7 @@ export async function savePage(input: PageInput) {
 }
 
 export async function deletePage(id: string) {
+  await requireAdmin();
   try {
     await db.page.delete({ where: { id } });
     revalidatePath("/admin/pages");

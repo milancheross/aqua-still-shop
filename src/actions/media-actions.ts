@@ -1,5 +1,7 @@
 "use server";
 
+
+import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import fs from "fs/promises";
 import path from "path";
@@ -26,6 +28,7 @@ async function ensureUploadsDir() {
 }
 
 export async function getMediaAssets(): Promise<MediaItem[]> {
+  await requireAdmin();
   try {
     if (process.env.DATABASE_URL) {
       const assets = await db.mediaAsset.findMany({ orderBy: { createdAt: "desc" } });
@@ -82,6 +85,7 @@ export async function getMediaAssets(): Promise<MediaItem[]> {
 }
 
 export async function uploadMediaAction(formData: FormData) {
+  await requireAdmin();
   const files = formData.getAll("files") as File[];
   const folder = (formData.get("folder") as string) || "general";
 
@@ -151,6 +155,7 @@ export async function uploadMediaAction(formData: FormData) {
 }
 
 export async function updateMediaAssetAction(id: string, data: { altText?: string; filename?: string }) {
+  await requireAdmin();
   try {
     if (process.env.DATABASE_URL) {
       await db.mediaAsset.update({
@@ -169,6 +174,7 @@ export async function updateMediaAssetAction(id: string, data: { altText?: strin
 }
 
 export async function deleteMediaAssetAction(id: string, url: string) {
+  await requireAdmin();
   try {
     // Check if used in products (placeholder check)
     if (process.env.DATABASE_URL) {
