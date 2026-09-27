@@ -5,7 +5,7 @@ import { Tag, Plus, Trash2, Loader2, Check, AlertCircle } from "lucide-react";
 import { getAdminBrands, createAdminBrand, deleteAdminBrand } from "@/actions/admin-cms-actions";
 
 export default function AdminBrandsPage() {
-  const [brands, setBrands] = useState<any[]>([]);
+  const [brands, setBrands] = useState<Array<{ id: string; name: string; slug: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -14,7 +14,6 @@ export default function AdminBrandsPage() {
   const [isPending, startTransition] = useTransition();
 
   const loadData = async () => {
-    setLoading(true);
     try {
       const data = await getAdminBrands();
       setBrands(data);
@@ -40,8 +39,8 @@ export default function AdminBrandsPage() {
         setSuccess("Brend je uspešno kreiran.");
         setForm({ name: "", slug: "" });
         await loadData();
-      } catch (err: any) {
-        setError(err.message || "Kreiranje brenda nije uspelo.");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Kreiranje brenda nije uspelo.");
       }
     });
   };
@@ -53,8 +52,8 @@ export default function AdminBrandsPage() {
         await deleteAdminBrand(id);
         setSuccess("Brend je obrisan.");
         await loadData();
-      } catch (err: any) {
-        alert(err.message || "Brisanje nije uspelo.");
+      } catch (err: unknown) {
+        alert(err instanceof Error ? err.message : "Brisanje nije uspelo.");
       }
     });
   };
