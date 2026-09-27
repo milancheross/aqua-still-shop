@@ -1,4 +1,6 @@
 import React from "react";
+import { requireAdmin } from "@/lib/admin-auth";
+import { logoutAdminAction } from "@/actions/admin-auth-actions";
 import Link from "next/link";
 import { 
   LayoutDashboard, 
@@ -34,7 +36,9 @@ const adminNavItems = [
   { name: "Podešavanja", href: "/admin/settings", icon: Settings },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await requireAdmin();
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row text-slate-900">
       {/* Sidebar */}
@@ -90,9 +94,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div className="hidden sm:block text-left">
                 <span className="font-bold text-slate-900 block">Administrator</span>
-                <span className="text-[10px] text-slate-400 block">admin@aquastill.rs</span>
+                <span className="text-[10px] text-slate-400 block">{process.env.ADMIN_EMAIL}</span>
               </div>
             </div>
+            <form action={logoutAdminAction}>
+              <button type="submit" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900" aria-label="Odjavi se">
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline">Odjavi se</span>
+              </button>
+            </form>
           </div>
         </header>
 
