@@ -34,6 +34,8 @@ After setting all three variables and restarting the app, open /admin-login. Sig
 
 The admin layout and admin server actions check the signed session on the server. Public storefront actions (such as cart and checkout) are not protected by admin authentication.
 
+The login action applies a basic in-memory limit of five failed attempts per email/IP key in a 15-minute window. This is defense in depth only: the counter is local to one running server process and can reset on restart or differ between server instances. In production, also configure rate limiting at a trusted hosting proxy or use a shared rate-limit store. Forwarded IP headers must be set or overwritten by that trusted proxy; do not rely on client-supplied values when the app is directly exposed.
+
 ## Deployment
 
 Set the three variables in the hosting provider's server-side environment settings, then redeploy/restart the app. Use a different, randomly generated session secret for each environment. Do not use the development secret in production.
