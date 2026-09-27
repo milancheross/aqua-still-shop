@@ -22,6 +22,11 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
             E-mail ili lozinka nisu ispravni.
           </p>
         )}
+        {error === "rate-limit" && (
+          <p role="alert" className="mb-5 rounded-xl bg-amber-50 p-3 text-sm font-medium text-amber-800">
+            Previše neuspešnih pokušaja. Sačekajte 15 minuta pre ponovnog pokušaja.
+          </p>
+        )}
         {error === "configuration" && (
           <p role="alert" className="mb-5 rounded-xl bg-amber-50 p-3 text-sm font-medium text-amber-800">
             Administracija nije podešena. Proverite serverske promenljive okruženja.
