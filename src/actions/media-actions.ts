@@ -28,9 +28,9 @@ async function ensureUploadsDir() {
 }
 
 export async function getMediaAssets(): Promise<MediaItem[]> {
+  await requireAdmin();
   try {
     if (process.env.DATABASE_URL) {
-  await requireAdmin();
       const assets = await db.mediaAsset.findMany({ orderBy: { createdAt: "desc" } });
       if (assets && assets.length > 0) {
         return assets.map((a: any) => ({
