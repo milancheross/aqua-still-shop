@@ -61,12 +61,17 @@ export async function destroyAdminSession() {
 }
 
 export async function isAdminAuthenticated() {
-  const email = process.env.ADMIN_EMAIL;
-  if (!email) return false;
-  const token = (await cookies()).get(COOKIE_NAME)?.value;
-  return isValidSession(token, email);
-}
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const secret = process.env.ADMIN_SESSION_SECRET;
+  if (!email || !secret || secret.length < 32) return false;
 
+  const token = (await cookies()).get(COOKIE_NAME)?.value;
+  try {
+    return isValidSession(token, email);
+  } catch {
+    return false;
+  }
+}
 export async function requireAdmin() {
   if (!(await isAdminAuthenticated())) {
     redirect("/admin-login");
