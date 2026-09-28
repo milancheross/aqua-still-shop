@@ -1,19 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronRight, Truck, ShieldCheck, Headphones, RefreshCw, Wrench, Sparkles } from "lucide-react";
-import { getDbProducts, getDbBrands } from "@/services/product-service";
+import { getDbProducts, getDbBrands, getDbCategories } from "@/services/product-service";
 import ProductCard from "@/components/catalog/ProductCard";
 
 export default async function HomePage() {
   const featuredProducts = (await getDbProducts({ sort: "popular" })).slice(0, 5);
   const brandsList = await getDbBrands();
+  const categories = await getDbCategories();
 
-  const mainCategoriesGrid = [
-    { name: "Alati", slug: "alati", desc: "Električni, ručni alati i pribor", image: "/placeholder-tool.svg" },
-    { name: "Kupatila", slug: "kupatila", desc: "Sanitarije, baterije, tuš program", image: "/placeholder-faucet.svg" },
-    { name: "Vodovod", slug: "vodovod", desc: "Cevi, fiting, ventili, slavine i pribor", image: "/placeholder-pipe.svg" },
-    { name: "Navodnjavanje", slug: "navodnjavanje", desc: "Creva, prskalice, pumpe i sistemi za zalivanje", image: "/placeholder-sprinkler.svg" },
-  ];
+  const mainCategoriesGrid = categories.slice(0, 4);
 
   const popularCategoriesGrid = [
     { name: "Električni alati", slug: "alati", image: "/placeholder-tool.svg" },
@@ -93,24 +89,30 @@ export default async function HomePage() {
 
       {/* 2. 4 MAIN CATEGORY CARDS */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-10 relative z-30">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
           {mainCategoriesGrid.map((cat, idx) => (
             <Link 
               key={idx}
               href={`/katalog/${cat.slug}`}
-              className="group bg-white rounded-2xl shadow-lg border border-slate-200/80 p-6 flex flex-col justify-between hover:border-cyan-500 hover:shadow-xl transition-all duration-300"
+              className="group flex flex-col justify-between rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm transition-all duration-300 hover:border-cyan-500 hover:shadow-xl sm:rounded-2xl sm:p-6"
             >
-              <div className="relative aspect-[16/10] mb-4 bg-slate-50 rounded-xl overflow-hidden p-4">
-                <Image src={cat.image} alt={cat.name} fill className="object-contain p-4 group-hover:scale-105 transition-transform duration-500" />
+              <div className="relative aspect-[16/10] mb-4 overflow-hidden rounded-xl bg-gradient-to-br from-slate-100 to-cyan-50">
+                {cat.imageUrl ? (
+                  <Image src={cat.imageUrl} alt={cat.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-cyan-800">
+                    <span className="text-5xl font-black opacity-20">{cat.name.slice(0, 1)}</span>
+                  </div>
+                )}
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900 group-hover:text-cyan-600 transition-colors">
+                <h3 className="text-sm font-black text-slate-900 transition-colors group-hover:text-cyan-600 sm:text-lg">
                   {cat.name}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">{cat.desc}</p>
+                <p className="mb-3 mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500 sm:mb-4 sm:text-xs">{cat.description}</p>
               </div>
               <div className="flex justify-end">
-                <span className="w-9 h-9 bg-cyan-600 group-hover:bg-cyan-700 text-white rounded-full flex items-center justify-center transition-colors">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-600 text-white transition-colors group-hover:bg-cyan-700 sm:h-9 sm:w-9">
                   <ChevronRight className="w-5 h-5" />
                 </span>
               </div>
@@ -152,53 +154,40 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-5">
           {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* 5. TWO PROMO BANNERS SIDE BY SIDE */}
+      {/* 5. Premium category feature cards — imagery managed in admin */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-          {/* Banner 1: Kupatilo */}
-          <div className="relative min-h-[300px] md:min-h-[320px] rounded-3xl overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-900 p-8 sm:p-10 flex flex-col justify-center text-white shadow-xl">
-            <div className="absolute right-0 bottom-0 w-1/2 h-full opacity-25 pointer-events-none">
-              <Image src="/placeholder-faucet.svg" alt="Kupatilo" fill className="object-contain object-right" />
-            </div>
-            <div className="relative z-10 max-w-sm space-y-4">
-              <span className="inline-block px-3 py-1 bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider rounded-md">
-                Kupatila & Sanitarije
-              </span>
-              <h3 className="text-3xl font-black leading-tight">Sve za vaše kupatilo</h3>
-              <p className="text-sm text-blue-100 leading-relaxed">Sanitarije, baterije, tuš program i moderni kupatilski nameštaj.</p>
-              <div className="pt-2">
-                <Link href="/katalog/kupatila" className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold text-sm rounded-xl transition-all shadow-md">
-                  Pogledaj ponudu <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
+        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-700">Istražite ponudu</p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Oprema za svaki projekat</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">Izaberite kategoriju i pronađite opremu za dom, radionicu i baštu.</p>
           </div>
-
-          {/* Banner 2: Navodnjavanje */}
-          <div className="relative min-h-[300px] md:min-h-[320px] rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 p-8 sm:p-10 flex flex-col justify-center text-white shadow-xl">
-            <div className="absolute right-0 bottom-0 w-1/2 h-full opacity-25 pointer-events-none">
-              <Image src="/placeholder-sprinkler.svg" alt="Navodnjavanje" fill className="object-contain object-right" />
-            </div>
-            <div className="relative z-10 max-w-sm space-y-4">
-              <span className="inline-block px-3 py-1 bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider rounded-md">
-                Bašta i Poljoprivreda
-              </span>
-              <h3 className="text-3xl font-black leading-tight">Sistemi za navodnjavanje</h3>
-              <p className="text-sm text-emerald-100 leading-relaxed">Efikasna rešenja za dvorišta, bašte, travnjake i plastenike.</p>
-              <div className="pt-2">
-                <Link href="/katalog/navodnjavanje" className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold text-sm rounded-xl transition-all shadow-md">
-                  Pogledaj ponudu <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
+          <Link href="/katalog" className="inline-flex w-fit items-center gap-2 text-sm font-bold text-cyan-700 hover:text-cyan-900">
+            Ceo katalog <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {categories.filter((category) => ["kupatila", "navodnjavanje"].includes(category.slug)).map((category) => (
+            <Link key={category.id} href={`/katalog/${category.slug}`} className="group relative isolate flex min-h-[260px] flex-col justify-end overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 p-6 text-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:min-h-[320px] sm:p-8 md:min-h-[360px]">
+              {category.imageUrl ? (
+                <Image src={category.imageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 50vw" className="absolute inset-0 -z-20 object-cover transition-transform duration-700 group-hover:scale-105" />
+              ) : (
+                <div className="absolute inset-0 -z-20 bg-gradient-to-br from-slate-800 via-cyan-950 to-slate-950" />
+              )}
+              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950/90 via-slate-950/35 to-slate-950/5" />
+              <span className="mb-3 w-fit rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">Aqua Still • Kategorija</span>
+              <h3 className="max-w-lg text-2xl font-black leading-tight sm:text-3xl">{category.name}</h3>
+              {category.description && <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/85">{category.description}</p>}
+              <span className="mt-5 inline-flex w-fit items-center gap-2 rounded-xl bg-cyan-600 px-5 py-3 text-sm font-bold text-white transition-colors group-hover:bg-cyan-500">Pogledaj ponudu <ArrowRight className="h-4 w-4" /></span>
+            </Link>
+          ))}
         </div>
       </section>
 

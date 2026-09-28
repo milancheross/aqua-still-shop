@@ -211,6 +211,7 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
       name: c.name,
       slug: c.slug,
       description: c.description ?? "",
+      imageUrl: c.imageUrl ?? undefined,
       itemCount: c.itemCount,
       iconName: (c.iconName as ProductCategory["iconName"]) || "wrench",
       subcategories: c.subcategories.map((sub) => ({

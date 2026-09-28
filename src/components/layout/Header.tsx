@@ -56,18 +56,19 @@ export default function Header() {
           </Link>
 
           {/* Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-2xl relative">
+          <form action="/katalog" method="GET" className="hidden md:flex flex-1 max-w-2xl relative">
             <input
               type="text"
+              name="q"
               placeholder="Pretražite proizvode, brendove, kategorije..."
               className="w-full pl-4 pr-28 py-3 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-full text-sm transition-all outline-none"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <button className="absolute right-1 top-1 bottom-1 px-6 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-full text-sm flex items-center gap-2 transition-colors shadow-sm">
+            <button type="submit" className="absolute right-1 top-1 bottom-1 px-6 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-full text-sm flex items-center gap-2 transition-colors shadow-sm">
               <Search className="w-4 h-4" /> Pretraži
             </button>
-          </div>
+          </form>
 
           {/* User Actions */}
           <div className="flex items-center space-x-4 md:space-x-6">
@@ -115,6 +116,11 @@ export default function Header() {
         </div>
       </div>
 
+      <form action="/katalog" method="GET" className="flex gap-2 border-t border-slate-100 bg-white px-4 pb-3 md:hidden">
+        <label htmlFor="mobile-store-search" className="sr-only">Pretraga proizvoda</label>
+        <input id="mobile-store-search" type="search" name="q" placeholder="Pretraži proizvode..." className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-cyan-500 focus:bg-white focus:ring-2 focus:ring-cyan-100" />
+        <button type="submit" aria-label="Pretraži" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-cyan-600 px-4 text-sm font-bold text-white hover:bg-cyan-700"><Search className="h-4 w-4" /><span>Traži</span></button>
+      </form>
       {/* Main category navigation */}
       <div className="relative z-40 bg-slate-900 text-white">
         <div className="container mx-auto px-4 flex items-center gap-3">

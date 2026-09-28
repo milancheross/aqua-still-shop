@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Filter, Search, ArrowUpDown, X, Check } from "lucide-react";
 import { getDbProducts, getDbCategories, getDbBrands } from "@/services/product-service";
 import ProductCard from "@/components/catalog/ProductCard";
@@ -20,6 +21,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   const categories = await getDbCategories();
   const brands = await getDbBrands();
+  const activeCategory = categories.find((category) => category.slug === selectedCategory);
 
   // Fetch filtered products using service layer with database/mock fallback
   const products = await getDbProducts({
@@ -50,6 +52,17 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           Prikazano <strong className="text-slate-900">{products.length}</strong> artikala iz našeg asortimana.
         </p>
       </div>
+
+      {activeCategory?.imageUrl && (
+        <div className="relative mb-8 min-h-36 overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 sm:min-h-48">
+          <Image src={activeCategory.imageUrl} alt="" fill sizes="100vw" className="object-cover" priority />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/45 to-transparent" />
+          <div className="relative z-10 flex min-h-36 max-w-2xl flex-col justify-center p-5 text-white sm:min-h-48 sm:p-8">
+            <h2 className="text-xl font-black sm:text-2xl">{activeCategory.name}</h2>
+            {activeCategory.description && <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/85">{activeCategory.description}</p>}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* SIDEBAR FILTERS */}
@@ -193,7 +206,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
