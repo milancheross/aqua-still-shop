@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Droplets, Mail, Phone, MapPin, MessageSquare, Share2 } from "lucide-react";
 
 export default function Footer() {
@@ -10,13 +11,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Section */}
           <div className="space-y-6">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="bg-blue-600 p-1.5 rounded-lg">
-                <Droplets className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold tracking-tight text-white uppercase">
-                Aqua<span className="text-blue-500">Still</span>
-              </span>
+            <Link href="/" aria-label="Aqua Still Zlatibor — početna strana" className="relative flex h-12 w-[190px] items-center">
+              <Image
+                src="/images/aqua-still-logo.png"
+                alt="Aqua Still Zlatibor"
+                fill
+                sizes="190px"
+                className="object-contain object-left"
+              />
             </Link>
             <p className="text-sm leading-relaxed">
               Vaš pouzdan partner za vodovod, alate, kupatilsku opremu i sisteme za navodnjavanje na Zlatiboru i šire. Kvalitet i iskustvo od poverenja.
