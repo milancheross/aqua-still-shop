@@ -25,7 +25,7 @@ export default async function OrderConfirmationPage({ params, searchParams }: Or
     console.warn("Could not fetch order from DB:", error);
   }
 
-  const storedInfo = order?.customerInfo as any;
+  const storedInfo = orderRecord?.customerInfo as any;
   const order = storedInfo?.confirmationToken && key && storedInfo.confirmationToken === key ? orderRecord : null;
   const customerInfo = order?.customerInfo as any;
   const items = order?.orderItems || order?.items || [];
