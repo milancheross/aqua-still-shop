@@ -41,6 +41,27 @@ export async function createAdminCategory(data: { name: string; slug: string; de
 
   revalidatePath("/admin/categories");
   revalidatePath("/katalog");
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function updateAdminCategory(id: string, data: { name: string; slug: string; description?: string; imageUrl?: string | null }) {
+  await requireAdmin();
+  if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
+  if (!data.name.trim() || !data.slug.trim()) throw new Error("Naziv i slug kategorije su obavezni.");
+  await db.category.update({
+    where: { id },
+    data: {
+      name: data.name.trim(),
+      slug: data.slug.trim(),
+      description: data.description?.trim() || null,
+      imageUrl: data.imageUrl || null,
+    },
+  });
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
+  revalidatePath("/katalog");
+  revalidatePath(`/katalog/${data.slug}`);
   return { success: true };
 }
 
