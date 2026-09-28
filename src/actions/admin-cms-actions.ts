@@ -52,8 +52,8 @@ export async function deleteAdminCategory(id: string) {
     revalidatePath("/admin/categories");
     revalidatePath("/katalog");
     return { success: true };
-  } catch (e: any) {
-    throw new Error(e.message || "Brisanje kategorije nije uspelo.");
+  } catch (e: unknown) {
+    throw new Error(e instanceof Error ? e.message : "Brisanje kategorije nije uspelo.");
   }
 }
 
@@ -101,8 +101,8 @@ export async function deleteAdminBrand(id: string) {
     revalidatePath("/admin/brands");
     revalidatePath("/katalog");
     return { success: true };
-  } catch (e: any) {
-    throw new Error(e.message || "Brisanje brenda nije uspelo.");
+  } catch (e: unknown) {
+    throw new Error(e instanceof Error ? e.message : "Brisanje brenda nije uspelo.");
   }
 }
 
