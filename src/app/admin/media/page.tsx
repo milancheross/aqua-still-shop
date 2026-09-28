@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useTransition } from "react";
-import Image from "next/image";
 import { Upload, Search, Trash2, Copy, Edit2, Check, Image as ImageIcon, Loader2, AlertCircle } from "lucide-react";
 import { getMediaAssets, uploadMediaAction, updateMediaAssetAction, deleteMediaAssetAction, MediaItem } from "@/actions/media-actions";
 
@@ -177,11 +176,11 @@ export default function AdminMediaPage() {
           {filteredMedia.map((item) => (
             <div key={item.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col group">
               <div className="relative aspect-square bg-slate-50 p-4 flex items-center justify-center overflow-hidden border-b border-slate-100">
-                <Image
+                <img
                   src={item.url}
                   alt={item.altText || item.filename}
-                  fill
-                  className="object-contain p-2 group-hover:scale-105 transition-transform"
+                  className="absolute inset-0 h-full w-full object-contain p-2 group-hover:scale-105 transition-transform"
+                  loading="lazy"
                 />
               </div>
 
