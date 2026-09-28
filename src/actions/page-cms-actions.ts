@@ -2,13 +2,14 @@
 
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export interface PageInput {
   id?: string;
   title: string;
   slug: string;
-  contentJson: unknown[];
+  contentJson: Prisma.InputJsonValue;
   seoTitle?: string;
   seoDescription?: string;
   isPublished?: boolean;
