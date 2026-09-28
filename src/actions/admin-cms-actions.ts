@@ -133,15 +133,38 @@ export async function getAdminOrders() {
 
 export async function updateOrderStatusAction(orderId: string, status: string) {
   await requireAdmin();
+  const allowedStatuses = ["pending", "processing", "shipped", "delivered", "ready_for_pickup", "picked_up", "cancelled"];
+  if (typeof orderId !== "string" || !orderId || !allowedStatuses.includes(status)) {
+    throw new Error("Neispravan status porudžbine.");
+  }
   try {
     if (!process.env.DATABASE_URL) throw new Error("Baza nije povezana.");
-    await db.order.update({
-      where: { id: orderId },
-      data: { status },
+    await db.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({ where: { id: orderId }, include: { orderItems: true } });
+      if (!order) throw new Error("Porudžbina nije pronađena.");
+      const info = order.customerInfo as { shippingMethod?: string } | null;
+      if (status === "shipped" && info?.shippingMethod === "store_pickup") {
+        throw new Error("Porudžbina za preuzimanje u radnji ne može biti označena kao poslata.");
+      }
+      if ((status === "ready_for_pickup" || status === "picked_up") && info?.shippingMethod !== "store_pickup") {
+        throw new Error("Ovaj status je dozvoljen samo za preuzimanje u radnji.");
+      }
+      if (order.status === "cancelled" && status !== "cancelled") {
+        throw new Error("Otkazana porudžbina ne može ponovo da se aktivira.");
+      }
+      if (status === "cancelled" && order.status !== "cancelled") {
+        for (const item of order.orderItems) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stockQuantity: { increment: item.quantity }, inStock: true },
+          });
+        }
+      }
+      await tx.order.update({ where: { id: orderId }, data: { status } });
     });
     revalidatePath("/admin/orders");
     return { success: true };
-  } catch (e: any) {
-    throw new Error(e.message || "Ažuriranje statusa porudžbine nije uspelo.");
+  } catch (e: unknown) {
+    throw new Error(e instanceof Error ? e.message : "Ažuriranje statusa porudžbine nije uspelo.");
   }
 }
