@@ -3,7 +3,6 @@
 import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowLeft, Save, Plus, Trash2, Loader2, Upload } from "lucide-react";
 import { getAdminProductById, updateAdminProduct } from "@/actions/product-admin-actions";
 import { uploadMediaAction } from "@/actions/media-actions";
@@ -398,7 +397,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
               {form.images.map((url, idx) => (
                 <div key={idx} className={`relative bg-slate-50 rounded-2xl border-2 p-3 flex flex-col items-center justify-center gap-2 group ${idx === 0 ? "border-cyan-600 bg-cyan-50/30" : "border-slate-200"}`}>
                   <div className="relative w-20 h-20">
-                    <Image src={url} alt={`Slika ${idx + 1}`} fill className="object-contain" />
+                    <img src={url} alt={`Slika ${idx + 1}`} className="absolute inset-0 h-full w-full object-contain" loading="lazy" />
                   </div>
                   {idx === 0 ? (
                     <span className="text-[10px] font-black text-cyan-700 bg-cyan-100 px-2 py-0.5 rounded-md">Glavna slika</span>
