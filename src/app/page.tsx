@@ -158,10 +158,10 @@ export default async function HomePage() {
           <div>
             <h2 className="text-2xl md:text-3xl font-black text-slate-900">Izdvajamo iz ponude</h2>
           </div>
-          <div className="flex items-center space-x-2 bg-white border border-slate-200 p-1 rounded-xl text-sm font-bold shadow-sm">
-            <button className="px-4 py-2 bg-cyan-600 text-white shadow-sm rounded-lg">Najprodavanije</button>
-            <button className="px-4 py-2 text-slate-600 hover:text-slate-900 transition-colors">Akcije</button>
-            <button className="px-4 py-2 text-slate-600 hover:text-slate-900 transition-colors">Novo u ponudi</button>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-lg bg-cyan-50 px-3 py-2 text-xs font-bold text-cyan-800">Izdvojeni proizvodi</span>
+            <Link href="/katalog/akcija" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700">Akcije</Link>
+            <Link href="/katalog" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700">Ceo katalog <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
           </div>
         </div>
 
