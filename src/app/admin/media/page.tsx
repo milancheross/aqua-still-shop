@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useTransition } from "react";
-import Image from "next/image";
 import { Upload, Search, Trash2, Copy, Edit2, Check, Image as ImageIcon, Loader2, AlertCircle } from "lucide-react";
 import { getMediaAssets, uploadMediaAction, updateMediaAssetAction, deleteMediaAssetAction, MediaItem } from "@/actions/media-actions";
 
@@ -43,21 +42,26 @@ export default function AdminMediaPage() {
     setSuccessMessage("");
     setIsUploading(true);
 
-    const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formData.append("files", files[i]);
-    }
-    formData.append("folder", selectedFolder === "all" ? "general" : selectedFolder);
+    let uploadedCount = 0;
 
     try {
-      const res = await uploadMediaAction(formData);
-      if (res.success) {
-        setSuccessMessage(`Uspešno otpremljeno ${res.uploaded.length} slika.`);
-        await loadMedia();
+      // Send files one by one so each server-action request stays under Vercel's
+      // 4.5 MB request-body limit, even when multiple images are selected.
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append("files", file);
+        formData.append("folder", selectedFolder === "all" ? "general" : selectedFolder);
+        const res = await uploadMediaAction(formData);
+        uploadedCount += res.uploaded.length;
       }
+      setSuccessMessage(`Uspešno otpremljeno ${uploadedCount} slika.`);
     } catch (err: unknown) {
       setUploadError((err instanceof Error ? err.message : null) || "Greška pri otpremanju fajlova.");
+      if (uploadedCount > 0) {
+        setSuccessMessage(`Delimično otpremanje: sačuvano ${uploadedCount} slika.`);
+      }
     } finally {
+      await loadMedia();
       setIsUploading(false);
       e.target.value = "";
     }
@@ -177,11 +181,11 @@ export default function AdminMediaPage() {
           {filteredMedia.map((item) => (
             <div key={item.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col group">
               <div className="relative aspect-square bg-slate-50 p-4 flex items-center justify-center overflow-hidden border-b border-slate-100">
-                <Image
+                <img
                   src={item.url}
                   alt={item.altText || item.filename}
-                  fill
-                  className="object-contain p-2 group-hover:scale-105 transition-transform"
+                  className="absolute inset-0 h-full w-full object-contain p-2 group-hover:scale-105 transition-transform"
+                  loading="lazy"
                 />
               </div>
 
