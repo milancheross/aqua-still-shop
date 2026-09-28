@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, Star, Percent } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { Product } from "@/types";
 import { formatPrice, calculateDiscountPercent } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
@@ -28,9 +28,11 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-slate-50 p-2 sm:p-6">
         <Image
-          src={product.images[0]}
+          src={product.images?.find(Boolean) || "/placeholder-tool.svg"}
           alt={product.name}
           fill
+          unoptimized
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
         />
       </div>
@@ -43,14 +45,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           </h3>
         </Link>
 
-        {/* Rating Stars mock */}
-        <div className="mb-2 flex items-center gap-1 sm:mb-3">
-          <div className="flex text-amber-400">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="h-3 w-3 fill-amber-400 sm:h-3.5 sm:w-3.5" />
-            ))}
-          </div>
-          <span className="text-xs text-slate-400">({product.stockQuantity > 10 ? 12 : 4})</span>
+        <div className="mb-2 min-h-4 sm:mb-3">
+          <span className={`inline-flex items-center gap-1 text-[10px] font-semibold sm:text-xs ${product.inStock && product.stockQuantity > 0 ? "text-emerald-700" : "text-slate-500"}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${product.inStock && product.stockQuantity > 0 ? "bg-emerald-500" : "bg-slate-400"}`} />
+            {product.inStock && product.stockQuantity > 0 ? "Na stanju" : "Proverite dostupnost"}
+          </span>
         </div>
 
         {/* Price & Cart */}
