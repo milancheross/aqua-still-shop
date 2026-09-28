@@ -33,8 +33,8 @@ export default function AdminOrdersPage() {
         await updateOrderStatusAction(orderId, newStatus);
         setSuccess(`Status porudžbine je uspešno ažuriran na: ${newStatus}`);
         await loadOrders();
-      } catch (err: any) {
-        alert(err.message || "Ažuriranje statusa nije uspelo.");
+      } catch (err: unknown) {
+        alert((err instanceof Error ? err.message : null) || "Ažuriranje statusa nije uspelo.");
       }
     });
   };
