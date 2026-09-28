@@ -2,10 +2,13 @@
 -- Product-specific SKUs, prices and stock are not fabricated from footage
 -- where labels are not legible. This migration adds categories only.
 INSERT INTO "categories" ("id", "name", "slug", "description", "item_count", "icon_name")
-VALUES ('cat-grejanje', 'Grejanje', 'grejanje', 'Oprema i instalacioni materijal za sisteme grejanja.', 0, 'flame')
-ON CONFLICT ("slug") DO UPDATE SET
-  "name" = EXCLUDED."name",
-  "description" = EXCLUDED."description";
+VALUES
+  ('cat-alati', 'Alati i oprema', 'alati', 'Profesionalni i hobi električni i ručni alati, pribor i oprema za majstore i radionice.', 420, 'wrench'),
+  ('cat-vodovod', 'Vodovod i kanalizacija', 'vodovod', 'Cevi, fiting, ventili, pumpe i kompletan materijal za vodovodne instalacije.', 380, 'droplet'),
+  ('cat-kupatila', 'Kupatilska oprema i sanitarije', 'kupatila', 'Baterije za kadu i lavabo, sanitarije, tuš program i moderna oprema za kupatila.', 290, 'bath'),
+  ('cat-navodnjavanje', 'Sistemi za navodnjavanje', 'navodnjavanje', 'Sve za profesionalno navodnjavanje voćnjaka, bašti, parkova i plastenika.', 215, 'sprout'),
+  ('cat-grejanje', 'Grejanje', 'grejanje', 'Oprema i instalacioni materijal za sisteme grejanja.', 0, 'flame')
+ON CONFLICT ("slug") DO NOTHING;
 
 INSERT INTO "subcategories" ("id", "category_id", "name", "slug", "item_count")
 VALUES
