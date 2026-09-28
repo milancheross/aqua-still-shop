@@ -94,7 +94,7 @@ export async function getAdminBrands() {
   }
 }
 
-export async function createAdminBrand(data: { name: string; slug: string }) {
+export async function createAdminBrand(data: { name: string; slug: string; logoUrl?: string | null }) {
   await requireAdmin();
   if (!process.env.DATABASE_URL) {
     throw new Error("Baza podataka nije povezana (nedostaje DATABASE_URL).");
@@ -108,11 +108,30 @@ export async function createAdminBrand(data: { name: string; slug: string }) {
     data: {
       name: data.name,
       slug: data.slug,
+      logoUrl: data.logoUrl || null,
     },
   });
 
   revalidatePath("/admin/brands");
   revalidatePath("/katalog");
+  return { success: true };
+}
+
+export async function updateAdminBrand(id: string, data: { name: string; slug: string; logoUrl?: string | null }) {
+  await requireAdmin();
+  if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
+  if (!data.name.trim() || !data.slug.trim()) throw new Error("Naziv i slug brenda su obavezni.");
+  await db.brand.update({
+    where: { id },
+    data: {
+      name: data.name.trim(),
+      slug: data.slug.trim(),
+      logoUrl: data.logoUrl || null,
+    },
+  });
+  revalidatePath("/admin/brands");
+  revalidatePath("/brendovi");
+  revalidatePath("/");
   return { success: true };
 }
 
