@@ -62,6 +62,8 @@ async function main() {
     { id: "sub-sekire-cekici", categoryId: "cat-alati", name: "Sekire i čekići", slug: "sekire-cekici", itemCount: 0 },
     { id: "sub-odvijaci-bitovi-rucni", categoryId: "cat-alati", name: "Odvijači i garniture bitova", slug: "odvijaci-garniture-bitova", itemCount: 0 },
     { id: "sub-garniture-rucnog-alata", categoryId: "cat-alati", name: "Garniture ručnog alata", slug: "garniture-rucnog-alata", itemCount: 0 },
+    { id: "sub-elektricne-busilice", categoryId: "cat-elektricni-alati", name: "Električne bušilice i odvijači", slug: "elektricne-busilice-odvijaci", itemCount: 0 },
+    { id: "sub-elektricne-brusilice", categoryId: "cat-elektricni-alati", name: "Električne brusilice", slug: "elektricne-brusilice", itemCount: 0 },
     { id: "sub-burgije", categoryId: "cat-elektricni-alati", name: "Burgije i pribor za bušenje", slug: "burgije-pribor-busenje", itemCount: 0 },
     { id: "sub-brusne-ploce", categoryId: "cat-elektricni-alati", name: "Brusne i rezne ploče", slug: "brusne-rezne-ploce", itemCount: 0 },
     { id: "sub-mesalice", categoryId: "cat-elektricni-alati", name: "Mešalice za boju i malter", slug: "mesalice-boju-malter", itemCount: 0 },
