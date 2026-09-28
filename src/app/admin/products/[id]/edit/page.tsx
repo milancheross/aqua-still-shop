@@ -118,8 +118,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
           images: prev.images[0] === "/placeholder-tool.svg" ? newUrls : [...prev.images, ...newUrls],
         }));
       }
-    } catch (err: any) {
-      setError(err.message || "Greška pri otpremanju slike.");
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : null) || "Greška pri otpremanju slike.");
     } finally {
       setUploadingImage(false);
       e.target.value = "";
@@ -175,8 +175,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       });
 
       router.push("/admin/products");
-    } catch (err: any) {
-      setError(err.message || "Greška pri čuvanju izmena.");
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : null) || "Greška pri čuvanju izmena.");
       setSaving(false);
     }
   };
