@@ -77,7 +77,7 @@ function EditorContent() {
   useEffect(() => {
     if (pageId) {
       getPages().then((pages) => {
-        const found = pages.find((p: any) => p.id === pageId);
+        const found = pages.find((p) => p.id === pageId);
         if (found) {
           setTitle(found.title);
           setSlug(found.slug);
@@ -113,12 +113,12 @@ function EditorContent() {
     setSelectedBlockId(newBlock.id);
   };
 
-  const updateSelectedBlockProps = (key: string, val: any) => {
+  const updateSelectedBlockProps = (key: keyof CanvasBlock["props"], val: string) => {
     if (!selectedBlockId) return;
     setBlocks(blocks.map(b => b.id === selectedBlockId ? { ...b, props: { ...b.props, [key]: val } } : b));
   };
 
-  const updateSelectedBlockStyles = (key: string, val: any) => {
+  const updateSelectedBlockStyles = (key: keyof CanvasBlock["styles"], val: string) => {
     if (!selectedBlockId) return;
     setBlocks(blocks.map(b => b.id === selectedBlockId ? { ...b, styles: { ...b.styles, [key]: val } } : b));
   };
