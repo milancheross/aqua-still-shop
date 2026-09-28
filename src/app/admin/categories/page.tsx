@@ -40,8 +40,8 @@ export default function AdminCategoriesPage() {
         setSuccess("Kategorija je uspešno kreirana.");
         setForm({ name: "", slug: "", description: "" });
         await loadData();
-      } catch (err: any) {
-        setError(err.message || "Kreiranje kategorije nije uspelo.");
+      } catch (err: unknown) {
+        setError((err instanceof Error ? err.message : null) || "Kreiranje kategorije nije uspelo.");
       }
     });
   };
@@ -53,8 +53,8 @@ export default function AdminCategoriesPage() {
         await deleteAdminCategory(id);
         setSuccess("Kategorija je obrisana.");
         await loadData();
-      } catch (err: any) {
-        alert(err.message || "Brisanje nije uspelo.");
+      } catch (err: unknown) {
+        alert((err instanceof Error ? err.message : null) || "Brisanje nije uspelo.");
       }
     });
   };
