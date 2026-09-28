@@ -62,11 +62,11 @@ export default async function HomePage() {
             priority
             unoptimized
             sizes="100vw"
-            className="absolute inset-0 -z-20 object-cover object-center"
+            className="absolute inset-0 z-0 object-cover object-center"
           />
         ) : null}
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-950/20" />
-        <div className="container mx-auto flex min-h-[420px] items-center px-4 py-12 sm:min-h-[480px] sm:px-6 sm:py-16 lg:min-h-[560px] lg:px-8">
+        <div className={`absolute inset-0 z-10 ${managedHeroImage ? "bg-gradient-to-r from-slate-950/95 via-slate-950/70 to-slate-950/10" : "bg-slate-950"}`} />
+        <div className="container relative z-20 mx-auto flex min-h-[420px] items-center px-4 py-12 sm:min-h-[480px] sm:px-6 sm:py-16 lg:min-h-[560px] lg:px-8">
           <div className="max-w-2xl space-y-5 sm:space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200 sm:text-xs">
               <Sparkles className="h-3.5 w-3.5" /> Profesionalni alati & oprema
@@ -92,7 +92,7 @@ export default async function HomePage() {
           </div>
         </div>
         {!managedHeroImage && heroImage ? (
-          <div className="pointer-events-none absolute bottom-5 right-5 hidden h-36 w-44 overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-sm lg:block">
+          <div className="pointer-events-none absolute bottom-5 right-5 z-20 hidden h-36 w-44 overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-sm lg:block">
             <Image src={heroImage} alt={heroProduct?.name || "Proizvod iz ponude"} fill sizes="176px" unoptimized className="object-contain p-3" />
           </div>
         ) : null}
