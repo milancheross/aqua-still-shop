@@ -7,7 +7,8 @@ INSERT INTO categories (id, name, slug, description, item_count, icon_name) VALU
 ('cat-alati', 'Alati i oprema', 'alati', 'Profesionalni i hobi električni i ručni alati, pribor i oprema za majstore i radionice.', 420, 'wrench'),
 ('cat-vodovod', 'Vodovod i kanalizacija', 'vodovod', 'Cevi, fiting, ventili, pumpe i kompletan materijal za vodovodne instalacije.', 380, 'droplet'),
 ('cat-kupatila', 'Kupatilska oprema i sanitarije', 'kupatila', 'Baterije za kadu i lavabo, sanitarije, tuš program i moderna oprema za kupatila.', 290, 'bath'),
-('cat-navodnjavanje', 'Sistemi za navodnjavanje', 'navodnjavanje', 'Sve za profesionalno navodnjavanje voćnjaka, bašti, parkova i plastenika.', 215, 'sprout')
+('cat-navodnjavanje', 'Sistemi za navodnjavanje', 'navodnjavanje', 'Sve za profesionalno navodnjavanje voćnjaka, bašti, parkova i plastenika.', 215, 'sprout'),
+('cat-grejanje', 'Grejanje', 'grejanje', 'Oprema i instalacioni materijal za sisteme grejanja.', 0, 'flame')
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description;
 
 -- 2. Subcategories
@@ -27,7 +28,18 @@ INSERT INTO subcategories (id, category_id, name, slug, item_count) VALUES
 ('sub-kap-po-kap', 'cat-navodnjavanje', 'Sistemi kap po kap', 'kap-po-kap', 65),
 ('sub-prskalice', 'cat-navodnjavanje', 'Rasprskivači i rotori', 'prskalice', 60),
 ('sub-creva', 'cat-navodnjavanje', 'Baštenska i tehnička creva', 'creva', 50),
-('sub-automatika', 'cat-navodnjavanje', 'Elektroventili i tajmeri', 'automatika', 40)
+('sub-automatika', 'cat-navodnjavanje', 'Elektroventili i tajmeri', 'automatika', 40),
+('sub-tolsen-rucni', 'cat-alati', 'Tolsen i ostali ručni alati', 'tolsen-rucni-alati', 0),
+('sub-pribor-alati', 'cat-alati', 'Pribor za električne alate', 'pribor-za-alate', 0),
+('sub-odvijaci', 'cat-alati', 'Odvijači i bitovi', 'odvijaci-bitovi', 0),
+('sub-klesta', 'cat-alati', 'Klešta i sečice', 'klesta-secice', 0),
+('sub-merni-alat', 'cat-alati', 'Merni i obeležavajući alat', 'merni-alat', 0),
+('sub-zaptivni-materijal', 'cat-vodovod', 'Zaptivni i montažni materijal', 'zaptivni-montazni-materijal', 0),
+('sub-odvodnja', 'cat-vodovod', 'Odvodnja i sifoni', 'odvodnja-sifoni', 0),
+('sub-grejna-tela', 'cat-grejanje', 'Radijatori i grejna tela', 'radijatori-grejna-tela', 0),
+('sub-ventili-grejanje', 'cat-grejanje', 'Ventili i termostatska regulacija', 'ventili-termostatska-regulacija', 0),
+('sub-pribor-grejanje', 'cat-grejanje', 'Pribor za grejanje', 'pribor-za-grejanje', 0),
+('sub-kupatilski-pribor', 'cat-kupatila', 'Kupatilski pribor i galanterija', 'kupatilski-pribor', 0)
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
 
 -- 3. Brands
@@ -44,7 +56,8 @@ INSERT INTO brands (id, name, slug) VALUES
 ('brand-geberit', 'Geberit', 'geberit'),
 ('brand-rain-bird', 'Rain Bird', 'rain-bird'),
 ('brand-gardena', 'Gardena', 'gardena'),
-('brand-hunter', 'Hunter', 'hunter')
+('brand-hunter', 'Hunter', 'hunter'),
+('brand-tolsen', 'Tolsen', 'tolsen')
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
 
 -- 4. Products (Test Products from mock-data.ts)
