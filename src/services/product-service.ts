@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { Product, ProductCategory } from "@/types";
 import { 
   getProducts as getMockProducts, 
@@ -35,7 +36,7 @@ export async function getDbProducts(options?: {
       return getMockProducts(options);
     }
 
-    const where: any = {};
+    const where: Prisma.ProductWhereInput = {};
 
     if (options?.categorySlug) {
       if (options.categorySlug === "akcija") {
@@ -75,7 +76,7 @@ export async function getDbProducts(options?: {
       ];
     }
 
-    let orderBy: any = { isFeatured: "desc" };
+    let orderBy: Prisma.ProductOrderByWithRelationInput = { isFeatured: "desc" };
     if (options?.sort) {
       switch (options.sort) {
         case "price-asc":
@@ -211,7 +212,7 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
       slug: c.slug,
       description: c.description ?? "",
       itemCount: c.itemCount,
-      iconName: (c.iconName as any) || "wrench",
+      iconName: (c.iconName as ProductCategory["iconName"]) || "wrench",
       subcategories: c.subcategories.map((sub) => ({
         id: sub.id,
         name: sub.name,
