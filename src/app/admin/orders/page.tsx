@@ -126,6 +126,8 @@ export default function AdminOrdersPage() {
                           <option value="processing">U obradi (Processing)</option>
                           <option value="shipped">Poslato (Shipped)</option>
                           <option value="delivered">Isporučeno (Delivered)</option>
+                          <option value="ready_for_pickup">Spremno za preuzimanje</option>
+                          <option value="picked_up">Preuzeto u radnji</option>
                           <option value="cancelled">Otkazano (Cancelled)</option>
                         </select>
                       </td>
