@@ -8,7 +8,7 @@ export interface PageInput {
   id?: string;
   title: string;
   slug: string;
-  contentJson: any[];
+  contentJson: unknown[];
   seoTitle?: string;
   seoDescription?: string;
   isPublished?: boolean;
@@ -21,7 +21,7 @@ export async function getPages() {
     const pages = await db.page.findMany({
       orderBy: { updatedAt: "desc" },
     });
-    return pages.map((p: any) => ({
+    return pages.map((p) => ({
       ...p,
       createdAt: p.createdAt.toISOString(),
       updatedAt: p.updatedAt.toISOString(),
