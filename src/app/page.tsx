@@ -27,20 +27,16 @@ export default async function HomePage() {
   }
   const heroImage = managedHeroImage || heroProduct?.images.find(Boolean);
 
-  const popularCategoryItems = [
-    { name: "Električni alati", slug: "alati", image: "/placeholder-tool.svg" },
-    { name: "Ručni alati", slug: "alati", image: "/placeholder-tool.svg" },
-    { name: "Cevi i fiting", slug: "vodovod", image: "/placeholder-pipe.svg" },
-    { name: "Slavine i baterije", slug: "kupatila", image: "/placeholder-faucet.svg" },
-    { name: "WC šolje", slug: "kupatila", image: "/placeholder-toilet.svg" },
-    { name: "Tuš kabine", slug: "kupatila", image: "/placeholder-faucet.svg" },
-    { name: "Creva i prskalice", slug: "navodnjavanje", image: "/placeholder-sprinkler.svg" },
-    { name: "Pumpe", slug: "vodovod", image: "/placeholder-valve.svg" },
-  ];
-  const popularCategoriesGrid = popularCategoryItems.map((item) => ({
-    ...item,
-    image: categories.find((category) => category.slug === item.slug)?.imageUrl || item.image,
-  }));
+  // Popular tiles are subcategories, not parent categories. Each uses its own admin-managed image.
+  const popularCategoriesGrid = categories
+    .flatMap((category) => category.subcategories.map((subcategory) => ({
+      id: subcategory.id,
+      name: subcategory.name,
+      slug: subcategory.slug,
+      categorySlug: category.slug,
+      imageUrl: subcategory.imageUrl,
+    })))
+    .slice(0, 8);
 
   const trustItems = [
     { title: "Brza dostava", subtitle: "na teritoriji Srbije", icon: Truck },
@@ -227,16 +223,24 @@ export default async function HomePage() {
             Pogledaj sve kategorije <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-          {popularCategoriesGrid.map((cat, idx) => (
-            <Link key={idx} href={`/katalog/${cat.slug}`} className="group bg-white rounded-2xl border border-slate-200 p-4 text-center hover:border-cyan-500 hover:shadow-lg transition-all shadow-sm">
-              <div className="relative aspect-square mb-3 bg-slate-50 rounded-xl overflow-hidden p-2">
-                <Image src={cat.image} alt={cat.name} fill className="object-contain p-2 group-hover:scale-105 transition-transform" />
-              </div>
-              <h3 className="text-xs font-bold text-slate-800 group-hover:text-cyan-600 transition-colors line-clamp-1">{cat.name}</h3>
-            </Link>
-          ))}
-        </div>
+        {popularCategoriesGrid.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-8">
+            {popularCategoriesGrid.map((subcategory) => (
+              <Link key={subcategory.id} href={`/katalog/${subcategory.categorySlug}?subcategory=${encodeURIComponent(subcategory.slug)}`} className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-cyan-500 hover:shadow-lg sm:p-4">
+                <div className="relative mb-3 aspect-square overflow-hidden rounded-xl bg-slate-50 p-2">
+                  {subcategory.imageUrl ? (
+                    <Image src={subcategory.imageUrl} alt={subcategory.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 12vw" unoptimized className="object-contain p-2 transition-transform group-hover:scale-105" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-4xl font-black text-cyan-800/20">{subcategory.name.slice(0, 1)}</div>
+                  )}
+                </div>
+                <h3 className="line-clamp-2 text-xs font-bold text-slate-800 transition-colors group-hover:text-cyan-600">{subcategory.name}</h3>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">Podkategorije će biti prikazane kada budu dodate u administraciji.</p>
+        )}
       </section>
     </div>
   );
