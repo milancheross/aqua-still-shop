@@ -51,7 +51,7 @@ export default async function AdminPagesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {pages.map((p: any) => (
+                {pages.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-4 px-4 font-bold text-slate-900">{p.title}</td>
                     <td className="py-4 px-4 font-mono text-cyan-700">/{p.slug}</td>
