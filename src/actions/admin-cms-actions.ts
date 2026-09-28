@@ -114,6 +114,8 @@ export async function createAdminBrand(data: { name: string; slug: string; logoU
 
   revalidatePath("/admin/brands");
   revalidatePath("/katalog");
+  revalidatePath("/brendovi");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -142,6 +144,8 @@ export async function deleteAdminBrand(id: string) {
     await db.brand.delete({ where: { id } });
     revalidatePath("/admin/brands");
     revalidatePath("/katalog");
+    revalidatePath("/brendovi");
+    revalidatePath("/");
     return { success: true };
   } catch (e: unknown) {
     throw new Error(e instanceof Error ? e.message : "Brisanje brenda nije uspelo.");
