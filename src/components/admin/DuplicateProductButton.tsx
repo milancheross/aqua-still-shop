@@ -11,8 +11,8 @@ export default function DuplicateProductButton({ id }: { id: string }) {
     startTransition(async () => {
       try {
         await duplicateAdminProduct(id);
-      } catch (e: any) {
-        alert(e.message || "Dupliranje nije uspelo.");
+      } catch (e: unknown) {
+        alert(e instanceof Error ? e.message : "Dupliranje nije uspelo.");
       }
     });
   };
