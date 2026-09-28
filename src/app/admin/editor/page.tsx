@@ -157,7 +157,7 @@ function EditorContent() {
           id: pageId || undefined,
           title,
           slug,
-          contentJson: blocks,
+          contentJson: JSON.parse(JSON.stringify(blocks)),
           seoTitle,
           seoDescription,
           isPublished,
