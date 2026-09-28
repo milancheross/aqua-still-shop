@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import { AlertCircle, Check, ImagePlus, Loader2, Plus, Save, Trash2, Upload, X } from "lucide-react";
-import { createAdminCategory, deleteAdminCategory, getAdminCategories, updateAdminCategory } from "@/actions/admin-cms-actions";
+import { createAdminCategory, deleteAdminCategory, getAdminCategories, updateAdminCategory, updateAdminSubcategoryImage } from "@/actions/admin-cms-actions";
 import { uploadMediaAction } from "@/actions/media-actions";
 
 type Category = Awaited<ReturnType<typeof getAdminCategories>>[number];
@@ -59,6 +59,35 @@ export default function AdminCategoriesPage() {
       setSuccess("Slika je otpremljena. Sačuvajte kategoriju da biste je prikazali na sajtu.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Otpremanje slike nije uspelo.");
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
+  };
+
+  const handleSubcategoryImageUpload = async (subcategoryId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setError("");
+    setSuccess("");
+    setUploading(true);
+    try {
+      const data = new FormData();
+      data.append("files", file);
+      data.append("folder", "categories");
+      const result = await uploadMediaAction(data);
+      const imageUrl = result.uploaded[0]?.url;
+      if (!imageUrl) throw new Error("Otpremanje slike nije vratilo adresu.");
+      await updateAdminSubcategoryImage(subcategoryId, imageUrl);
+      setCategories((current) => current.map((category) => ({
+        ...category,
+        subcategories: category.subcategories.map((subcategory) =>
+          subcategory.id === subcategoryId ? { ...subcategory, imageUrl } : subcategory
+        ),
+      })));
+      setSuccess("Fotografija podkategorije je sačuvana i prikazana na sajtu.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Otpremanje slike podkategorije nije uspelo.");
     } finally {
       setUploading(false);
       event.target.value = "";
@@ -142,7 +171,18 @@ export default function AdminCategoriesPage() {
           {loading ? <div className="rounded-2xl border border-slate-200 bg-white py-16 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-cyan-600" /></div> : categories.length === 0 ? <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Još nema kreiranih kategorija.</div> : <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {categories.map((category) => <article key={category.id} className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${editingId === category.id ? "border-cyan-500 ring-2 ring-cyan-100" : "border-slate-200"}`}>
               <div className="relative aspect-[16/8] bg-gradient-to-br from-slate-100 to-cyan-50">{category.imageUrl ? <Image src={category.imageUrl} alt={category.name} fill sizes="(max-width: 640px) 100vw, 30vw" className="object-cover" /> : <div className="absolute inset-0 flex items-center justify-center text-4xl font-black text-cyan-800/20">{category.name.slice(0,1)}</div>}<span className="absolute bottom-2 left-2 rounded-lg bg-white/90 px-2 py-1 text-[10px] font-bold text-slate-600">{category.imageUrl ? "Ima fotografiju" : "Bez fotografije"}</span></div>
-              <div className="space-y-2 p-3 sm:p-4"><div><h3 className="line-clamp-2 text-sm font-bold text-slate-900">{category.name}</h3><p className="mt-1 truncate font-mono text-xs text-slate-500">/{category.slug}</p></div><div className="flex gap-2"><button type="button" onClick={() => startEdit(category)} className="min-h-10 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800">Uredi</button><button type="button" onClick={() => handleDelete(category.id)} aria-label={`Obriši kategoriju ${category.name}`} className="min-h-10 rounded-lg border border-red-100 px-3 py-2 text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button></div></div>
+              <div className="space-y-2 p-3 sm:p-4"><div><h3 className="line-clamp-2 text-sm font-bold text-slate-900">{category.name}</h3><p className="mt-1 truncate font-mono text-xs text-slate-500">/{category.slug}</p></div><div className="flex gap-2"><button type="button" onClick={() => startEdit(category)} className="min-h-10 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800">Uredi kategoriju</button><button type="button" onClick={() => handleDelete(category.id)} aria-label={`Obriši kategoriju ${category.name}`} className="min-h-10 rounded-lg border border-red-100 px-3 py-2 text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button></div>
+                {category.subcategories.length > 0 && <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+                  <p className="text-[11px] font-black uppercase tracking-wide text-slate-500">Podkategorije — zasebne fotografije</p>
+                  {category.subcategories.map((subcategory) => <div key={subcategory.id} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-2">
+                    <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
+                      {subcategory.imageUrl ? <Image src={subcategory.imageUrl} alt={subcategory.name} fill sizes="56px" className="object-contain p-1" /> : <div className="flex h-full items-center justify-center text-lg font-black text-slate-300">{subcategory.name.slice(0,1)}</div>}
+                    </div>
+                    <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-slate-800">{subcategory.name}</p><p className="text-[10px] text-slate-500">{subcategory.imageUrl ? "Ima fotografiju" : "Nema fotografiju"}</p></div>
+                    <label className={`inline-flex min-h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-cyan-200 bg-white px-2.5 text-[11px] font-bold text-cyan-800 hover:bg-cyan-50 ${uploading ? "pointer-events-none opacity-50" : ""}`}><Upload className="h-3.5 w-3.5" />{subcategory.imageUrl ? "Zameni" : "Dodaj"}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => void handleSubcategoryImageUpload(subcategory.id, event)} className="sr-only" /></label>
+                  </div>)}
+                </div>}
+              </div>
             </article>)}
           </div>}
         </section>
