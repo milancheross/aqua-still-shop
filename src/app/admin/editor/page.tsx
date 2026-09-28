@@ -154,8 +154,8 @@ function EditorContent() {
         });
         setSuccessMsg("Stranica je uspešno sačuvana!");
         setTimeout(() => setSuccessMsg(""), 3000);
-      } catch (err: any) {
-        alert(err.message || "Greška pri čuvanju stranice.");
+      } catch (err: unknown) {
+        alert((err instanceof Error ? err.message : null) || "Greška pri čuvanju stranice.");
       }
     });
   };
