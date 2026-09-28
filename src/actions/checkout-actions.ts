@@ -1,159 +1,161 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { db } from "@/lib/db";
-import { validateAndGetProduct } from "@/actions/cart-actions";
+import { revalidatePath } from "next/cache";
 
 export interface CheckoutInput {
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
-  street: string;
-  city: string;
-  postalCode: string;
+  street?: string;
+  city?: string;
+  postalCode?: string;
   notes?: string;
   paymentMethod?: string;
-  shippingMethod?: string; // "courier" | "store_pickup"
+  shippingMethod?: string;
   items: { productId: string; quantity: number }[];
 }
 
+const FREE_SHIPPING_THRESHOLD = 5000;
+const DEFAULT_SHIPPING_COST = 500;
+const MAX_ITEMS = 50;
+const MAX_QUANTITY_PER_ITEM = 1000;
+
+function requiredText(value: unknown, maxLength: number): value is string {
+  return typeof value === "string" && value.trim().length > 0 && value.trim().length <= maxLength;
+}
+
 export async function createOrderAction(input: CheckoutInput) {
-  // 1. Basic validation
-  if (!input.firstName || !input.lastName || !input.email || !input.phone || !input.postalCode) {
-    throw new Error("Molimo popunite sva obavezna polja za kontakt.");
+  if (!input || typeof input !== "object") throw new Error("Neispravni podaci porudžbine.");
+
+  const firstName = typeof input.firstName === "string" ? input.firstName.trim() : "";
+  const lastName = typeof input.lastName === "string" ? input.lastName.trim() : "";
+  const email = typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
+  const phone = typeof input.phone === "string" ? input.phone.trim() : "";
+  const shippingMethod = input.shippingMethod ?? "courier";
+  const paymentMethod = input.paymentMethod ?? "cash_on_delivery";
+  const isStorePickup = shippingMethod === "store_pickup";
+
+  if (!requiredText(firstName, 100) || !requiredText(lastName, 100) ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 ||
+      !requiredText(phone, 40)) {
+    throw new Error("Molimo unesite ispravno ime, prezime, email i telefon.");
+  }
+  if (shippingMethod !== "courier" && shippingMethod !== "store_pickup") {
+    throw new Error("Izabran je nevažeći način isporuke.");
+  }
+  if (paymentMethod !== "cash_on_delivery") {
+    throw new Error("Izabran je nevažeći način plaćanja.");
   }
 
-  if (input.shippingMethod !== "store_pickup" && (!input.street || !input.city)) {
-    throw new Error("Molimo unesite ulicu i grad za dostavu na adresu.");
+  const street = typeof input.street === "string" ? input.street.trim() : "";
+  const city = typeof input.city === "string" ? input.city.trim() : "";
+  const postalCode = typeof input.postalCode === "string" ? input.postalCode.trim() : "";
+  const notes = typeof input.notes === "string" ? input.notes.trim().slice(0, 1000) : "";
+  if (!isStorePickup && (!requiredText(street, 200) || !requiredText(city, 100) || !requiredText(postalCode, 20))) {
+    throw new Error("Molimo unesite ulicu, grad i poštanski broj za dostavu.");
   }
 
-  if (!input.items || input.items.length === 0) {
-    throw new Error("Vaša korpa je prazna.");
+  if (!Array.isArray(input.items) || input.items.length === 0 || input.items.length > MAX_ITEMS) {
+    throw new Error("Vaša korpa je prazna ili sadrži previše stavki.");
   }
 
-  // 2. Server-side validation of items, prices, and stock
-  let subtotal = 0;
-  let taxAmount = 0;
-  const verifiedOrderItems: {
-    productId: string;
-    productName: string;
-    sku: string;
-    price: number;
-    quantity: number;
-    total: number;
-  }[] = [];
-
-  const rawItemsSummary: any[] = [];
-
-  for (const cartItem of input.items) {
-    if (cartItem.quantity <= 0) {
-      throw new Error("Količina proizvoda mora biti veća od nule.");
+  const quantities = new Map<string, number>();
+  for (const item of input.items) {
+    if (!item || typeof item.productId !== "string" || !item.productId.trim() ||
+        !Number.isSafeInteger(item.quantity) || item.quantity < 1 || item.quantity > MAX_QUANTITY_PER_ITEM) {
+      throw new Error("Korpa sadrži neispravnu količinu proizvoda.");
     }
-
-    const validated = await validateAndGetProduct(cartItem.productId, cartItem.quantity);
-    const product = validated.product;
-    const unitPrice = validated.unitPrice;
-    const lineTotal = unitPrice * cartItem.quantity;
-
-    subtotal += lineTotal;
-    taxAmount += lineTotal * (validated.vatRate / (1 + validated.vatRate));
-
-    verifiedOrderItems.push({
-      productId: product.id,
-      productName: product.name,
-      sku: product.sku,
-      price: unitPrice,
-      quantity: cartItem.quantity,
-      total: lineTotal,
-    });
-
-    rawItemsSummary.push({
-      id: product.id,
-      name: product.name,
-      sku: product.sku,
-      price: unitPrice,
-      quantity: cartItem.quantity,
-      total: lineTotal,
-    });
+    quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
+  }
+  for (const quantity of quantities.values()) {
+    if (quantity > MAX_QUANTITY_PER_ITEM) throw new Error("Tražena količina je prevelika.");
   }
 
-  const FREE_SHIPPING_THRESHOLD = 5000;
-  const DEFAULT_SHIPPING_COST = 500;
-  
-  // Shipping calculation: if store_pickup, shipping is 0. If courier, standard rules apply.
-  const isStorePickup = input.shippingMethod === "store_pickup";
-  const shippingCost = isStorePickup ? 0 : (subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : DEFAULT_SHIPPING_COST);
-  const total = subtotal + shippingCost;
+  if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
 
-  const orderNumber = `AS-${Date.now().toString().slice(-8)}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const orderNumber = `AS-${Date.now().toString().slice(-8)}-${randomBytes(4).toString("hex").toUpperCase()}`;
+  const confirmationToken = randomBytes(32).toString("hex");
 
-  const customerInfo = {
-    firstName: input.firstName,
-    lastName: input.lastName,
-    email: input.email,
-    phone: input.phone,
-    street: isStorePickup ? "Lično preuzimanje u radnji" : input.street,
-    city: isStorePickup ? "Zlatibor" : input.city,
-    postalCode: isStorePickup ? "31315" : input.postalCode,
-    notes: input.notes ?? "",
-    shippingMethod: isStorePickup ? "store_pickup" : "courier",
-    paymentMethod: input.paymentMethod ?? "cash_on_delivery",
-    pickupNotice: isStorePickup ? "Spremno za preuzimanje narednog dana u Aqua Still Zlatibor izložbenom salonu." : undefined,
-  };
-
-  // 3. Prisma Transaction for atomic order creation and stock decrement
   try {
     const order = await db.$transaction(async (tx) => {
-      // Create Order
-      const newOrder = await tx.order.create({
-        data: {
-          orderNumber,
-          status: "pending",
-          customerInfo,
-          items: rawItemsSummary,
-          subtotal,
-          taxAmount,
-          shippingCost,
-          total,
-          orderItems: {
-            create: verifiedOrderItems.map((item) => ({
-              productId: item.productId,
-              productName: item.productName,
-              sku: item.sku,
-              price: item.price,
-              quantity: item.quantity,
-              total: item.total,
-            })),
-          },
-        },
-        include: {
-          orderItems: true,
-        },
-      });
+      const verifiedOrderItems: {
+        productId: string; productName: string; sku: string; price: number; quantity: number; total: number;
+      }[] = [];
+      let subtotal = 0;
+      let taxAmount = 0;
 
-      // Decrement stock for each product
-      for (const item of verifiedOrderItems) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: {
-            stockQuantity: {
-              decrement: item.quantity,
-            },
-          },
+      for (const [productId, quantity] of quantities) {
+        const product = await tx.product.findUnique({ where: { id: productId } });
+        if (!product || !product.inStock || product.stockQuantity < quantity) {
+          throw new Error("Jedan od proizvoda više nije dostupan u traženoj količini. Osvežite korpu.");
+        }
+        const price = Number(product.salePrice ?? product.price);
+        const vatRate = Number(product.vatRate);
+        if (!Number.isFinite(price) || price < 0 || !Number.isFinite(vatRate) || vatRate < 0) {
+          throw new Error("Cena proizvoda nije ispravna.");
+        }
+        const lineTotal = Math.round(price * quantity * 100) / 100;
+        subtotal += lineTotal;
+        taxAmount += lineTotal * (vatRate / (1 + vatRate));
+        verifiedOrderItems.push({
+          productId, productName: product.name, sku: product.sku, price, quantity, total: lineTotal,
         });
       }
 
-      return newOrder;
+      subtotal = Math.round(subtotal * 100) / 100;
+      taxAmount = Math.round(taxAmount * 100) / 100;
+      const shippingCost = isStorePickup || subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : DEFAULT_SHIPPING_COST;
+      const total = Math.round((subtotal + shippingCost) * 100) / 100;
+
+      // Conditional updates make stock reservation atomic; any failed item rolls back the whole transaction.
+      for (const item of verifiedOrderItems) {
+        const reserved = await tx.product.updateMany({
+          where: { id: item.productId, inStock: true, stockQuantity: { gte: item.quantity } },
+          data: { stockQuantity: { decrement: item.quantity } },
+        });
+        if (reserved.count !== 1) {
+          throw new Error(`Nema dovoljno zaliha za proizvod: ${item.productName}.`);
+        }
+      }
+
+      const customerInfo = {
+        firstName, lastName, email, phone,
+        street: isStorePickup ? "Lično preuzimanje u radnji" : street,
+        city: isStorePickup ? "Zlatibor" : city,
+        postalCode: isStorePickup ? "31315" : postalCode,
+        notes,
+        shippingMethod,
+        paymentMethod,
+        pickupNotice: isStorePickup ? "Preuzimanje narednog dana u Aqua Still Zlatibor salonu, nakon potvrde da je porudžbina spremna." : undefined,
+        confirmationToken,
+      };
+      const rawItemsSummary = verifiedOrderItems.map((item) => ({
+        id: item.productId, name: item.productName, sku: item.sku,
+        price: item.price, quantity: item.quantity, total: item.total,
+      }));
+
+      return tx.order.create({
+        data: {
+          orderNumber, status: "pending", customerInfo, items: rawItemsSummary,
+          subtotal, taxAmount, shippingCost, total,
+          orderItems: { create: verifiedOrderItems },
+        },
+      });
     });
 
+    revalidatePath("/admin/orders");
     return {
       success: true,
       orderNumber: order.orderNumber,
+      confirmationToken,
       orderId: order.id,
       total: Number(order.total),
     };
-  } catch (error: any) {
-    console.error("Greška prilikom kreiranja porudžbine u bazi:", error);
-    throw new Error(error.message || "Neuspešno kreiranje porudžbine. Molimo pokušajte ponovo.");
+  } catch (error: unknown) {
+    console.error("Greška prilikom kreiranja porudžbine:", error);
+    throw new Error(error instanceof Error ? error.message : "Neuspešno kreiranje porudžbine. Molimo pokušajte ponovo.");
   }
 }

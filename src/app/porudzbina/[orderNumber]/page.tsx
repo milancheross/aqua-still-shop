@@ -6,15 +6,17 @@ import { formatPrice } from "@/lib/utils";
 
 interface OrderConfirmationPageProps {
   params: Promise<{ orderNumber: string }>;
+  searchParams: Promise<{ key?: string }>;
 }
 
-export default async function OrderConfirmationPage({ params }: OrderConfirmationPageProps) {
+export default async function OrderConfirmationPage({ params, searchParams }: OrderConfirmationPageProps) {
   const { orderNumber } = await params;
+  const { key } = await searchParams;
 
-  let order: any = null;
+  let orderRecord: any = null;
   try {
     if (process.env.DATABASE_URL) {
-      order = await db.order.findUnique({
+      orderRecord = await db.order.findUnique({
         where: { orderNumber },
         include: { orderItems: true },
       });
@@ -23,6 +25,8 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
     console.warn("Could not fetch order from DB:", error);
   }
 
+  const storedInfo = orderRecord?.customerInfo as any;
+  const order = storedInfo?.confirmationToken && key && storedInfo.confirmationToken === key ? orderRecord : null;
   const customerInfo = order?.customerInfo as any;
   const items = order?.orderItems || order?.items || [];
 
@@ -60,12 +64,12 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
                   <span className="text-slate-900 font-bold">{customerInfo?.phone}</span>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-slate-500 block font-bold">Adresa dostave:</span>
+                  <span className="text-slate-500 block font-bold">{customerInfo?.shippingMethod === "store_pickup" ? "Način preuzimanja:" : "Adresa dostave:"}</span>
                   <span className="text-slate-900 font-bold">{customerInfo?.street}, {customerInfo?.postalCode} {customerInfo?.city}</span>
                 </div>
                 <div className="space-y-1">
                   <span className="text-slate-500 block font-bold">Način plaćanja:</span>
-                  <span className="text-slate-900 font-bold">Plaćanje pouzećem</span>
+                  <span className="text-slate-900 font-bold">{customerInfo?.shippingMethod === "store_pickup" ? "Plaćanje pri preuzimanju u radnji" : "Plaćanje pouzećem kuriru"}</span>
                 </div>
               </div>
 
