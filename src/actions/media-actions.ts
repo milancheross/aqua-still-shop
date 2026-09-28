@@ -202,7 +202,7 @@ export async function deleteMediaAssetAction(id: string, url: string) {
     }
 
     return { success: true };
-  } catch (error: any) {
-    throw new Error(error.message || "Neuspešno brisanje fotografije.");
+  } catch (error: unknown) {
+    throw new Error((error instanceof Error ? error.message : null) || "Neuspešno brisanje fotografije.");
   }
 }
