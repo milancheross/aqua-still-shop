@@ -120,13 +120,14 @@ export async function uploadMediaAction(formData: FormData) {
   return { success: true, uploaded };
 }
 
-export async function updateMediaAssetAction(id: string, data: { altText?: string; filename?: string }) {
+export async function updateMediaAssetAction(id: string, data: { altText?: string; filename?: string; folder?: string }) {
   await requireAdmin();
   await db.mediaAsset.update({
     where: { id },
     data: {
       ...(data.altText !== undefined ? { altText: data.altText } : {}),
       ...(data.filename !== undefined ? { filename: getSafeFilename(data.filename) } : {}),
+      ...(data.folder !== undefined ? { folder: /^[a-z0-9_-]{1,40}$/.test(data.folder) ? data.folder : "general" } : {}),
     },
   });
   return { success: true };
