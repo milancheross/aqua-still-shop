@@ -226,7 +226,7 @@ export default async function HomePage() {
         {popularCategoriesGrid.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-8">
             {popularCategoriesGrid.map((subcategory) => (
-              <Link key={subcategory.id} href={`/katalog/${subcategory.categorySlug}?subcategory=${encodeURIComponent(subcategory.slug)}`} className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-cyan-500 hover:shadow-lg sm:p-4">
+              <Link key={subcategory.id} href={`/katalog?category=${encodeURIComponent(subcategory.categorySlug)}&subcategory=${encodeURIComponent(subcategory.slug)}`} className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-cyan-500 hover:shadow-lg sm:p-4">
                 <div className="relative mb-3 aspect-square overflow-hidden rounded-xl bg-slate-50 p-2">
                   {subcategory.imageUrl ? (
                     <Image src={subcategory.imageUrl} alt={subcategory.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 12vw" unoptimized className="object-contain p-2 transition-transform group-hover:scale-105" />
