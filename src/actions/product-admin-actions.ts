@@ -283,7 +283,7 @@ export async function deleteAdminProduct(id: string) {
     revalidatePath("/katalog");
     revalidatePath("/");
     return { success: true };
-  } catch (e: any) {
+  } catch (e: unknown) {
     throw new Error("Brisanje proizvoda nije uspelo.");
   }
 }
