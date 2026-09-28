@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronRight, Truck, ShieldCheck, Headphones, RefreshCw, Wrench, Sparkles } from "lucide-react";
 import { getDbProducts, getDbBrands, getDbCategories } from "@/services/product-service";
+import { db } from "@/lib/db";
 import ProductCard from "@/components/catalog/ProductCard";
 
 export default async function HomePage() {
@@ -11,7 +12,20 @@ export default async function HomePage() {
 
   const mainCategoriesGrid = categories.slice(0, 4);
   const heroProduct = featuredProducts.find((product) => product.images?.some(Boolean));
-  const heroImage = heroProduct?.images.find(Boolean) || "/placeholder-tool.svg";
+  let managedHeroImage: string | undefined;
+  try {
+    if (process.env.DATABASE_URL) {
+      const heroAsset = await db.mediaAsset.findFirst({
+        where: { folder: "hero" },
+        orderBy: { createdAt: "desc" },
+        select: { url: true },
+      });
+      managedHeroImage = heroAsset?.url;
+    }
+  } catch (error) {
+    console.warn("Could not load managed hero image:", error);
+  }
+  const heroImage = managedHeroImage || heroProduct?.images.find(Boolean);
 
   const popularCategoriesGrid = [
     { name: "Električni alati", slug: "alati", image: "/placeholder-tool.svg" },
@@ -34,59 +48,50 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col space-y-12 md:space-y-16 pb-20 bg-slate-50 overflow-x-hidden">
-      {/* 1. HERO SECTION - Enhanced Tool Showcase Space & Light Theme */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-slate-100 via-cyan-50/60 to-white py-12 md:py-24 border-b border-slate-200">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            <div className="lg:col-span-7 space-y-6">
-              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-cyan-100 text-cyan-800 text-xs font-black tracking-widest uppercase rounded-lg shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-600" /> Profesionalni alati & oprema
-              </span>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 leading-[1.15]">
-                Snaga za <span className="text-cyan-600">svaki projekat</span>
-              </h1>
-              <p className="text-slate-600 text-base md:text-lg leading-relaxed max-w-xl">
-                Veliki izbor električnih i aku alata vodećih svetskih brendova. Pouzdanost, kvalitet i stručna podrška – sve na jednom mestu.
-              </p>
-              <div className="pt-2 flex flex-wrap gap-4">
-                <Link 
-                  href="/katalog" 
-                  className="inline-flex items-center gap-3 px-8 py-4 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-2xl shadow-xl shadow-pink-600/25 transition-all text-base"
-                >
-                  Pogledaj ponudu <ArrowRight className="w-5 h-5" />
-                </Link>
-                <Link 
-                  href="/katalog/alati" 
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-slate-100 text-slate-900 border border-slate-200 font-bold rounded-2xl transition-all text-base shadow-sm"
-                >
-                  Katalog alata
-                </Link>
-              </div>
+      {/* 1. HERO — wide editorial banner; the newest media asset in the "hero" folder is used automatically. */}
+      <section className="relative isolate min-h-[420px] overflow-hidden bg-slate-950 sm:min-h-[480px] lg:min-h-[560px]">
+        {managedHeroImage ? (
+          <Image
+            src={managedHeroImage}
+            alt="Aqua Still — profesionalni alati i vodovodna oprema"
+            fill
+            priority
+            unoptimized
+            sizes="100vw"
+            className="absolute inset-0 -z-20 object-cover object-center"
+          />
+        ) : null}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-950/20" />
+        <div className="container mx-auto flex min-h-[420px] items-center px-4 py-12 sm:min-h-[480px] sm:px-6 sm:py-16 lg:min-h-[560px] lg:px-8">
+          <div className="max-w-2xl space-y-5 sm:space-y-6">
+            <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200 sm:text-xs">
+              <Sparkles className="h-3.5 w-3.5" /> Profesionalni alati & oprema
+            </span>
+            <h1 className="text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Snaga za <span className="text-cyan-400">svaki projekat</span>
+            </h1>
+            <p className="max-w-xl text-sm leading-relaxed text-slate-200 sm:text-base lg:text-lg">
+              Veliki izbor električnih i aku alata, vodovodnog materijala i opreme za dom i baštu. Pouzdanost, kvalitet i stručna podrška — sve na jednom mestu.
+            </p>
+            <div className="flex flex-col gap-3 pt-1 sm:flex-row">
+              <Link href="/katalog" className="inline-flex min-h-12 items-center justify-center gap-3 rounded-xl bg-cyan-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-cyan-950/30 transition hover:bg-cyan-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 sm:px-8 sm:text-base">
+                Pogledaj ponudu <ArrowRight className="h-5 w-5" />
+              </Link>
+              <Link href="/katalog/alati" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:px-8 sm:text-base">
+                Katalog alata
+              </Link>
             </div>
-            
-            {/* High-Quality Tool Showcase Container (Prepared for future high-res photo drop-in) */}
-            <div className="lg:col-span-5">
-              <div className="relative aspect-[4/3] sm:aspect-[16/11] bg-white rounded-3xl shadow-2xl border border-slate-200/90 overflow-hidden p-6 md:p-8 flex flex-col items-center justify-center group">
-                <div className="absolute top-4 left-4 bg-cyan-600 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-md shadow-sm z-10">
-                  Top Preporuka
-                </div>
-                {/* Tool Image Container */}
-                <div className="relative w-full h-full flex items-center justify-center">
-                  <Image 
-                    src={heroImage}
-                    alt={heroProduct?.name || "Profesionalna aku udarna bušilica"} 
-                    fill 
-                    className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-                    priority
-                  />
-                </div>
-                <div className="absolute bottom-4 text-center">
-                  <span className="text-xs font-bold text-slate-500">Aku udarna bušilica 18V</span>
-                </div>
-              </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-2 pt-2 text-xs font-medium text-slate-300 sm:text-sm">
+              <span className="inline-flex items-center gap-2"><Truck className="h-4 w-4 text-cyan-300" /> Dostava širom Srbije</span>
+              <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-cyan-300" /> Sigurna kupovina</span>
             </div>
           </div>
         </div>
+        {!managedHeroImage && heroImage ? (
+          <div className="pointer-events-none absolute bottom-5 right-5 hidden h-36 w-44 overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-sm lg:block">
+            <Image src={heroImage} alt={heroProduct?.name || "Proizvod iz ponude"} fill sizes="176px" unoptimized className="object-contain p-3" />
+          </div>
+        ) : null}
       </section>
 
       {/* 2. 4 MAIN CATEGORY CARDS */}
