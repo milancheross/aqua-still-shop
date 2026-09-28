@@ -95,7 +95,7 @@ function EditorContent() {
           setSeoDescription(found.seoDescription || "");
           setIsPublished(found.isPublished);
           if (Array.isArray(found.contentJson) && found.contentJson.length > 0) {
-            setBlocks(found.contentJson.filter(isCanvasBlock));
+            setBlocks(found.contentJson.filter((block) => isCanvasBlock(block)) as unknown as CanvasBlock[]);
           }
         }
       });
