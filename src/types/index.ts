@@ -3,6 +3,7 @@ export interface ProductCategory {
   name: string;
   slug: string;
   description: string;
+  imageUrl?: string;
   itemCount: number;
   iconName: "wrench" | "droplet" | "bath" | "sprout" | "layers";
   subcategories: {
