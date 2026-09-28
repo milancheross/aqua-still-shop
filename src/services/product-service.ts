@@ -247,3 +247,21 @@ export async function getDbBrands(): Promise<string[]> {
     return getMockBrands;
   }
 }
+
+
+export type StorefrontBrand = { id: string; name: string; slug: string; logoUrl: string | null };
+
+export async function getDbBrandRecords(): Promise<StorefrontBrand[]> {
+  if (!process.env.DATABASE_URL) {
+    return getMockBrands.map((name) => ({ id: name, name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), logoUrl: null }));
+  }
+
+  try {
+    const brands = await db.brand.findMany({ orderBy: { name: "asc" } });
+    if (brands.length) return brands.map((brand) => ({ id: brand.id, name: brand.name, slug: brand.slug, logoUrl: brand.logoUrl }));
+    return getMockBrands.map((name) => ({ id: name, name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), logoUrl: null }));
+  } catch (error) {
+    console.warn("DB brand records fetch failed, falling back to mock data:", error);
+    return getMockBrands.map((name) => ({ id: name, name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), logoUrl: null }));
+  }
+}
