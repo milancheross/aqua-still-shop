@@ -44,6 +44,16 @@ export interface CanvasBlock {
   };
 }
 
+function isCanvasBlock(value: unknown): value is CanvasBlock {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const block = value as Record<string, unknown>;
+  const validTypes = ["heading", "text", "image", "button", "container", "spacer"];
+  if (typeof block.id !== "string" || !validTypes.includes(String(block.type))) return false;
+  if (!block.props || typeof block.props !== "object" || Array.isArray(block.props)) return false;
+  if (!block.styles || typeof block.styles !== "object" || Array.isArray(block.styles)) return false;
+  return true;
+}
+
 function EditorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -85,7 +95,7 @@ function EditorContent() {
           setSeoDescription(found.seoDescription || "");
           setIsPublished(found.isPublished);
           if (Array.isArray(found.contentJson) && found.contentJson.length > 0) {
-            setBlocks(found.contentJson);
+            setBlocks(found.contentJson.filter(isCanvasBlock));
           }
         }
       });
