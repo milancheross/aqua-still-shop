@@ -31,6 +31,8 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  // Initial data loading is an intentional effect; state updates happen after the async request resolves.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void loadData(); }, []);
 
   const resetForm = () => { setForm(emptyForm); setEditingId(null); };
