@@ -185,7 +185,7 @@ export default function Header() {
                   </div>
                 </div>
               </div>
-            )}}
+            )}
           </div>
           <nav aria-label="Glavna navigacija" className="flex min-w-0 items-center gap-1 overflow-x-auto py-2">
             <Link href="/katalog/akcija" className="rounded-lg px-4 py-2 text-sm font-semibold text-orange-400 hover:bg-slate-800 hover:text-orange-300 transition-colors whitespace-nowrap">
