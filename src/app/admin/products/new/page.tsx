@@ -61,15 +61,17 @@ export default function NewProductPage() {
     setError("");
 
     try {
-      const formData = new FormData();
-      for (let i = 0; i < files.length; i++) {
-        formData.append("files", files[i]);
+      const newUrls: string[] = [];
+      // Upload sequentially to keep every server-action request below Vercel's
+      // request-body limit, including when several images are selected.
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append("files", file);
+        formData.append("folder", "products");
+        const res = await uploadMediaAction(formData);
+        newUrls.push(...res.uploaded.map((item) => item.url));
       }
-      formData.append("folder", "products");
-
-      const res = await uploadMediaAction(formData);
-      if (res.success && res.uploaded.length > 0) {
-        const newUrls = res.uploaded.map((item) => item.url);
+      if (newUrls.length > 0) {
         setForm((prev) => ({
           ...prev,
           images: prev.images[0] === "/placeholder-tool.svg" ? newUrls : [...prev.images, ...newUrls],
