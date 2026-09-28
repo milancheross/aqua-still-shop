@@ -21,7 +21,6 @@ The root `package.json` declares:
 - TypeScript (declared as ^5)
 - Tailwind CSS 4
 - Prisma / @prisma/client 6
-- Supabase JS client
 
 Root scripts currently include `dev`, `build`, `start`, `lint` and `db:seed`. The root package does not declare a packageManager field in the reviewed version.
 
