@@ -74,7 +74,7 @@ async function main() {
     { id: "sub-led-rasveta", categoryId: "cat-rasveta-elektro", name: "LED rasveta", slug: "led-rasveta", itemCount: 0 },
     { id: "sub-kablovi", categoryId: "cat-rasveta-elektro", name: "Kablovi i produžni kablovi", slug: "kablovi-produzni", itemCount: 0 },
     { id: "sub-sklopke", categoryId: "cat-rasveta-elektro", name: "Sklopke i elektro-pribor", slug: "sklopke-elektro-pribor", itemCount: 0 },
-    { id: "sub-baterije-elektro", categoryId: "cat-rasveta-elektro", name: "Baterije", slug: "baterije", itemCount: 0 },
+    { id: "sub-baterije-elektro", categoryId: "cat-rasveta-elektro", name: "Baterije", slug: "elektro-baterije", itemCount: 0 },
     { id: "sub-srafovi-tiplovi", categoryId: "cat-vijcana-roba", name: "Šrafovi i tiplovi", slug: "srafovi-tiplovi", itemCount: 0 },
     { id: "sub-ekseri", categoryId: "cat-vijcana-roba", name: "Ekseri", slug: "ekseri", itemCount: 0 },
     { id: "sub-metalni-elementi", categoryId: "cat-vijcana-roba", name: "Metalni elementi za pričvršćivanje", slug: "metalni-elementi-pricvrscivanje", itemCount: 0 },
