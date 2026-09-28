@@ -12,6 +12,7 @@ async function main() {
     { id: "cat-vodovod", name: "Vodovod i kanalizacija", slug: "vodovod", description: "Cevi, fiting, ventili, pumpe i kompletan materijal za vodovodne instalacije.", itemCount: 380, iconName: "droplet" },
     { id: "cat-kupatila", name: "Kupatilska oprema i sanitarije", slug: "kupatila", description: "Baterije za kadu i lavabo, sanitarije, tuš program i moderna oprema za kupatila.", itemCount: 290, iconName: "bath" },
     { id: "cat-navodnjavanje", name: "Sistemi za navodnjavanje", slug: "navodnjavanje", description: "Sve za profesionalno navodnjavanje voćnjaka, bašti, parkova i plastenika.", itemCount: 215, iconName: "sprout" },
+    { id: "cat-grejanje", name: "Grejanje", slug: "grejanje", description: "Oprema i instalacioni materijal za sisteme grejanja.", itemCount: 0, iconName: "flame" },
   ];
 
   for (const cat of categoriesData) {
