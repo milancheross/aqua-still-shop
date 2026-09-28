@@ -55,8 +55,8 @@ export default function AdminMediaPage() {
         setSuccessMessage(`Uspešno otpremljeno ${res.uploaded.length} slika.`);
         await loadMedia();
       }
-    } catch (err: any) {
-      setUploadError(err.message || "Greška pri otpremanju fajlova.");
+    } catch (err: unknown) {
+      setUploadError((err instanceof Error ? err.message : null) || "Greška pri otpremanju fajlova.");
     } finally {
       setIsUploading(false);
       e.target.value = "";
@@ -70,8 +70,8 @@ export default function AdminMediaPage() {
         await deleteMediaAssetAction(id, url);
         setSuccessMessage("Fotografija je uspešno obrisana.");
         await loadMedia();
-      } catch (err: any) {
-        alert(err.message || "Brisanje nije uspelo.");
+      } catch (err: unknown) {
+        alert((err instanceof Error ? err.message : null) || "Brisanje nije uspelo.");
       }
     });
   };
