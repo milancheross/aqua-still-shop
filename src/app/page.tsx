@@ -27,7 +27,7 @@ export default async function HomePage() {
   }
   const heroImage = managedHeroImage || heroProduct?.images.find(Boolean);
 
-  const popularCategoriesGrid = [
+  const popularCategoryItems = [
     { name: "Električni alati", slug: "alati", image: "/placeholder-tool.svg" },
     { name: "Ručni alati", slug: "alati", image: "/placeholder-tool.svg" },
     { name: "Cevi i fiting", slug: "vodovod", image: "/placeholder-pipe.svg" },
@@ -37,6 +37,10 @@ export default async function HomePage() {
     { name: "Creva i prskalice", slug: "navodnjavanje", image: "/placeholder-sprinkler.svg" },
     { name: "Pumpe", slug: "vodovod", image: "/placeholder-valve.svg" },
   ];
+  const popularCategoriesGrid = popularCategoryItems.map((item) => ({
+    ...item,
+    image: categories.find((category) => category.slug === item.slug)?.imageUrl || item.image,
+  }));
 
   const trustItems = [
     { title: "Brza dostava", subtitle: "na teritoriji Srbije", icon: Truck },
@@ -105,7 +109,7 @@ export default async function HomePage() {
             >
               <div className="relative aspect-[16/10] mb-4 overflow-hidden rounded-xl bg-gradient-to-br from-slate-100 to-cyan-50">
                 {cat.imageUrl ? (
-                  <Image src={cat.imageUrl} alt={cat.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <Image src={cat.imageUrl} alt={cat.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" unoptimized className="object-cover transition-transform duration-500 group-hover:scale-105" />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-cyan-800">
                     <span className="text-5xl font-black opacity-20">{cat.name.slice(0, 1)}</span>
@@ -184,7 +188,7 @@ export default async function HomePage() {
           {categories.filter((category) => ["kupatila", "navodnjavanje"].includes(category.slug)).map((category) => (
             <Link key={category.id} href={`/katalog/${category.slug}`} className="group relative isolate flex min-h-[260px] flex-col justify-end overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 p-6 text-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:min-h-[320px] sm:p-8 md:min-h-[360px]">
               {category.imageUrl ? (
-                <Image src={category.imageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 50vw" className="absolute inset-0 -z-20 object-cover transition-transform duration-700 group-hover:scale-105" />
+                <Image src={category.imageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 50vw" unoptimized className="absolute inset-0 -z-20 object-cover transition-transform duration-700 group-hover:scale-105" />
               ) : (
                 <div className="absolute inset-0 -z-20 bg-gradient-to-br from-slate-800 via-cyan-950 to-slate-950" />
               )}
