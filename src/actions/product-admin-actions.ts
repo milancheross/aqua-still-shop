@@ -4,6 +4,7 @@
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 
 export interface ProductAdminInput {
   name: string;
@@ -38,7 +39,7 @@ export async function getAdminProducts(filters?: {
   try {
     if (!process.env.DATABASE_URL) return [];
 
-    const where: any = {};
+    const where: Prisma.ProductWhereInput = {};
 
     if (filters?.search) {
       const q = filters.search.trim();
@@ -72,7 +73,7 @@ export async function getAdminProducts(filters?: {
       orderBy: { createdAt: "desc" },
     });
 
-    return products.map((p: any) => ({
+    return products.map((p) => ({
       ...p,
       price: Number(p.price),
       salePrice: p.salePrice ? Number(p.salePrice) : null,
