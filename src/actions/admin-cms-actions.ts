@@ -72,6 +72,7 @@ export async function deleteAdminCategory(id: string) {
     if (!process.env.DATABASE_URL) throw new Error("Baza nije povezana.");
     await db.category.delete({ where: { id } });
     revalidatePath("/admin/categories");
+    revalidatePath("/");
     revalidatePath("/katalog");
     return { success: true };
   } catch (e: unknown) {
