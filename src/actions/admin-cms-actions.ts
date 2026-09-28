@@ -152,6 +152,9 @@ export async function updateOrderStatusAction(orderId: string, status: string) {
       if (order.status === "cancelled" && status !== "cancelled") {
         throw new Error("Otkazana porudžbina ne može ponovo da se aktivira.");
       }
+      if (status === "cancelled" && ["shipped", "delivered", "picked_up"].includes(order.status)) {
+        throw new Error("Porudžbina koja je već poslata ili preuzeta ne može se otkazati iz administracije.");
+      }
       if (status === "cancelled" && order.status !== "cancelled") {
         for (const item of order.orderItems) {
           await tx.product.update({
