@@ -83,7 +83,7 @@ export default async function AdminProductsPage({ searchParams }: ProductsPagePr
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {products.map((p: any) => (
+                {products.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3 px-4 flex items-center gap-3">
                       <div className="relative w-12 h-12 bg-slate-50 border border-slate-100 rounded-xl overflow-hidden shrink-0 p-1">
