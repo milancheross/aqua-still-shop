@@ -10,6 +10,8 @@ export default async function HomePage() {
   const categories = await getDbCategories();
 
   const mainCategoriesGrid = categories.slice(0, 4);
+  const heroProduct = featuredProducts.find((product) => product.images?.some(Boolean));
+  const heroImage = heroProduct?.images.find(Boolean) || "/placeholder-tool.svg";
 
   const popularCategoriesGrid = [
     { name: "Električni alati", slug: "alati", image: "/placeholder-tool.svg" },
@@ -71,8 +73,8 @@ export default async function HomePage() {
                 {/* Tool Image Container */}
                 <div className="relative w-full h-full flex items-center justify-center">
                   <Image 
-                    src="/placeholder-tool.svg" 
-                    alt="Profesionalna udarna bušilica" 
+                    src={heroImage}
+                    alt={heroProduct?.name || "Profesionalna aku udarna bušilica"} 
                     fill 
                     className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                     priority
