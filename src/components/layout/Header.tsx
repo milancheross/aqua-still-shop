@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Search, ShoppingCart, Menu, X, User, Heart, Globe, Share2, ChevronDown } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
-import { CATEGORIES } from "@/lib/mock-data";
 import { formatPrice } from "@/lib/utils";
 
 export default function Header() {
