@@ -110,7 +110,7 @@ export async function uploadMediaAction(formData: FormData) {
       });
     } catch (error) {
       // Avoid leaving an orphaned Blob if the database write fails.
-      await del(blob.url).catch((deleteError) => {
+      await del(blob.url).catch((deleteError: unknown) => {
         console.error("Failed to clean up uploaded Blob:", deleteError);
       });
       throw new Error("Slika je otpremljena, ali nije sačuvana u bazi. Proverite bazu i pokušajte ponovo.");
