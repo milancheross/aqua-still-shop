@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { LayoutDashboard, Package, ShoppingCart, Users, TrendingUp, ArrowUpRight } from "lucide-react";
 import { db } from "@/lib/db";
 
@@ -57,25 +58,25 @@ export default async function AdminDashboardPage() {
           <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
             <h3 className="font-bold text-slate-900">Vizuelni editor stranica</h3>
             <p className="text-slate-500 leading-relaxed">Uređujte raspored sekcija, banera i početne stranice bez kodiranja.</p>
-            <a href="/admin/editor" className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:underline pt-1">
+            <Link href="/admin/editor" className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:underline pt-1">
               Pokreni editor <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
+            </Link>
           </div>
 
           <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
             <h3 className="font-bold text-slate-900">Upravljanje proizvodima</h3>
             <p className="text-slate-500 leading-relaxed">Dodajte nove artikle, menjajte cene, zalihe i WMS lokacije u magacinu.</p>
-            <a href="/admin/products" className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:underline pt-1">
+            <Link href="/admin/products" className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:underline pt-1">
               Otvori katalog <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
+            </Link>
           </div>
 
           <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
             <h3 className="font-bold text-slate-900">Pregled porudžbina</h3>
             <p className="text-slate-500 leading-relaxed">Pratite pristigle porudžbine, status dostave i preuzimanja u radnji.</p>
-            <a href="/admin/orders" className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:underline pt-1">
+            <Link href="/admin/orders" className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:underline pt-1">
               Pregledaj porudžbine <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>
