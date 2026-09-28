@@ -33,7 +33,7 @@ export async function getMediaAssets(): Promise<MediaItem[]> {
     if (process.env.DATABASE_URL) {
       const assets = await db.mediaAsset.findMany({ orderBy: { createdAt: "desc" } });
       if (assets && assets.length > 0) {
-        return assets.map((a: any) => ({
+        return assets.map((a) => ({
           id: a.id,
           filename: a.filename,
           url: a.url,
@@ -121,7 +121,7 @@ export async function uploadMediaAction(formData: FormData) {
     const url = `/uploads/${filename}`;
     const altText = file.name.replace(/\.[^/.]+$/, "");
 
-    let newAsset: any = null;
+    let newAsset: Awaited<ReturnType<typeof db.mediaAsset.create>> | null = null;
     try {
       if (process.env.DATABASE_URL) {
         newAsset = await db.mediaAsset.create({
