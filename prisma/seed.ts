@@ -13,6 +13,12 @@ async function main() {
     { id: "cat-kupatila", name: "Kupatilska oprema i sanitarije", slug: "kupatila", description: "Baterije za kadu i lavabo, sanitarije, tuš program i moderna oprema za kupatila.", itemCount: 290, iconName: "bath" },
     { id: "cat-navodnjavanje", name: "Sistemi za navodnjavanje", slug: "navodnjavanje", description: "Sve za profesionalno navodnjavanje voćnjaka, bašti, parkova i plastenika.", itemCount: 215, iconName: "sprout" },
     { id: "cat-grejanje", name: "Grejanje", slug: "grejanje", description: "Oprema i instalacioni materijal za sisteme grejanja.", itemCount: 0, iconName: "flame" },
+    { id: "cat-elektricni-alati", name: "Električni alat i mašine", slug: "elektricni-alat", description: "Električne i akumulatorske bušilice, brusilice, mešalice i mašine za radionicu.", itemCount: 0, iconName: "drill" },
+    { id: "cat-boje-hemija", name: "Boje, lakovi i hemija", slug: "boje-lakovi-hemija", description: "Boje, lakovi, impregnacije, lepkovi, zaptivne mase i materijali za hidroizolaciju.", itemCount: 0, iconName: "paintbrush" },
+    { id: "cat-rasveta-elektro", name: "Rasveta i elektro-oprema", slug: "rasveta-elektro-oprema", description: "LED rasveta, kablovi, produžni kablovi, sklopke i baterije.", itemCount: 0, iconName: "lightbulb" },
+    { id: "cat-vijcana-roba", name: "Vijčana roba i metalni delovi", slug: "vijcana-roba", description: "Šrafovi, tiplovi, ekseri i elementi za pričvršćivanje i montažu.", itemCount: 0, iconName: "nut" },
+    { id: "cat-gradjevinska-oprema", name: "Građevinska i zaštitna oprema", slug: "gradjevinska-zastitna-oprema", description: "Merdevine, građevinska kolica, mešalice za beton, rukavice i lična zaštitna oprema.", itemCount: 0, iconName: "hard-hat" },
+    { id: "cat-kuca-dvoriste", name: "Oprema za kuću, dvorište i čišćenje", slug: "kuca-dvoriste-ciscenje", description: "Četke, kante, baštenska creva, kanisteri, užad, kace i burad.", itemCount: 0, iconName: "house" },
   ];
 
   for (const cat of categoriesData) {
@@ -52,6 +58,33 @@ async function main() {
     { id: "sub-ventili-grejanje", categoryId: "cat-grejanje", name: "Ventili i termostatska regulacija", slug: "ventili-termostatska-regulacija", itemCount: 0 },
     { id: "sub-pribor-grejanje", categoryId: "cat-grejanje", name: "Pribor za grejanje", slug: "pribor-za-grejanje", itemCount: 0 },
     { id: "sub-kupatilski-pribor", categoryId: "cat-kupatila", name: "Kupatilski pribor i galanterija", slug: "kupatilski-pribor", itemCount: 0 },
+    // Dodatne podkategorije prema dostavljenom asortimanu
+    { id: "sub-sekire-cekici", categoryId: "cat-alati", name: "Sekire i čekići", slug: "sekire-cekici", itemCount: 0 },
+    { id: "sub-odvijaci-bitovi-rucni", categoryId: "cat-alati", name: "Odvijači i garniture bitova", slug: "odvijaci-garniture-bitova", itemCount: 0 },
+    { id: "sub-garniture-rucnog-alata", categoryId: "cat-alati", name: "Garniture ručnog alata", slug: "garniture-rucnog-alata", itemCount: 0 },
+    { id: "sub-burgije", categoryId: "cat-elektricni-alati", name: "Burgije i pribor za bušenje", slug: "burgije-pribor-busenje", itemCount: 0 },
+    { id: "sub-brusne-ploce", categoryId: "cat-elektricni-alati", name: "Brusne i rezne ploče", slug: "brusne-rezne-ploce", itemCount: 0 },
+    { id: "sub-mesalice", categoryId: "cat-elektricni-alati", name: "Mešalice za boju i malter", slug: "mesalice-boju-malter", itemCount: 0 },
+    { id: "sub-elektro-pumpe", categoryId: "cat-elektricni-alati", name: "Električne pumpe i ventilatori", slug: "elektricne-pumpe-ventilatori", itemCount: 0 },
+    { id: "sub-boje-zidne", categoryId: "cat-boje-hemija", name: "Boje za zidove", slug: "boje-za-zidove", itemCount: 0 },
+    { id: "sub-lakovi-impregnacije", categoryId: "cat-boje-hemija", name: "Lakovi i impregnacije", slug: "lakovi-impregnacije", itemCount: 0 },
+    { id: "sub-silikoni-pur-pene", categoryId: "cat-boje-hemija", name: "Silikoni i pur-pene", slug: "silikoni-pur-pene", itemCount: 0 },
+    { id: "sub-lepkovi-trake", categoryId: "cat-boje-hemija", name: "Lepkovi i krep trake", slug: "lepkovi-krep-trake", itemCount: 0 },
+    { id: "sub-hidroizolacija", categoryId: "cat-boje-hemija", name: "Hidroizolacioni materijali", slug: "hidroizolacija", itemCount: 0 },
+    { id: "sub-led-rasveta", categoryId: "cat-rasveta-elektro", name: "LED rasveta", slug: "led-rasveta", itemCount: 0 },
+    { id: "sub-kablovi", categoryId: "cat-rasveta-elektro", name: "Kablovi i produžni kablovi", slug: "kablovi-produzni", itemCount: 0 },
+    { id: "sub-sklopke", categoryId: "cat-rasveta-elektro", name: "Sklopke i elektro-pribor", slug: "sklopke-elektro-pribor", itemCount: 0 },
+    { id: "sub-baterije-elektro", categoryId: "cat-rasveta-elektro", name: "Baterije", slug: "baterije", itemCount: 0 },
+    { id: "sub-srafovi-tiplovi", categoryId: "cat-vijcana-roba", name: "Šrafovi i tiplovi", slug: "srafovi-tiplovi", itemCount: 0 },
+    { id: "sub-ekseri", categoryId: "cat-vijcana-roba", name: "Ekseri", slug: "ekseri", itemCount: 0 },
+    { id: "sub-metalni-elementi", categoryId: "cat-vijcana-roba", name: "Metalni elementi za pričvršćivanje", slug: "metalni-elementi-pricvrscivanje", itemCount: 0 },
+    { id: "sub-merdevine", categoryId: "cat-gradjevinska-oprema", name: "Drvene i aluminijumske merdevine", slug: "merdevine", itemCount: 0 },
+    { id: "sub-kolica", categoryId: "cat-gradjevinska-oprema", name: "Građevinska kolica", slug: "gradjevinska-kolica", itemCount: 0 },
+    { id: "sub-mesalice-beton", categoryId: "cat-gradjevinska-oprema", name: "Mešalice za beton", slug: "mesalice-za-beton", itemCount: 0 },
+    { id: "sub-zastitna-oprema", categoryId: "cat-gradjevinska-oprema", name: "Radne rukavice i zaštitna oprema", slug: "radne-rukavice-zastitna-oprema", itemCount: 0 },
+    { id: "sub-ciscenje", categoryId: "cat-kuca-dvoriste", name: "Četke i oprema za čišćenje", slug: "cetke-oprema-ciscenje", itemCount: 0 },
+    { id: "sub-kante-kanisteri", categoryId: "cat-kuca-dvoriste", name: "Kante i kanisteri", slug: "kante-kanisteri", itemCount: 0 },
+    { id: "sub-uzad-kace-burad", categoryId: "cat-kuca-dvoriste", name: "Užad, kace i burad", slug: "uzad-kace-burad", itemCount: 0 },
   ];
 
   for (const sub of subcategoriesData) {
