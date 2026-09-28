@@ -137,34 +137,55 @@ export default function Header() {
               <ChevronDown className={`w-4 h-4 transition-transform ${isCategoriesOpen ? "rotate-180" : ""}`} />
             </button>
             {isCategoriesOpen && (
-              <div id="desktop-category-menu" className="absolute left-0 top-full mt-1 w-[min(92vw,720px)] rounded-xl border border-slate-200 bg-white p-3 text-slate-800 shadow-2xl">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
-                  {[
-                    { name: "Alati i oprema", slug: "alati" },
-                    { name: "Vodovod i kanalizacija", slug: "vodovod" },
-                    { name: "Kupatilska oprema i sanitarije", slug: "kupatila" },
-                    { name: "Sistemi za navodnjavanje", slug: "navodnjavanje" },
-                    { name: "Grejanje", slug: "grejanje" },
-                    { name: "Elektromaterijal", slug: "elektromaterijal" },
-                    { name: "Oprema za majstore", slug: "majstori" },
-                  ].map((category) => (
-                    <Link
-                      key={category.slug}
-                      href={`/katalog/${category.slug}`}
-                      onClick={() => setIsCategoriesOpen(false)}
-                      className="rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-cyan-50 hover:text-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
-                    >
-                      {category.name}
+              <div id="desktop-category-menu" className="absolute left-0 top-full mt-2 w-[min(94vw,880px)] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-800 shadow-2xl shadow-slate-950/20">
+                <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_240px]">
+                  <div className="p-4 sm:p-6">
+                    <div className="mb-4 flex items-end justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-700">Aqua Still Shop</p>
+                        <h2 className="mt-1 text-lg font-black text-slate-900">Istražite kategorije</h2>
+                      </div>
+                      <span className="hidden text-xs font-medium text-slate-400 sm:block">Izaberite grupu proizvoda</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {[
+                        { name: "Alati i oprema", slug: "alati", description: "Električni i ručni alati", icon: "⚒" },
+                        { name: "Vodovod i kanalizacija", slug: "vodovod", description: "Cevi, fiting i ventili", icon: "◉" },
+                        { name: "Kupatilska oprema", slug: "kupatila", description: "Sanitarije i baterije", icon: "▤" },
+                        { name: "Sistemi za navodnjavanje", slug: "navodnjavanje", description: "Oprema za baštu i plastenik", icon: "✳" },
+                        { name: "Grejanje", slug: "grejanje", description: "Oprema i instalacioni materijal", icon: "♨" },
+                        { name: "Elektromaterijal", slug: "elektromaterijal", description: "Materijal za instalacije", icon: "ϟ" },
+                        { name: "Oprema za majstore", slug: "majstori", description: "Pribor za svaki posao", icon: "⚙" },
+                      ].map((category) => (
+                        <Link
+                          key={category.slug}
+                          href={`/katalog/${category.slug}`}
+                          onClick={() => setIsCategoriesOpen(false)}
+                          className="group flex min-w-0 items-center gap-3 rounded-xl border border-transparent p-3 transition hover:border-cyan-100 hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                        >
+                          <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-lg font-black text-cyan-700 transition group-hover:bg-white">{category.icon}</span>
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-bold text-slate-800 group-hover:text-cyan-800">{category.name}</span>
+                            <span className="mt-0.5 block truncate text-xs text-slate-500">{category.description}</span>
+                          </span>
+                          <ChevronDown className="ml-auto h-4 w-4 shrink-0 -rotate-90 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-cyan-600" />
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex flex-col justify-between bg-slate-950 p-5 text-white sm:p-6">
+                    <div>
+                      <span className="inline-flex rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-200">Kompletna ponuda</span>
+                      <h3 className="mt-4 text-xl font-black leading-tight">Sve za vaš sledeći projekat.</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-slate-300">Pronađite alat, materijal i opremu na jednom mestu.</p>
+                    </div>
+                    <Link href="/katalog" onClick={() => setIsCategoriesOpen(false)} className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-cyan-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-cyan-500">
+                      Pogledaj ceo katalog <ChevronDown className="h-4 w-4 -rotate-90" />
                     </Link>
-                  ))}
-                </div>
-                <div className="mt-2 border-t border-slate-100 pt-2">
-                  <Link href="/katalog" onClick={() => setIsCategoriesOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-bold text-cyan-700 hover:bg-cyan-50">
-                    Pogledaj ceo katalog →
-                  </Link>
+                  </div>
                 </div>
               </div>
-            )}
+            )}}
           </div>
           <nav aria-label="Glavna navigacija" className="flex min-w-0 items-center gap-1 overflow-x-auto py-2">
             <Link href="/katalog/akcija" className="rounded-lg px-4 py-2 text-sm font-semibold text-orange-400 hover:bg-slate-800 hover:text-orange-300 transition-colors whitespace-nowrap">
