@@ -40,8 +40,8 @@ export default function AdminBrandsPage() {
         setSuccess("Brend je uspešno kreiran.");
         setForm({ name: "", slug: "" });
         await loadData();
-      } catch (err: any) {
-        setError(err.message || "Kreiranje brenda nije uspelo.");
+      } catch (err: unknown) {
+        setError((err instanceof Error ? err.message : null) || "Kreiranje brenda nije uspelo.");
       }
     });
   };
@@ -53,8 +53,8 @@ export default function AdminBrandsPage() {
         await deleteAdminBrand(id);
         setSuccess("Brend je obrisan.");
         await loadData();
-      } catch (err: any) {
-        alert(err.message || "Brisanje nije uspelo.");
+      } catch (err: unknown) {
+        alert((err instanceof Error ? err.message : null) || "Brisanje nije uspelo.");
       }
     });
   };
