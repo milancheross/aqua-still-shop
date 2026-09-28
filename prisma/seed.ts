@@ -12,6 +12,7 @@ async function main() {
     { id: "cat-vodovod", name: "Vodovod i kanalizacija", slug: "vodovod", description: "Cevi, fiting, ventili, pumpe i kompletan materijal za vodovodne instalacije.", itemCount: 380, iconName: "droplet" },
     { id: "cat-kupatila", name: "Kupatilska oprema i sanitarije", slug: "kupatila", description: "Baterije za kadu i lavabo, sanitarije, tuš program i moderna oprema za kupatila.", itemCount: 290, iconName: "bath" },
     { id: "cat-navodnjavanje", name: "Sistemi za navodnjavanje", slug: "navodnjavanje", description: "Sve za profesionalno navodnjavanje voćnjaka, bašti, parkova i plastenika.", itemCount: 215, iconName: "sprout" },
+    { id: "cat-grejanje", name: "Grejanje", slug: "grejanje", description: "Oprema i instalacioni materijal za sisteme grejanja.", itemCount: 0, iconName: "flame" },
   ];
 
   for (const cat of categoriesData) {
@@ -40,6 +41,17 @@ async function main() {
     { id: "sub-prskalice", categoryId: "cat-navodnjavanje", name: "Rasprskivači i rotori", slug: "prskalice", itemCount: 60 },
     { id: "sub-creva", categoryId: "cat-navodnjavanje", name: "Baštenska i tehnička creva", slug: "creva", itemCount: 50 },
     { id: "sub-automatika", categoryId: "cat-navodnjavanje", name: "Elektroventili i tajmeri", slug: "automatika", itemCount: 40 },
+    { id: "sub-tolsen-rucni", categoryId: "cat-alati", name: "Tolsen i ostali ručni alati", slug: "tolsen-rucni-alati", itemCount: 0 },
+    { id: "sub-pribor-alati", categoryId: "cat-alati", name: "Pribor za električne alate", slug: "pribor-za-alate", itemCount: 0 },
+    { id: "sub-odvijaci", categoryId: "cat-alati", name: "Odvijači i bitovi", slug: "odvijaci-bitovi", itemCount: 0 },
+    { id: "sub-klesta", categoryId: "cat-alati", name: "Klešta i sečice", slug: "klesta-secice", itemCount: 0 },
+    { id: "sub-merni-alat", categoryId: "cat-alati", name: "Merni i obeležavajući alat", slug: "merni-alat", itemCount: 0 },
+    { id: "sub-zaptivni-materijal", categoryId: "cat-vodovod", name: "Zaptivni i montažni materijal", slug: "zaptivni-montazni-materijal", itemCount: 0 },
+    { id: "sub-odvodnja", categoryId: "cat-vodovod", name: "Odvodnja i sifoni", slug: "odvodnja-sifoni", itemCount: 0 },
+    { id: "sub-grejna-tela", categoryId: "cat-grejanje", name: "Radijatori i grejna tela", slug: "radijatori-grejna-tela", itemCount: 0 },
+    { id: "sub-ventili-grejanje", categoryId: "cat-grejanje", name: "Ventili i termostatska regulacija", slug: "ventili-termostatska-regulacija", itemCount: 0 },
+    { id: "sub-pribor-grejanje", categoryId: "cat-grejanje", name: "Pribor za grejanje", slug: "pribor-za-grejanje", itemCount: 0 },
+    { id: "sub-kupatilski-pribor", categoryId: "cat-kupatila", name: "Kupatilski pribor i galanterija", slug: "kupatilski-pribor", itemCount: 0 },
   ];
 
   for (const sub of subcategoriesData) {
@@ -65,6 +77,7 @@ async function main() {
     { id: "brand-rain-bird", name: "Rain Bird", slug: "rain-bird" },
     { id: "brand-gardena", name: "Gardena", slug: "gardena" },
     { id: "brand-hunter", name: "Hunter", slug: "hunter" },
+    { id: "brand-tolsen", name: "Tolsen", slug: "tolsen" },
   ];
 
   for (const brand of brandsData) {
