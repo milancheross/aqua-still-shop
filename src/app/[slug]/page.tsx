@@ -57,8 +57,14 @@ export default async function DynamicRenderPage({ params }: DynamicPageProps) {
     notFound();
   }
 
-  const blocks: CanvasBlock[] = Array.isArray(page.contentJson)
-    ? page.contentJson.filter(isCanvasBlock)
+  // Prisma exposes JSON arrays as JsonValue[], which is broader than the CMS block type.
+  // Validate each entry from unknown and build a correctly narrowed array.
+  const content: unknown = page.contentJson;
+  const blocks: CanvasBlock[] = Array.isArray(content)
+    ? content.reduce<CanvasBlock[]>((validBlocks, value) => {
+        if (isCanvasBlock(value)) validBlocks.push(value);
+        return validBlocks;
+      }, [])
     : [];
 
   return (
