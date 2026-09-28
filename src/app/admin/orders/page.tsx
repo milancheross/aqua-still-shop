@@ -6,7 +6,7 @@ import { getAdminOrders, updateOrderStatusAction } from "@/actions/admin-cms-act
 import { formatPrice } from "@/lib/utils";
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Awaited<ReturnType<typeof getAdminOrders>>>([]);
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -82,14 +82,14 @@ export default function AdminOrdersPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {orders.map((o) => {
-                  const customer = o.customerInfo as any;
-                  const isStorePickup = customer?.shippingMethod === "store_pickup";
+                  const customer = typeof o.customerInfo === "object" && o.customerInfo !== null && !Array.isArray(o.customerInfo) ? o.customerInfo as Record<string, unknown> : {};
+                  const isStorePickup = customer.shippingMethod === "store_pickup";
                   return (
                     <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-4 px-4 font-black text-slate-900 font-mono">{o.orderNumber}</td>
                       <td className="py-4 px-4">
-                        <span className="font-bold text-slate-900 block">{customer?.firstName} {customer?.lastName}</span>
-                        <span className="text-[10px] text-slate-400 block">{customer?.phone}</span>
+                        <span className="font-bold text-slate-900 block">{String(customer.firstName ?? "")} {String(customer.lastName ?? "")}</span>
+                        <span className="text-[10px] text-slate-400 block">{String(customer.phone ?? "")}</span>
                       </td>
                       <td className="py-4 px-4">
                         {isStorePickup ? (
