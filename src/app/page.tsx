@@ -89,12 +89,12 @@ export default async function HomePage() {
 
       {/* 2. 4 MAIN CATEGORY CARDS */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-10 relative z-30">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
           {mainCategoriesGrid.map((cat, idx) => (
             <Link 
               key={idx}
               href={`/katalog/${cat.slug}`}
-              className="group bg-white rounded-2xl shadow-lg border border-slate-200/80 p-6 flex flex-col justify-between hover:border-cyan-500 hover:shadow-xl transition-all duration-300"
+              className="group flex flex-col justify-between rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm transition-all duration-300 hover:border-cyan-500 hover:shadow-xl sm:rounded-2xl sm:p-6"
             >
               <div className="relative aspect-[16/10] mb-4 overflow-hidden rounded-xl bg-gradient-to-br from-slate-100 to-cyan-50">
                 {cat.imageUrl ? (
@@ -106,13 +106,13 @@ export default async function HomePage() {
                 )}
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900 group-hover:text-cyan-600 transition-colors">
+                <h3 className="text-sm font-black text-slate-900 transition-colors group-hover:text-cyan-600 sm:text-lg">
                   {cat.name}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">{cat.description}</p>
+                <p className="mb-3 mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500 sm:mb-4 sm:text-xs">{cat.description}</p>
               </div>
               <div className="flex justify-end">
-                <span className="w-9 h-9 bg-cyan-600 group-hover:bg-cyan-700 text-white rounded-full flex items-center justify-center transition-colors">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-600 text-white transition-colors group-hover:bg-cyan-700 sm:h-9 sm:w-9">
                   <ChevronRight className="w-5 h-5" />
                 </span>
               </div>
@@ -154,7 +154,7 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-5">
           {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
