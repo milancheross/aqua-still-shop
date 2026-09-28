@@ -12,8 +12,8 @@ export default function DeleteProductButton({ id }: { id: string }) {
       startTransition(async () => {
         try {
           await deleteAdminProduct(id);
-        } catch (e: any) {
-          alert(e.message || "Brisanje nije uspelo.");
+        } catch (e: unknown) {
+          alert(e instanceof Error ? e.message : "Brisanje nije uspelo.");
         }
       });
     }
