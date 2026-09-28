@@ -5,7 +5,7 @@ import { Tag, Plus, Trash2, Loader2, Check, AlertCircle } from "lucide-react";
 import { getAdminBrands, createAdminBrand, deleteAdminBrand } from "@/actions/admin-cms-actions";
 
 export default function AdminBrandsPage() {
-  const [brands, setBrands] = useState<any[]>([]);
+  const [brands, setBrands] = useState<Awaited<ReturnType<typeof getAdminBrands>>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
