@@ -219,6 +219,7 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
         name: sub.name,
         slug: sub.slug,
         itemCount: sub.itemCount,
+        imageUrl: sub.imageUrl ?? undefined,
       })),
       attributes: [],
     }));
