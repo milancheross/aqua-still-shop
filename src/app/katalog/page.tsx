@@ -16,6 +16,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const searchQuery = typeof params.q === "string" ? params.q : "";
   const selectedBrand = typeof params.brand === "string" ? params.brand : undefined;
   const selectedCategory = typeof params.category === "string" ? params.category : undefined;
+  const selectedSubcategory = typeof params.subcategory === "string" ? params.subcategory : undefined;
   const sortOption = (typeof params.sort === "string" ? params.sort : "popular") as "popular" | "price-asc" | "price-desc" | "name";
   const inStockOnly = params.inStock === "true";
 
@@ -28,6 +29,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     search: searchQuery,
     brand: selectedBrand,
     categorySlug: selectedCategory,
+    subcategorySlug: selectedSubcategory,
     inStockOnly,
     sort: sortOption,
   });
