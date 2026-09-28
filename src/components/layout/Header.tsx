@@ -3,14 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, Menu, X, User, Heart, Globe, Share2 } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, User, Heart, Globe, Share2, ChevronDown } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
-import { CATEGORIES } from "@/lib/mock-data";
 import { formatPrice } from "@/lib/utils";
 
 export default function Header() {
   const { cart, setIsCartOpen } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -115,60 +115,89 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Navigation Bar matching dizajn.png */}
-      <div className="bg-slate-900 text-white">
-        <div className="container mx-auto px-4 flex items-center justify-between overflow-x-auto no-scrollbar">
-          <div className="flex items-center space-x-1 py-2">
-            <button className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-colors shrink-0 mr-4">
-              <Menu className="w-4 h-4" /> Sve kategorije
+      {/* Main category navigation */}
+      <div className="relative z-40 bg-slate-900 text-white">
+        <div className="container mx-auto px-4 flex items-center gap-3">
+          <div className="relative py-2">
+            <button
+              type="button"
+              aria-expanded={isCategoriesOpen}
+              aria-controls="desktop-category-menu"
+              onClick={() => setIsCategoriesOpen((open) => !open)}
+              className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap"
+            >
+              <Menu className="w-4 h-4" />
+              Sve kategorije
+              <ChevronDown className={`w-4 h-4 transition-transform ${isCategoriesOpen ? "rotate-180" : ""}`} />
             </button>
-
-            <Link href="/katalog/akcija" className="px-4 py-2 text-sm font-medium text-orange-400 hover:text-white transition-colors whitespace-nowrap">
+            {isCategoriesOpen && (
+              <div id="desktop-category-menu" className="absolute left-0 top-full mt-1 w-[min(92vw,720px)] rounded-xl border border-slate-200 bg-white p-3 text-slate-800 shadow-2xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
+                  {[
+                    { name: "Alati i oprema", slug: "alati" },
+                    { name: "Vodovod i kanalizacija", slug: "vodovod" },
+                    { name: "Kupatilska oprema i sanitarije", slug: "kupatila" },
+                    { name: "Sistemi za navodnjavanje", slug: "navodnjavanje" },
+                    { name: "Grejanje", slug: "grejanje" },
+                    { name: "Elektromaterijal", slug: "elektromaterijal" },
+                    { name: "Oprema za majstore", slug: "majstori" },
+                  ].map((category) => (
+                    <Link
+                      key={category.slug}
+                      href={`/katalog/${category.slug}`}
+                      onClick={() => setIsCategoriesOpen(false)}
+                      className="rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-cyan-50 hover:text-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                    >
+                      {category.name}
+                    </Link>
+                  ))}
+                </div>
+                <div className="mt-2 border-t border-slate-100 pt-2">
+                  <Link href="/katalog" onClick={() => setIsCategoriesOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-bold text-cyan-700 hover:bg-cyan-50">
+                    Pogledaj ceo katalog →
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+          <nav aria-label="Glavna navigacija" className="flex min-w-0 items-center gap-1 overflow-x-auto py-2">
+            <Link href="/katalog/akcija" className="rounded-lg px-4 py-2 text-sm font-semibold text-orange-400 hover:bg-slate-800 hover:text-orange-300 transition-colors whitespace-nowrap">
               Akcije
             </Link>
-            <Link href="/katalog/alati" className="px-4 py-2 text-sm font-medium text-slate-200 hover:text-white transition-colors whitespace-nowrap">
-              Alati
-            </Link>
-            <Link href="/katalog/vodovod" className="px-4 py-2 text-sm font-medium text-slate-200 hover:text-white transition-colors whitespace-nowrap">
-              Vodovod
-            </Link>
-            <Link href="/katalog/kupatila" className="px-4 py-2 text-sm font-medium text-slate-200 hover:text-white transition-colors whitespace-nowrap">
-              Kupatila
-            </Link>
-            <Link href="/katalog/navodnjavanje" className="px-4 py-2 text-sm font-medium text-slate-200 hover:text-white transition-colors whitespace-nowrap">
-              Navodnjavanje
-            </Link>
-            <Link href="/katalog/grejanje" className="px-4 py-2 text-sm font-medium text-slate-200 hover:text-white transition-colors whitespace-nowrap">
-              Grejanje
-            </Link>
-            <Link href="/katalog/elektromaterijal" className="px-4 py-2 text-sm font-medium text-slate-200 hover:text-white transition-colors whitespace-nowrap">
-              Elektromaterijal
-            </Link>
-            <Link href="/katalog/majstori" className="px-4 py-2 text-sm font-medium text-slate-200 hover:text-white transition-colors whitespace-nowrap">
-              Oprema za majstore
-            </Link>
-            <Link href="/brendovi" className="px-4 py-2 text-sm font-medium text-slate-200 hover:text-white transition-colors whitespace-nowrap">
+            <Link href="/brendovi" className="rounded-lg px-4 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-white transition-colors whitespace-nowrap">
               Brendovi
             </Link>
-          </div>
+          </nav>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-slate-200 shadow-xl overflow-y-auto max-h-[80vh]">
-          <nav className="flex flex-col p-4 space-y-3">
-            <Link href="/katalog/akcija" className="text-lg font-bold text-orange-600 px-2 py-1">Akcije</Link>
-            {CATEGORIES.map((cat) => (
-              <Link 
-                key={cat.id} 
-                href={`/katalog/${cat.slug}`}
+        <div className="lg:hidden absolute left-0 top-full z-50 max-h-[80vh] w-full overflow-y-auto border-b border-slate-200 bg-white text-slate-800 shadow-xl">
+          <nav aria-label="Mobilna navigacija" className="flex flex-col p-4">
+            <Link href="/katalog" onClick={() => setIsMenuOpen(false)} className="mb-2 rounded-lg bg-cyan-50 px-3 py-3 text-sm font-bold text-cyan-800">
+              Sve kategorije — ceo katalog
+            </Link>
+            <Link href="/katalog/akcija" onClick={() => setIsMenuOpen(false)} className="border-b border-slate-100 px-3 py-3 text-sm font-bold text-orange-600">Akcije</Link>
+            {[
+              { name: "Alati i oprema", slug: "alati" },
+              { name: "Vodovod i kanalizacija", slug: "vodovod" },
+              { name: "Kupatilska oprema i sanitarije", slug: "kupatila" },
+              { name: "Sistemi za navodnjavanje", slug: "navodnjavanje" },
+              { name: "Grejanje", slug: "grejanje" },
+              { name: "Elektromaterijal", slug: "elektromaterijal" },
+              { name: "Oprema za majstore", slug: "majstori" },
+            ].map((category) => (
+              <Link
+                key={category.slug}
+                href={`/katalog/${category.slug}`}
                 onClick={() => setIsMenuOpen(false)}
-                className="px-2 py-1.5 text-base font-medium text-slate-800 hover:text-cyan-600 flex justify-between items-center border-b border-slate-100"
+                className="border-b border-slate-100 px-3 py-3 text-sm font-medium text-slate-800 hover:bg-cyan-50 hover:text-cyan-800"
               >
-                {cat.name}
+                {category.name}
               </Link>
             ))}
+            <Link href="/brendovi" onClick={() => setIsMenuOpen(false)} className="px-3 py-3 text-sm font-medium text-slate-800">Brendovi</Link>
           </nav>
         </div>
       )}
