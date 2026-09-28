@@ -1,10 +1,8 @@
 "use server";
 
-
+import { del, put } from "@vercel/blob";
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
-import fs from "fs/promises";
-import path from "path";
 
 export interface MediaItem {
   id: string;
@@ -17,138 +15,106 @@ export interface MediaItem {
   createdAt: string;
 }
 
-const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
+const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MAX_SIZE = 4 * 1024 * 1024; // Keep below Vercel's server action request limit.
 
-async function ensureUploadsDir() {
-  try {
-    await fs.mkdir(UPLOADS_DIR, { recursive: true });
-  } catch (e) {
-    console.error("Error creating uploads dir:", e);
-  }
+function getSafeFolder(value: FormDataEntryValue | null): string {
+  const folder = typeof value === "string" ? value.trim().toLowerCase() : "general";
+  return /^[a-z0-9_-]{1,40}$/.test(folder) ? folder : "general";
+}
+
+function getSafeFilename(value: string): string {
+  const basename = value.split(/[\\/]/).pop() ?? "image";
+  const cleaned = basename
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^[-.]+|[-.]+$/g, "");
+  return cleaned || "image";
 }
 
 export async function getMediaAssets(): Promise<MediaItem[]> {
   await requireAdmin();
-  try {
-    if (process.env.DATABASE_URL) {
-      const assets = await db.mediaAsset.findMany({ orderBy: { createdAt: "desc" } });
-      if (assets && assets.length > 0) {
-        return assets.map((a) => ({
-          id: a.id,
-          filename: a.filename,
-          url: a.url,
-          mimeType: a.mimeType,
-          size: a.size,
-          altText: a.altText,
-          folder: a.folder,
-          createdAt: a.createdAt.toISOString(),
-        }));
-      }
-    }
-  } catch (error) {
-    console.warn("DB media fetch fallback to filesystem:", error);
-  }
 
-  // Fallback to scanning public/uploads and public/images
-  try {
-    await ensureUploadsDir();
-    const files = await fs.readdir(UPLOADS_DIR);
-    const list: MediaItem[] = [];
-    for (const file of files) {
-      const filePath = path.join(UPLOADS_DIR, file);
-      const stat = await fs.stat(filePath);
-      if (stat.isFile()) {
-        list.push({
-          id: file,
-          filename: file,
-          url: `/uploads/${file}`,
-          mimeType: file.endsWith(".png") ? "image/png" : "image/jpeg",
-          size: stat.size,
-          altText: file,
-          folder: "general",
-          createdAt: stat.birthtime.toISOString(),
-        });
-      }
-    }
+  // Vercel's filesystem is ephemeral. The database is the source of truth;
+  // uploaded files themselves live in Vercel Blob.
+  const assets = await db.mediaAsset.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
-    // Also include placeholder images from public root
-    list.push(
-      { id: "ph-tool", filename: "placeholder-tool.svg", url: "/placeholder-tool.svg", mimeType: "image/svg+xml", size: 1200, altText: "Tool", folder: "products", createdAt: new Date().toISOString() },
-      { id: "ph-faucet", filename: "placeholder-faucet.svg", url: "/placeholder-faucet.svg", mimeType: "image/svg+xml", size: 1200, altText: "Faucet", folder: "products", createdAt: new Date().toISOString() },
-      { id: "logo", filename: "aqua-still-logo.png", url: "/images/aqua-still-logo.png", mimeType: "image/png", size: 3400, altText: "Logo", folder: "logo", createdAt: new Date().toISOString() }
-    );
-
-    return list;
-  } catch (e) {
-    return [];
-  }
+  return assets.map((asset) => ({
+    id: asset.id,
+    filename: asset.filename,
+    url: asset.url,
+    mimeType: asset.mimeType,
+    size: asset.size,
+    altText: asset.altText,
+    folder: asset.folder,
+    createdAt: asset.createdAt.toISOString(),
+  }));
 }
 
 export async function uploadMediaAction(formData: FormData) {
   await requireAdmin();
-  const files = formData.getAll("files") as File[];
-  const folder = (formData.get("folder") as string) || "general";
 
-  if (!files || files.length === 0) {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    throw new Error("Nije podešen Vercel Blob token (BLOB_READ_WRITE_TOKEN).");
+  }
+
+  const files = formData.getAll("files").filter((value): value is File => value instanceof File);
+  const folder = getSafeFolder(formData.get("folder"));
+
+  if (files.length === 0) {
     throw new Error("Niste izabrali nijednu datoteku za otpremanje.");
   }
 
-  await ensureUploadsDir();
   const uploaded: MediaItem[] = [];
 
-  const allowedMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-  const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-
   for (const file of files) {
-    if (!allowedMimeTypes.includes(file.type)) {
+    if (!ALLOWED_MIME_TYPES.has(file.type)) {
       throw new Error(`Nedozvoljen format fajla: ${file.name}. Dozvoljeni su JPG, PNG i WebP.`);
     }
-
-    if (file.size > MAX_SIZE) {
-      throw new Error(`Fajl ${file.name} je prevelik. Maksimalna veličina je 5MB.`);
+    if (file.size === 0 || file.size > MAX_SIZE) {
+      throw new Error(`Fajl ${file.name} je prazan ili prevelik. Maksimalna veličina je 4MB.`);
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.name) || ".jpg";
-    const filename = `${path.basename(file.name, ext)}-${uniqueSuffix}${ext}`;
-    const filePath = path.join(UPLOADS_DIR, filename);
-
-    await fs.writeFile(filePath, buffer);
-
-    const url = `/uploads/${filename}`;
-    const altText = file.name.replace(/\.[^/.]+$/, "");
-
-    let newAsset: Awaited<ReturnType<typeof db.mediaAsset.create>> | null = null;
-    try {
-      if (process.env.DATABASE_URL) {
-        newAsset = await db.mediaAsset.create({
-          data: {
-            filename,
-            url,
-            mimeType: file.type,
-            size: file.size,
-            altText,
-            folder,
-          },
-        });
-      }
-    } catch (dbErr) {
-      console.warn("Could not save media asset to DB (table may not be migrated yet):", dbErr);
-    }
-
-    uploaded.push({
-      id: newAsset?.id || uniqueSuffix,
-      filename,
-      url,
-      mimeType: file.type,
-      size: file.size,
-      altText,
-      folder,
-      createdAt: newAsset?.createdAt ? newAsset.createdAt.toISOString() : new Date().toISOString(),
+    const filename = getSafeFilename(file.name);
+    const blob = await put(`${folder}/${filename}`, file, {
+      access: "public",
+      addRandomSuffix: true,
+      contentType: file.type,
     });
+
+    try {
+      const asset = await db.mediaAsset.create({
+        data: {
+          filename,
+          url: blob.url,
+          mimeType: file.type,
+          size: file.size,
+          altText: filename.replace(/\.[^/.]+$/, ""),
+          folder,
+        },
+      });
+
+      uploaded.push({
+        id: asset.id,
+        filename: asset.filename,
+        url: asset.url,
+        mimeType: asset.mimeType,
+        size: asset.size,
+        altText: asset.altText,
+        folder: asset.folder,
+        createdAt: asset.createdAt.toISOString(),
+      });
+    } catch (error) {
+      // Avoid leaving an orphaned Blob if the database write fails.
+      await del(blob.url).catch((deleteError) => {
+        console.error("Failed to clean up uploaded Blob:", deleteError);
+      });
+      throw new Error("Slika je otpremljena, ali nije sačuvana u bazi. Proverite bazu i pokušajte ponovo.");
+    }
   }
 
   return { success: true, uploaded };
@@ -156,53 +122,34 @@ export async function uploadMediaAction(formData: FormData) {
 
 export async function updateMediaAssetAction(id: string, data: { altText?: string; filename?: string }) {
   await requireAdmin();
-  try {
-    if (process.env.DATABASE_URL) {
-      await db.mediaAsset.update({
-        where: { id },
-        data: {
-          altText: data.altText,
-          filename: data.filename,
-        },
-      });
-      return { success: true };
-    }
-  } catch (e) {
-    console.warn("DB update media error:", e);
-  }
+  await db.mediaAsset.update({
+    where: { id },
+    data: {
+      ...(data.altText !== undefined ? { altText: data.altText } : {}),
+      ...(data.filename !== undefined ? { filename: getSafeFilename(data.filename) } : {}),
+    },
+  });
   return { success: true };
 }
 
 export async function deleteMediaAssetAction(id: string, url: string) {
   await requireAdmin();
-  try {
-    // Check if used in products (placeholder check)
-    if (process.env.DATABASE_URL) {
-      const productsUsingImage = await db.product.findFirst({
-        where: {
-          images: {
-            has: url,
-          },
-        },
-      });
 
-      if (productsUsingImage) {
-        throw new Error(`Brisanje nije dozvoljeno. Ova fotografija se koristi na proizvodu: "${productsUsingImage.name}".`);
-      }
-
-      await db.mediaAsset.delete({
-        where: { id },
-      }).catch(() => {});
-    }
-
-    // Delete file from uploads if it's in /uploads/
-    if (url.startsWith("/uploads/")) {
-      const filePath = path.join(process.cwd(), "public", url);
-      await fs.unlink(filePath).catch(() => {});
-    }
-
-    return { success: true };
-  } catch (error: unknown) {
-    throw new Error((error instanceof Error ? error.message : null) || "Neuspešno brisanje fotografije.");
+  const asset = await db.mediaAsset.findUnique({ where: { id } });
+  if (!asset || asset.url !== url) {
+    throw new Error("Fotografija nije pronađena.");
   }
+
+  const productsUsingImage = await db.product.findFirst({
+    where: { images: { has: asset.url } },
+    select: { name: true },
+  });
+
+  if (productsUsingImage) {
+    throw new Error(`Brisanje nije dozvoljeno. Ova fotografija se koristi na proizvodu: "${productsUsingImage.name}".`);
+  }
+
+  await del(asset.url);
+  await db.mediaAsset.delete({ where: { id: asset.id } });
+  return { success: true };
 }
