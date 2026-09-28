@@ -61,8 +61,8 @@ export default function CheckoutPage() {
         clearCart();
         router.push(`/porudzbina/${result.orderNumber}?key=${encodeURIComponent(result.confirmationToken)}`);
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || "Došlo je do greške prilikom slanja porudžbine.");
+    } catch (err: unknown) {
+      setErrorMessage((err instanceof Error ? err.message : null) || "Došlo je do greške prilikom slanja porudžbine.");
       setIsSubmitting(false);
     }
   };
