@@ -109,7 +109,7 @@ export default async function HomePage() {
                 <h3 className="text-lg font-black text-slate-900 group-hover:text-cyan-600 transition-colors">
                   {cat.name}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">{cat.desc}</p>
+                <p className="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">{cat.description}</p>
               </div>
               <div className="flex justify-end">
                 <span className="w-9 h-9 bg-cyan-600 group-hover:bg-cyan-700 text-white rounded-full flex items-center justify-center transition-colors">
