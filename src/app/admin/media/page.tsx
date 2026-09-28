@@ -42,21 +42,26 @@ export default function AdminMediaPage() {
     setSuccessMessage("");
     setIsUploading(true);
 
-    const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formData.append("files", files[i]);
-    }
-    formData.append("folder", selectedFolder === "all" ? "general" : selectedFolder);
+    let uploadedCount = 0;
 
     try {
-      const res = await uploadMediaAction(formData);
-      if (res.success) {
-        setSuccessMessage(`Uspešno otpremljeno ${res.uploaded.length} slika.`);
-        await loadMedia();
+      // Send files one by one so each server-action request stays under Vercel's
+      // 4.5 MB request-body limit, even when multiple images are selected.
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append("files", file);
+        formData.append("folder", selectedFolder === "all" ? "general" : selectedFolder);
+        const res = await uploadMediaAction(formData);
+        uploadedCount += res.uploaded.length;
       }
+      setSuccessMessage(`Uspešno otpremljeno ${uploadedCount} slika.`);
     } catch (err: unknown) {
       setUploadError((err instanceof Error ? err.message : null) || "Greška pri otpremanju fajlova.");
+      if (uploadedCount > 0) {
+        setSuccessMessage(`Delimično otpremanje: sačuvano ${uploadedCount} slika.`);
+      }
     } finally {
+      await loadMedia();
       setIsUploading(false);
       e.target.value = "";
     }
