@@ -5,7 +5,7 @@ import { FolderTree, Plus, Trash2, Loader2, Check, AlertCircle } from "lucide-re
 import { getAdminCategories, createAdminCategory, deleteAdminCategory } from "@/actions/admin-cms-actions";
 
 export default function AdminCategoriesPage() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Awaited<ReturnType<typeof getAdminCategories>>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
