@@ -20,7 +20,7 @@ export async function getAdminCategories() {
   }
 }
 
-export async function createAdminCategory(data: { name: string; slug: string; description?: string; iconName?: string }) {
+export async function createAdminCategory(data: { name: string; slug: string; description?: string; iconName?: string; imageUrl?: string | null }) {
   await requireAdmin();
   if (!process.env.DATABASE_URL) {
     throw new Error("Baza podataka nije povezana (nedostaje DATABASE_URL).");
@@ -36,6 +36,7 @@ export async function createAdminCategory(data: { name: string; slug: string; de
       slug: data.slug,
       description: data.description || null,
       iconName: data.iconName || "wrench",
+      imageUrl: data.imageUrl || null,
     },
   });
 
