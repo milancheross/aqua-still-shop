@@ -66,6 +66,19 @@ export async function updateAdminCategory(id: string, data: { name: string; slug
   return { success: true };
 }
 
+export async function updateAdminSubcategoryImage(id: string, imageUrl: string | null) {
+  await requireAdmin();
+  if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
+  await db.subcategory.update({
+    where: { id },
+    data: { imageUrl: imageUrl || null },
+  });
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
+  revalidatePath("/katalog");
+  return { success: true };
+}
+
 export async function deleteAdminCategory(id: string) {
   await requireAdmin();
   try {
