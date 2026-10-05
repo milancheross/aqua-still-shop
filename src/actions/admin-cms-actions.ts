@@ -3,6 +3,7 @@
 
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
+import { releaseExpiredStockReservations } from "@/lib/order-stock";
 import { revalidatePath } from "next/cache";
 
 // --- CATEGORIES ACTIONS ---
@@ -170,6 +171,11 @@ export async function getAdminOrders() {
   await requireAdmin();
   try {
     if (!process.env.DATABASE_URL) return [];
+    try {
+      await releaseExpiredStockReservations();
+    } catch (releaseError) {
+      console.error("Failed to release expired reservations:", releaseError);
+    }
     const orders = await db.order.findMany({
       include: { orderItems: true },
       orderBy: { createdAt: "desc" },

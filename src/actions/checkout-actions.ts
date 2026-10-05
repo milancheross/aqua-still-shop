@@ -1,7 +1,11 @@
 "use server";
 
 import { randomBytes } from "node:crypto";
+import { headers } from "next/headers";
 import { db } from "@/lib/db";
+import { notifyOrderCreated } from "@/lib/order-notify";
+import { releaseExpiredStockReservations, stockReservedUntil } from "@/lib/order-stock";
+import { getTrustedClientIp, isRateLimited, recordRateLimitEvent } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
 
 export interface CheckoutInput {
@@ -22,13 +26,18 @@ const FREE_SHIPPING_THRESHOLD = 5000;
 const DEFAULT_SHIPPING_COST = 500;
 const MAX_ITEMS = 50;
 const MAX_QUANTITY_PER_ITEM = 1000;
+const CHECKOUT_WINDOW_MS = 60 * 60 * 1000;
+const MAX_CHECKOUTS_PER_IP = 5;
+const MAX_CHECKOUTS_PER_EMAIL = 8;
+
+class CheckoutError extends Error {}
 
 function requiredText(value: unknown, maxLength: number): value is string {
   return typeof value === "string" && value.trim().length > 0 && value.trim().length <= maxLength;
 }
 
 export async function createOrderAction(input: CheckoutInput) {
-  if (!input || typeof input !== "object") throw new Error("Neispravni podaci porudžbine.");
+  if (!input || typeof input !== "object") throw new CheckoutError("Neispravni podaci porudžbine.");
 
   const firstName = typeof input.firstName === "string" ? input.firstName.trim() : "";
   const lastName = typeof input.lastName === "string" ? input.lastName.trim() : "";
@@ -41,13 +50,13 @@ export async function createOrderAction(input: CheckoutInput) {
   if (!requiredText(firstName, 100) || !requiredText(lastName, 100) ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 ||
       !requiredText(phone, 40)) {
-    throw new Error("Molimo unesite ispravno ime, prezime, email i telefon.");
+    throw new CheckoutError("Molimo unesite ispravno ime, prezime, email i telefon.");
   }
   if (shippingMethod !== "courier" && shippingMethod !== "store_pickup") {
-    throw new Error("Izabran je nevažeći način isporuke.");
+    throw new CheckoutError("Izabran je nevažeći način isporuke.");
   }
   if (paymentMethod !== "cash_on_delivery") {
-    throw new Error("Izabran je nevažeći način plaćanja.");
+    throw new CheckoutError("Izabran je nevažeći način plaćanja.");
   }
 
   const street = typeof input.street === "string" ? input.street.trim() : "";
@@ -55,26 +64,39 @@ export async function createOrderAction(input: CheckoutInput) {
   const postalCode = typeof input.postalCode === "string" ? input.postalCode.trim() : "";
   const notes = typeof input.notes === "string" ? input.notes.trim().slice(0, 1000) : "";
   if (!isStorePickup && (!requiredText(street, 200) || !requiredText(city, 100) || !requiredText(postalCode, 20))) {
-    throw new Error("Molimo unesite ulicu, grad i poštanski broj za dostavu.");
+    throw new CheckoutError("Molimo unesite ulicu, grad i poštanski broj za dostavu.");
   }
 
   if (!Array.isArray(input.items) || input.items.length === 0 || input.items.length > MAX_ITEMS) {
-    throw new Error("Vaša korpa je prazna ili sadrži previše stavki.");
+    throw new CheckoutError("Vaša korpa je prazna ili sadrži previše stavki.");
   }
 
   const quantities = new Map<string, number>();
   for (const item of input.items) {
     if (!item || typeof item.productId !== "string" || !item.productId.trim() ||
         !Number.isSafeInteger(item.quantity) || item.quantity < 1 || item.quantity > MAX_QUANTITY_PER_ITEM) {
-      throw new Error("Korpa sadrži neispravnu količinu proizvoda.");
+      throw new CheckoutError("Korpa sadrži neispravnu količinu proizvoda.");
     }
     quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
   }
   for (const quantity of quantities.values()) {
-    if (quantity > MAX_QUANTITY_PER_ITEM) throw new Error("Tražena količina je prevelika.");
+    if (quantity > MAX_QUANTITY_PER_ITEM) throw new CheckoutError("Tražena količina je prevelika.");
   }
 
-  if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
+  if (!process.env.DATABASE_URL) throw new CheckoutError("Baza podataka nije povezana.");
+
+  const ip = getTrustedClientIp(await headers());
+  const checkoutBuckets = [`checkout:ip:${ip}`, `checkout:email:${email}`];
+  for (const bucket of checkoutBuckets) {
+    const limit = bucket.startsWith("checkout:email:") ? MAX_CHECKOUTS_PER_EMAIL : MAX_CHECKOUTS_PER_IP;
+    if (await isRateLimited(bucket, limit, CHECKOUT_WINDOW_MS)) {
+      throw new CheckoutError("Previše porudžbina u kratkom roku. Pokušajte ponovo kasnije.");
+    }
+  }
+
+  await releaseExpiredStockReservations().catch((releaseError: unknown) => {
+    console.error("Failed to release expired reservations:", releaseError);
+  });
 
   const orderNumber = `AS-${Date.now().toString().slice(-8)}-${randomBytes(4).toString("hex").toUpperCase()}`;
   const confirmationToken = randomBytes(32).toString("hex");
@@ -90,12 +112,12 @@ export async function createOrderAction(input: CheckoutInput) {
       for (const [productId, quantity] of quantities) {
         const product = await tx.product.findUnique({ where: { id: productId } });
         if (!product || !product.inStock || product.stockQuantity < quantity) {
-          throw new Error("Jedan od proizvoda više nije dostupan u traženoj količini. Osvežite korpu.");
+          throw new CheckoutError("Jedan od proizvoda više nije dostupan u traženoj količini. Osvežite korpu.");
         }
         const price = Number(product.salePrice ?? product.price);
         const vatRate = Number(product.vatRate);
         if (!Number.isFinite(price) || price < 0 || !Number.isFinite(vatRate) || vatRate < 0) {
-          throw new Error("Cena proizvoda nije ispravna.");
+          throw new CheckoutError("Cena proizvoda nije ispravna.");
         }
         const lineTotal = Math.round(price * quantity * 100) / 100;
         subtotal += lineTotal;
@@ -117,7 +139,7 @@ export async function createOrderAction(input: CheckoutInput) {
           data: { stockQuantity: { decrement: item.quantity } },
         });
         if (reserved.count !== 1) {
-          throw new Error(`Nema dovoljno zaliha za proizvod: ${item.productName}.`);
+          throw new CheckoutError(`Nema dovoljno zaliha za proizvod: ${item.productName}.`);
         }
       }
 
@@ -141,12 +163,34 @@ export async function createOrderAction(input: CheckoutInput) {
         data: {
           orderNumber, status: "pending", customerInfo, items: rawItemsSummary,
           subtotal, taxAmount, shippingCost, total,
+          stockReservedUntil: stockReservedUntil(),
           orderItems: { create: verifiedOrderItems },
         },
       });
     });
 
     revalidatePath("/admin/orders");
+    await Promise.all(checkoutBuckets.map((bucket) => recordRateLimitEvent(bucket, CHECKOUT_WINDOW_MS)));
+    const emailedItems = Array.isArray(order.items)
+      ? order.items.flatMap((item) => {
+          if (!item || typeof item !== "object") return [];
+          const row = item as { name?: unknown; quantity?: unknown; total?: unknown };
+          if (typeof row.name !== "string" || typeof row.quantity !== "number" || typeof row.total !== "number") return [];
+          return [{ name: row.name, quantity: row.quantity, total: row.total }];
+        })
+      : [];
+    await notifyOrderCreated({
+      orderNumber: order.orderNumber,
+      confirmationToken,
+      total: Number(order.total),
+      email,
+      firstName,
+      lastName,
+      phone,
+      address: isStorePickup ? "Lično preuzimanje u radnji, Zlatibor" : `${street}, ${postalCode} ${city}`,
+      shippingMethod,
+      items: emailedItems,
+    });
     return {
       success: true,
       orderNumber: order.orderNumber,
@@ -156,6 +200,7 @@ export async function createOrderAction(input: CheckoutInput) {
     };
   } catch (error: unknown) {
     console.error("Greška prilikom kreiranja porudžbine:", error);
-    throw new Error(error instanceof Error ? error.message : "Neuspešno kreiranje porudžbine. Molimo pokušajte ponovo.");
+    if (error instanceof CheckoutError) throw error;
+    throw new CheckoutError("Neuspešno kreiranje porudžbine. Molimo pokušajte ponovo.");
   }
 }

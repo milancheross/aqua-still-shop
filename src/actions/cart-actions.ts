@@ -63,7 +63,10 @@ export async function validateAndGetProduct(productIdOrSlug: string, requestedQu
       }
     }
   } catch (error) {
-    console.warn("DB product lookup warning in validation:", error);
+    console.error("DB product lookup failed during cart validation:", error);
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Proizvod trenutno ne možemo da proverimo. Pokušajte ponovo.");
+    }
   }
 
   // 2. If not found in DB, try slug lookup via service
@@ -71,8 +74,8 @@ export async function validateAndGetProduct(productIdOrSlug: string, requestedQu
     product = await getDbProductBySlug(productIdOrSlug);
   }
 
-  // 3. If still not found, fallback to mock data lookup by ID or slug
-  if (!product) {
+  // Mock products exist only for local development without a database.
+  if (!product && process.env.NODE_ENV !== "production") {
     const mockList = getMockProducts();
     const foundMock = mockList.find(
       (p) => p.id === productIdOrSlug || p.slug === productIdOrSlug

@@ -43,7 +43,7 @@ export default function AdminOrdersPage() {
     <div className="space-y-8 max-w-7xl mx-auto">
       <div>
         <h1 className="text-2xl font-black text-slate-900">Upravljanje porudžbinama</h1>
-        <p className="text-slate-500 text-xs mt-1">Pregledajte prispele porudžbine i pratite statuse isporuke i preuzimanja.</p>
+        <p className="text-slate-500 text-xs mt-1">Pregledajte prispele porudžbine i pratite statuse isporuke i preuzimanja. Porudžbine na čekanju drže zalihe 48 sati, pa se same otkazuju ako ostanu nepotvrđene. Premestite prihvaćenu porudžbinu u obradu.</p>
       </div>
 
       {success && (

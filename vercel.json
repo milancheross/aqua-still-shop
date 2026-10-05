@@ -1,4 +1,10 @@
 {
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm exec prisma generate && if [ -n \"$DATABASE_URL\" ]; then pnpm exec prisma migrate deploy; fi && pnpm build"
+  "buildCommand": "pnpm exec prisma generate && if [ -n \"$DATABASE_URL\" ]; then pnpm exec prisma migrate deploy; fi && pnpm build",
+  "crons": [
+    {
+      "path": "/api/cron/release-reservations",
+      "schedule": "0 5 * * *"
+    }
+  ]
 }

@@ -40,14 +40,19 @@ export async function getAdminProducts(filters?: {
     if (!process.env.DATABASE_URL) return [];
 
     const where: Prisma.ProductWhereInput = {};
+    const andFilters: Prisma.ProductWhereInput[] = [];
 
     if (filters?.search) {
       const q = filters.search.trim();
-      where.OR = [
-        { name: { contains: q, mode: "insensitive" } },
-        { sku: { contains: q, mode: "insensitive" } },
-        { brand: { contains: q, mode: "insensitive" } },
-      ];
+      if (q) {
+        andFilters.push({
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { sku: { contains: q, mode: "insensitive" } },
+            { brand: { contains: q, mode: "insensitive" } },
+          ],
+        });
+      }
     }
 
     if (filters?.category && filters.category !== "all") {
@@ -62,10 +67,16 @@ export async function getAdminProducts(filters?: {
       where.inStock = true;
       where.stockQuantity = { gt: 0 };
     } else if (filters?.status === "out_of_stock") {
-      where.OR = [
-        { inStock: false },
-        { stockQuantity: { lte: 0 } },
-      ];
+      andFilters.push({
+        OR: [
+          { inStock: false },
+          { stockQuantity: { lte: 0 } },
+        ],
+      });
+    }
+
+    if (andFilters.length > 0) {
+      where.AND = andFilters;
     }
 
     const products = await db.product.findMany({
