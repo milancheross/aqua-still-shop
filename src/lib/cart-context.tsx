@@ -46,7 +46,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD || items.length === 0 ? 0 : DEFAULT_SHIPPING_COST;
-  const taxAmount = subtotal * 0.2; // Informativni prikaz PDV-a uračunatog u cenu
+  const taxAmount = items.reduce((sum, item) => {
+    const lineTotal = (item.product.salePrice ?? item.product.price) * item.quantity;
+    const vatRate = typeof item.product.vatRate === "number" && item.product.vatRate >= 0 ? item.product.vatRate : 0.2;
+    return sum + lineTotal * (vatRate / (1 + vatRate));
+  }, 0);
 
   const cart: Cart = {
     items,

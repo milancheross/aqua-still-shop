@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import CartDrawer from "@/components/cart/CartDrawer";
 import { CartProvider } from "@/lib/cart-context";
+import SiteChrome from "@/components/layout/SiteChrome";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,12 +28,7 @@ export default function RootLayout({
     <html lang="sr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-slate-50 selection:bg-blue-100 selection:text-blue-900" suppressHydrationWarning>
         <CartProvider>
-          <Header />
-          <CartDrawer />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer />
+          <SiteChrome>{children}</SiteChrome>
         </CartProvider>
       </body>
     </html>

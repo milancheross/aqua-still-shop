@@ -8,6 +8,31 @@ import {
   BRANDS as getMockBrands 
 } from "@/lib/mock-data";
 
+export type StorefrontBrand = { id: string; name: string; slug: string; logoUrl: string | null };
+
+function mockCatalogEnabled() {
+  return process.env.NODE_ENV !== "production";
+}
+
+function devMockProducts(options?: Parameters<typeof getMockProducts>[0]): Product[] {
+  if (!mockCatalogEnabled()) return [];
+  const products = getMockProducts(options);
+  if (options?.categorySlug === "akcija") {
+    return products.filter((product) => product.salePrice != null || product.isPromo);
+  }
+  return products;
+}
+
+function devMockBrandRecords(): StorefrontBrand[] {
+  if (!mockCatalogEnabled()) return [];
+  return getMockBrands.map((name) => ({
+    id: name,
+    name,
+    slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+    logoUrl: null,
+  }));
+}
+
 export async function getDbProducts(options?: {
   categorySlug?: string;
   subcategorySlug?: string;
@@ -19,31 +44,23 @@ export async function getDbProducts(options?: {
   sort?: "price-asc" | "price-desc" | "name" | "popular";
 }): Promise<Product[]> {
   if (!process.env.DATABASE_URL) {
-    if (options?.categorySlug === "akcija") {
-      const mockAll = getMockProducts(options);
-      return mockAll.filter(p => p.salePrice != null || p.isPromo);
-    }
-    return getMockProducts(options);
+    return devMockProducts(options);
   }
 
   try {
     const count = await db.product.count();
     if (count === 0) {
-      if (options?.categorySlug === "akcija") {
-        const mockAll = getMockProducts(options);
-        return mockAll.filter(p => p.salePrice != null || p.isPromo);
-      }
-      return getMockProducts(options);
+      return devMockProducts(options);
     }
 
     const where: Prisma.ProductWhereInput = {};
+    const andFilters: Prisma.ProductWhereInput[] = [];
 
     if (options?.categorySlug) {
       if (options.categorySlug === "akcija") {
-        where.OR = [
-          { salePrice: { not: null } },
-          { isPromo: true },
-        ];
+        andFilters.push({
+          OR: [{ salePrice: { not: null } }, { isPromo: true }],
+        });
       } else {
         where.categorySlug = options.categorySlug;
       }
@@ -67,13 +84,21 @@ export async function getDbProducts(options?: {
 
     if (options?.search) {
       const q = options.search.trim();
-      where.OR = [
-        { name: { contains: q, mode: "insensitive" } },
-        { brand: { contains: q, mode: "insensitive" } },
-        { sku: { contains: q, mode: "insensitive" } },
-        { barcode: { contains: q, mode: "insensitive" } },
-        { categoryName: { contains: q, mode: "insensitive" } },
-      ];
+      if (q) {
+        andFilters.push({
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { brand: { contains: q, mode: "insensitive" } },
+            { sku: { contains: q, mode: "insensitive" } },
+            { barcode: { contains: q, mode: "insensitive" } },
+            { categoryName: { contains: q, mode: "insensitive" } },
+          ],
+        });
+      }
+    }
+
+    if (andFilters.length > 0) {
+      where.AND = andFilters;
     }
 
     let orderBy: Prisma.ProductOrderByWithRelationInput = { isFeatured: "desc" };
@@ -104,7 +129,7 @@ export async function getDbProducts(options?: {
       },
     });
 
-    return products.map((p) => ({
+    const mapped = products.map((p) => ({
       id: p.id,
       sku: p.sku,
       barcode: p.barcode ?? "",
@@ -130,19 +155,22 @@ export async function getDbProducts(options?: {
       isFeatured: p.isFeatured,
       isPromo: p.isPromo,
     }));
-  } catch (error) {
-    console.warn("DB product fetch failed, falling back to mock data:", error);
-    if (options?.categorySlug === "akcija") {
-      const mockAll = getMockProducts(options);
-      return mockAll.filter(p => p.salePrice != null || p.isPromo);
+
+    if (options?.sort === "price-asc" || options?.sort === "price-desc") {
+      const direction = options.sort === "price-asc" ? 1 : -1;
+      mapped.sort((a, b) => ((a.salePrice ?? a.price) - (b.salePrice ?? b.price)) * direction);
     }
-    return getMockProducts(options);
+
+    return mapped;
+  } catch (error) {
+    console.error("DB product fetch failed:", error);
+    return devMockProducts(options);
   }
 }
 
 export async function getDbProductBySlug(slug: string): Promise<Product | undefined> {
   if (!process.env.DATABASE_URL) {
-    return getMockProductBySlug(slug);
+    return mockCatalogEnabled() ? getMockProductBySlug(slug) : undefined;
   }
 
   try {
@@ -155,7 +183,7 @@ export async function getDbProductBySlug(slug: string): Promise<Product | undefi
     });
 
     if (!p) {
-      return getMockProductBySlug(slug);
+      return mockCatalogEnabled() ? getMockProductBySlug(slug) : undefined;
     }
 
     return {
@@ -185,14 +213,14 @@ export async function getDbProductBySlug(slug: string): Promise<Product | undefi
       isPromo: p.isPromo,
     };
   } catch (error) {
-    console.warn("DB product by slug fetch failed, falling back to mock data:", error);
-    return getMockProductBySlug(slug);
+    console.error("DB product by slug fetch failed:", error);
+    return mockCatalogEnabled() ? getMockProductBySlug(slug) : undefined;
   }
 }
 
 export async function getDbCategories(): Promise<ProductCategory[]> {
   if (!process.env.DATABASE_URL) {
-    return getMockCategories();
+    return mockCatalogEnabled() ? getMockCategories() : [];
   }
 
   try {
@@ -203,7 +231,7 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
     });
 
     if (!cats || cats.length === 0) {
-      return getMockCategories();
+      return mockCatalogEnabled() ? getMockCategories() : [];
     }
 
     return cats.map((c) => ({
@@ -224,14 +252,14 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
       attributes: [],
     }));
   } catch (error) {
-    console.warn("DB categories fetch failed, falling back to mock data:", error);
-    return getMockCategories();
+    console.error("DB categories fetch failed:", error);
+    return mockCatalogEnabled() ? getMockCategories() : [];
   }
 }
 
 export async function getDbBrands(): Promise<string[]> {
   if (!process.env.DATABASE_URL) {
-    return getMockBrands;
+    return mockCatalogEnabled() ? getMockBrands : [];
   }
 
   try {
@@ -240,29 +268,27 @@ export async function getDbBrands(): Promise<string[]> {
       distinct: ["brand"],
     });
     if (!products || products.length === 0) {
-      return getMockBrands;
+      return mockCatalogEnabled() ? getMockBrands : [];
     }
     return products.map((p) => p.brand).sort();
   } catch (error) {
-    console.warn("DB brands fetch failed, falling back to mock data:", error);
-    return getMockBrands;
+    console.error("DB brands fetch failed:", error);
+    return mockCatalogEnabled() ? getMockBrands : [];
   }
 }
 
 
-export type StorefrontBrand = { id: string; name: string; slug: string; logoUrl: string | null };
-
 export async function getDbBrandRecords(): Promise<StorefrontBrand[]> {
   if (!process.env.DATABASE_URL) {
-    return getMockBrands.map((name) => ({ id: name, name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), logoUrl: null }));
+    return devMockBrandRecords();
   }
 
   try {
     const brands = await db.brand.findMany({ orderBy: { name: "asc" } });
     if (brands.length) return brands.map((brand) => ({ id: brand.id, name: brand.name, slug: brand.slug, logoUrl: brand.logoUrl }));
-    return getMockBrands.map((name) => ({ id: name, name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), logoUrl: null }));
+    return devMockBrandRecords();
   } catch (error) {
-    console.warn("DB brand records fetch failed, falling back to mock data:", error);
-    return getMockBrands.map((name) => ({ id: name, name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), logoUrl: null }));
+    console.error("DB brand records fetch failed:", error);
+    return devMockBrandRecords();
   }
 }

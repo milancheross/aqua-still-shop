@@ -2,24 +2,7 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getPageBySlug, getPublishedPageSlugs } from "@/actions/page-cms-actions";
-import type { CanvasBlock } from "@/app/admin/editor/page";
-
-function isCanvasBlock(value: unknown): value is CanvasBlock {
-  if (typeof value !== "object" || value === null) return false;
-
-  const block = value as Record<string, unknown>;
-  const validTypes = ["heading", "text", "image", "button", "container", "spacer"];
-
-  return (
-    typeof block.id === "string" &&
-    typeof block.type === "string" &&
-    validTypes.includes(block.type) &&
-    typeof block.props === "object" &&
-    block.props !== null &&
-    typeof block.styles === "object" &&
-    block.styles !== null
-  );
-}
+import { normalizeBlocks } from "@/lib/page-blocks";
 
 interface DynamicPageProps {
   params: Promise<{ slug: string }>;
@@ -57,15 +40,7 @@ export default async function DynamicRenderPage({ params }: DynamicPageProps) {
     notFound();
   }
 
-  // Prisma exposes JSON arrays as JsonValue[], which is broader than the CMS block type.
-  // Validate each entry from unknown and build a correctly narrowed array.
-  const content: unknown = page.contentJson;
-  const blocks: CanvasBlock[] = Array.isArray(content)
-    ? content.reduce<CanvasBlock[]>((validBlocks, value) => {
-        if (isCanvasBlock(value)) validBlocks.push(value);
-        return validBlocks;
-      }, [])
-    : [];
+  const blocks = normalizeBlocks(page.contentJson);
 
   return (
     <div className="bg-white min-h-screen py-12">

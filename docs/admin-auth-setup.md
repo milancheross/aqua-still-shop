@@ -34,7 +34,7 @@ After setting all three variables and restarting the app, open /admin-login. Sig
 
 The admin layout and admin server actions check the signed session on the server. Public storefront actions (such as cart and checkout) are not protected by admin authentication.
 
-The login action applies a basic in-memory limit of five failed attempts per email/IP key in a 15-minute window. This is defense in depth only: the counter is local to one running server process and can reset on restart or differ between server instances. In production, also configure rate limiting at a trusted hosting proxy or use a shared rate-limit store. Forwarded IP headers must be set or overwritten by that trusted proxy; do not rely on client-supplied values when the app is directly exposed.
+The login action allows five failed attempts per trusted client IP and per email address inside a 15-minute window. Counters are stored in Postgres (`rate_limit_events`) and mirrored in process memory when the database is unavailable. The client IP is taken from `x-real-ip` or the first address in `x-vercel-forwarded-for`, which the host sets. The raw `x-forwarded-for` header is ignored because a caller can spoof its first value.
 
 ## Deployment
 
