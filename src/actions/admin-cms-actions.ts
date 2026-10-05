@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { releaseExpiredStockReservations } from "@/lib/order-stock";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 
 // --- CATEGORIES ACTIONS ---
 export async function getAdminCategories() {
@@ -167,32 +168,76 @@ export async function deleteAdminBrand(id: string) {
 }
 
 // --- ORDERS ACTIONS ---
+function customerInfoWithoutToken(value: Prisma.JsonValue) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const info = { ...(value as Record<string, unknown>) };
+  delete info.confirmationToken;
+  return info;
+}
+
+function serializeOrder(order: Prisma.OrderGetPayload<{ include: { orderItems: true } }>) {
+  return {
+    id: order.id,
+    orderNumber: order.orderNumber,
+    status: order.status,
+    customerInfo: customerInfoWithoutToken(order.customerInfo),
+    subtotal: Number(order.subtotal),
+    taxAmount: Number(order.taxAmount),
+    shippingCost: Number(order.shippingCost),
+    total: Number(order.total),
+    stockReservedUntil: order.stockReservedUntil?.toISOString() ?? null,
+    createdAt: order.createdAt.toISOString(),
+    updatedAt: order.updatedAt.toISOString(),
+    orderItems: order.orderItems.map((item) => ({
+      id: item.id,
+      productName: item.productName,
+      sku: item.sku,
+      price: Number(item.price),
+      quantity: item.quantity,
+      total: Number(item.total),
+    })),
+  };
+}
+
+async function loadOrders() {
+  try {
+    await releaseExpiredStockReservations();
+  } catch (releaseError) {
+    console.error("Failed to release expired reservations:", releaseError);
+  }
+  const orders = await db.order.findMany({
+    include: { orderItems: true },
+    orderBy: { createdAt: "desc" },
+  });
+  return orders.map(serializeOrder);
+}
+
 export async function getAdminOrders() {
   await requireAdmin();
   try {
     if (!process.env.DATABASE_URL) return [];
-    try {
-      await releaseExpiredStockReservations();
-    } catch (releaseError) {
-      console.error("Failed to release expired reservations:", releaseError);
-    }
-    const orders = await db.order.findMany({
-      include: { orderItems: true },
-      orderBy: { createdAt: "desc" },
-    });
-
-    return orders.map((o: any) => ({
-      ...o,
-      subtotal: Number(o.subtotal),
-      taxAmount: Number(o.taxAmount),
-      shippingCost: Number(o.shippingCost),
-      total: Number(o.total),
-      createdAt: o.createdAt.toISOString(),
-      updatedAt: o.updatedAt.toISOString(),
-    }));
+    return await loadOrders();
   } catch (e) {
     console.error("Error fetching admin orders:", e);
     return [];
+  }
+}
+
+export async function getAdminOrderById(id: string) {
+  await requireAdmin();
+  if (!process.env.DATABASE_URL || !id) return null;
+  try {
+    await releaseExpiredStockReservations().catch((releaseError: unknown) => {
+      console.error("Failed to release expired reservations:", releaseError);
+    });
+    const order = await db.order.findUnique({
+      where: { id },
+      include: { orderItems: true },
+    });
+    return order ? serializeOrder(order) : null;
+  } catch (e) {
+    console.error("Error fetching admin order:", e);
+    return null;
   }
 }
 
@@ -228,9 +273,16 @@ export async function updateOrderStatusAction(orderId: string, status: string) {
           });
         }
       }
-      await tx.order.update({ where: { id: orderId }, data: { status } });
+      await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status,
+          stockReservedUntil: status === "pending" ? order.stockReservedUntil : null,
+        },
+      });
     });
     revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${orderId}`);
     return { success: true };
   } catch (e: unknown) {
     throw new Error(e instanceof Error ? e.message : "Ažuriranje statusa porudžbine nije uspelo.");

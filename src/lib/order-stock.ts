@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
+import { STOCK_RESERVATION_MS } from "@/lib/order-present";
 
-export const STOCK_RESERVATION_MS = 48 * 60 * 60 * 1000;
+export { STOCK_RESERVATION_MS };
 
 export function stockReservedUntil(from = new Date()) {
   return new Date(from.getTime() + STOCK_RESERVATION_MS);
