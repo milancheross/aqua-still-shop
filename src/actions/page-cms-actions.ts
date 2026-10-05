@@ -15,6 +15,27 @@ export interface PageInput {
   isPublished?: boolean;
 }
 
+export async function getPageById(id: string) {
+  await requireAdmin();
+  if (!id || !process.env.DATABASE_URL) return null;
+  try {
+    const page = await db.page.findUnique({ where: { id } });
+    if (!page) return null;
+    return {
+      id: page.id,
+      title: page.title,
+      slug: page.slug,
+      contentJson: page.contentJson,
+      seoTitle: page.seoTitle,
+      seoDescription: page.seoDescription,
+      isPublished: page.isPublished,
+    };
+  } catch (e) {
+    console.error("Error fetching page by id:", e);
+    return null;
+  }
+}
+
 export async function getPages() {
   await requireAdmin();
   try {
@@ -110,6 +131,7 @@ export async function savePage(input: PageInput) {
   }
 
   revalidatePath("/admin/pages");
+  revalidatePath("/admin/editor");
   revalidatePath(`/${page.slug}`);
   return { success: true, pageId: page.id };
 }
