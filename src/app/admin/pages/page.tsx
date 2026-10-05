@@ -22,7 +22,7 @@ export default async function AdminPagesPage() {
           <p className="text-slate-500 text-xs mt-1">Kreirajte i uredite statičke stranice i landing stranice pomoću vizuelnog editora.</p>
         </div>
         <Link
-          href="/admin/editor"
+          href="/admin/editor?new=1"
           className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs rounded-2xl transition-all shadow-lg shadow-cyan-600/20"
         >
           <Plus className="w-4 h-4" /> Kreiraj novu stranicu
@@ -82,7 +82,7 @@ export default async function AdminPagesPage() {
                           </Link>
                         )}
                         <Link
-                          href={`/admin/editor?id=${p.id}`}
+                          href={p.slug === "pocetna" ? "/admin/editor?home=1" : `/admin/editor?id=${p.id}`}
                           className="p-2 text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-colors"
                           title="Uredi u vizuelnom editoru"
                         >

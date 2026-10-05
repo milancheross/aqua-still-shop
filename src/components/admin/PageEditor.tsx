@@ -64,7 +64,7 @@ export default function PageEditor({
     if (nextId === (pageId ?? "")) return;
     const ok = window.confirm("Nečuvane izmene će biti odbačene. Otvoriti izabranu stranicu?");
     if (!ok) return;
-    router.push(nextId ? `/admin/editor?id=${nextId}` : "/admin/editor");
+    router.push(nextId === "home" ? "/admin/editor?home=1" : nextId ? `/admin/editor?id=${nextId}` : "/admin/editor?new=1");
   };
 
   const addBlock = (type: CanvasBlock["type"]) => {
@@ -153,6 +153,7 @@ export default function PageEditor({
               onChange={(event) => openPage(event.target.value)}
               className="max-w-56 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white outline-none focus:border-cyan-500"
             >
+              <option value="home">Početna stranica</option>
               <option value="">Nova stranica</option>
               {pages.map((item) => (
                 <option key={item.id} value={item.id}>{item.title} /{item.slug}</option>

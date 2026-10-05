@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { HOME_SLUG, parseHomeContent, type HomeContent } from "@/lib/home-content";
 
 export interface PageInput {
   id?: string;
@@ -83,7 +84,7 @@ export async function getPublishedPageSlugs() {
   try {
     if (!process.env.DATABASE_URL) return [];
     return await db.page.findMany({
-      where: { isPublished: true },
+      where: { isPublished: true, slug: { not: HOME_SLUG } },
       select: { slug: true },
     });
   } catch (e) {
@@ -92,10 +93,66 @@ export async function getPublishedPageSlugs() {
   }
 }
 
+export async function getHomeContent() {
+  try {
+    if (!process.env.DATABASE_URL) return null;
+    const page = await db.page.findFirst({ where: { slug: HOME_SLUG, isPublished: true } });
+    return page ? parseHomeContent(page.contentJson) : null;
+  } catch (error) {
+    console.error("Error fetching home content:", error);
+    return null;
+  }
+}
+
+export async function getHomePageForAdmin() {
+  await requireAdmin();
+  if (!process.env.DATABASE_URL) return null;
+  const page = await db.page.findUnique({ where: { slug: HOME_SLUG } });
+  if (!page) return null;
+  return {
+    content: parseHomeContent(page.contentJson),
+    isPublished: page.isPublished,
+  };
+}
+
+export async function saveHomePage(input: HomeContent & { isPublished: boolean }) {
+  await requireAdmin();
+  if (!process.env.DATABASE_URL) throw new Error("Baza nije povezana.");
+  const content = parseHomeContent({ kind: "home", ...input });
+  if (!content.title.trim() || !content.description.trim()) {
+    throw new Error("Naslov i opis početne stranice su obavezni.");
+  }
+  for (const href of [content.primaryHref, content.secondaryHref]) {
+    if (!href.startsWith("/") && !href.startsWith("https://")) {
+      throw new Error("Link dugmeta mora početi sa / ili https://");
+    }
+  }
+  const data = {
+    title: "Početna",
+    slug: HOME_SLUG,
+    contentJson: { kind: "home" as const, ...content },
+    seoTitle: content.seoTitle || null,
+    seoDescription: content.seoDescription || null,
+    isPublished: input.isPublished,
+  };
+  await db.page.upsert({
+    where: { slug: HOME_SLUG },
+    update: data,
+    create: data,
+  });
+  revalidatePath("/");
+  revalidatePath("/admin/editor");
+  revalidatePath("/admin/pages");
+  return { success: true };
+}
+
 export async function savePage(input: PageInput) {
   await requireAdmin();
   if (!input.title || !input.slug) {
     throw new Error("Naslov i slug stranice su obavezni.");
+  }
+  if (input.slug === HOME_SLUG) {
+    throw new Error("Početna stranica se uređuje posebno, preko izbora Početna stranica.");
   }
 
   // Check unique slug if new or changing

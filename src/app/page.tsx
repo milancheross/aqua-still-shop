@@ -1,14 +1,38 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowRight, ChevronRight, Truck, ShieldCheck, Headphones, RefreshCw, Wrench, Sparkles } from "lucide-react";
 import { getDbProducts, getDbBrands, getDbCategories } from "@/services/product-service";
 import { db } from "@/lib/db";
 import ProductCard from "@/components/catalog/ProductCard";
+import { getHomeContent } from "@/actions/page-cms-actions";
+import { DEFAULT_HOME } from "@/lib/home-content";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const home = await getHomeContent();
+  return {
+    title: home?.seoTitle || undefined,
+    description: home?.seoDescription || undefined,
+  };
+}
+
+function titleWithAccent(title: string, accent: string) {
+  const index = accent ? title.indexOf(accent) : -1;
+  if (index < 0) return title;
+  return (
+    <>
+      {title.slice(0, index)}
+      <span className="text-cyan-400">{accent}</span>
+      {title.slice(index + accent.length)}
+    </>
+  );
+}
 
 export default async function HomePage() {
   const featuredProducts = (await getDbProducts({ sort: "popular" })).slice(0, 5);
   const brandsList = await getDbBrands();
   const categories = await getDbCategories();
+  const home = (await getHomeContent()) ?? DEFAULT_HOME;
 
   const mainCategoriesGrid = categories.slice(0, 4);
   const heroProduct = featuredProducts.find((product) => product.images?.some(Boolean));
@@ -65,20 +89,20 @@ export default async function HomePage() {
         <div className="container relative z-20 mx-auto flex min-h-[420px] items-center px-4 py-12 sm:min-h-[480px] sm:px-6 sm:py-16 lg:min-h-[560px] lg:px-8">
           <div className="max-w-2xl space-y-5 sm:space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200 sm:text-xs">
-              <Sparkles className="h-3.5 w-3.5" /> Profesionalni alati & oprema
+              <Sparkles className="h-3.5 w-3.5" /> {home.eyebrow}
             </span>
             <h1 className="text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Snaga za <span className="text-cyan-400">svaki projekat</span>
+              {titleWithAccent(home.title, home.titleAccent)}
             </h1>
             <p className="max-w-xl text-sm leading-relaxed text-slate-200 sm:text-base lg:text-lg">
-              Veliki izbor električnih i aku alata, vodovodnog materijala i opreme za dom i baštu. Pouzdanost, kvalitet i stručna podrška — sve na jednom mestu.
+              {home.description}
             </p>
             <div className="flex flex-col gap-3 pt-1 sm:flex-row">
-              <Link href="/katalog" className="inline-flex min-h-12 items-center justify-center gap-3 rounded-xl bg-cyan-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-cyan-950/30 transition hover:bg-cyan-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 sm:px-8 sm:text-base">
-                Pogledaj ponudu <ArrowRight className="h-5 w-5" />
+              <Link href={home.primaryHref} className="inline-flex min-h-12 items-center justify-center gap-3 rounded-xl bg-cyan-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-cyan-950/30 transition hover:bg-cyan-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 sm:px-8 sm:text-base">
+                {home.primaryLabel} <ArrowRight className="h-5 w-5" />
               </Link>
-              <Link href="/katalog/alati" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:px-8 sm:text-base">
-                Katalog alata
+              <Link href={home.secondaryHref} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:px-8 sm:text-base">
+                {home.secondaryLabel}
               </Link>
             </div>
             <div className="flex flex-wrap gap-x-5 gap-y-2 pt-2 text-xs font-medium text-slate-300 sm:text-sm">
@@ -152,7 +176,7 @@ export default async function HomePage() {
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-8 gap-4">
           <div>
-            <h2 className="text-2xl md:text-3xl font-black text-slate-900">Izdvajamo iz ponude</h2>
+            <h2 className="text-2xl md:text-3xl font-black text-slate-900">{home.featuredTitle}</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-lg bg-cyan-50 px-3 py-2 text-xs font-bold text-cyan-800">Izdvojeni proizvodi</span>
@@ -172,9 +196,9 @@ export default async function HomePage() {
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-700">Istražite ponudu</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Oprema za svaki projekat</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">Izaberite kategoriju i pronađite opremu za dom, radionicu i baštu.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-700">{home.exploreEyebrow}</p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{home.exploreTitle}</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">{home.exploreText}</p>
           </div>
           <Link href="/katalog" className="inline-flex w-fit items-center gap-2 text-sm font-bold text-cyan-700 hover:text-cyan-900">
             Ceo katalog <ArrowRight className="h-4 w-4" />
@@ -201,7 +225,7 @@ export default async function HomePage() {
       {/* 6. "NAŠI BRENDOVI" SECTION */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-black text-slate-900">Naši brendovi</h2>
+          <h2 className="text-xl font-black text-slate-900">{home.brandsTitle}</h2>
           <Link href="/brendovi" className="text-xs font-bold text-cyan-600 hover:underline flex items-center gap-1">
             Pogledaj sve brendove <ArrowRight className="w-3.5 h-3.5" />
           </Link>
@@ -218,7 +242,7 @@ export default async function HomePage() {
       {/* 7. "NAJPULARNIJE KATEGORIJE" SECTION */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-black text-slate-900">Najpopularnije kategorije</h2>
+          <h2 className="text-xl font-black text-slate-900">{home.popularTitle}</h2>
           <Link href="/katalog" className="text-xs font-bold text-cyan-600 hover:underline flex items-center gap-1">
             Pogledaj sve kategorije <ArrowRight className="w-3.5 h-3.5" />
           </Link>

@@ -58,7 +58,7 @@ export default async function AdminDashboardPage() {
           <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
             <h3 className="font-bold text-slate-900">Vizuelni editor stranica</h3>
             <p className="text-slate-500 leading-relaxed">Uređujte raspored sekcija, banera i početne stranice bez kodiranja.</p>
-            <Link href="/admin/editor" className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:underline pt-1">
+            <Link href="/admin/editor?home=1" className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:underline pt-1">
               Pokreni editor <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>

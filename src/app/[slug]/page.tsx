@@ -1,5 +1,5 @@
 import React from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Metadata } from "next";
 import { getPageBySlug, getPublishedPageSlugs } from "@/actions/page-cms-actions";
 import { normalizeBlocks } from "@/lib/page-blocks";
@@ -10,6 +10,7 @@ interface DynamicPageProps {
 
 export async function generateMetadata({ params }: DynamicPageProps): Promise<Metadata> {
   const { slug } = await params;
+  if (slug === "pocetna") return { title: "Aqua Still Zlatibor" };
   const page = await getPageBySlug(slug);
 
   if (!page || !page.isPublished) {
@@ -34,6 +35,7 @@ export async function generateStaticParams() {
 
 export default async function DynamicRenderPage({ params }: DynamicPageProps) {
   const { slug } = await params;
+  if (slug === "pocetna") redirect("/");
   const page = await getPageBySlug(slug);
 
   if (!page || !page.isPublished) {

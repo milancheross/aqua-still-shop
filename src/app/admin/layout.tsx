@@ -22,7 +22,7 @@ import {
 
 const adminNavItems = [
   { name: "Kontrolna tabla", href: "/admin", icon: LayoutDashboard },
-  { name: "Vizuelni editor", href: "/admin/editor", icon: FileEdit },
+  { name: "Vizuelni editor", href: "/admin/editor?home=1", icon: FileEdit },
   { name: "Stranice", href: "/admin/pages", icon: FileText },
   { name: "Proizvodi", href: "/admin/products", icon: Package },
   { name: "Kategorije", href: "/admin/categories", icon: FolderTree },
