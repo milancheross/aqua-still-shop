@@ -107,12 +107,17 @@ export async function getHomeContent() {
 export async function getHomePageForAdmin() {
   await requireAdmin();
   if (!process.env.DATABASE_URL) return null;
-  const page = await db.page.findUnique({ where: { slug: HOME_SLUG } });
-  if (!page) return null;
-  return {
-    content: parseHomeContent(page.contentJson),
-    isPublished: page.isPublished,
-  };
+  try {
+    const page = await db.page.findUnique({ where: { slug: HOME_SLUG } });
+    if (!page) return null;
+    return {
+      content: parseHomeContent(page.contentJson),
+      isPublished: page.isPublished,
+    };
+  } catch (error) {
+    console.error("Error fetching homepage for editor:", error);
+    return null;
+  }
 }
 
 export async function saveHomePage(input: HomeContent & { isPublished: boolean }) {

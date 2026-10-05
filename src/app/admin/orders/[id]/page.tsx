@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Mail, MapPin, Phone } from "lucide-react";
 import { getAdminOrderById } from "@/actions/admin-cms-actions";
+import OrderDesk from "@/components/admin/OrderDesk";
 import OrderStatusSelect from "@/components/admin/OrderStatusSelect";
 import { formatPrice } from "@/lib/utils";
 import {
@@ -13,6 +14,16 @@ import {
 
 function text(value: unknown) {
   return typeof value === "string" ? value : "";
+}
+
+function privateNotes(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+    const note = entry as Record<string, unknown>;
+    if (typeof note.message !== "string" || typeof note.createdAt !== "string") return [];
+    return [{ id: typeof note.id === "string" ? note.id : note.createdAt, message: note.message, createdAt: note.createdAt }];
+  });
 }
 
 export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -66,7 +77,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </span>
           </p>
           <p className="text-xs font-bold text-slate-500">
-            Plaćanje: {pickup ? "pri preuzimanju u radnji" : "pouzećem kuriru"}
+            Plaćanje: {pickup ? "pri preuzimanju u radnji" : "pouzećem kuriru"} · {customer.paid === true ? "plaćeno" : "nije plaćeno"}
           </p>
           <div className="border-t border-slate-100 pt-4">
             <h3 className="text-xs font-black uppercase tracking-wide text-slate-400">Napomena</h3>
@@ -108,6 +119,11 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           </dl>
         </section>
       </div>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-sm font-black text-slate-900">Radnje na porudžbini</h2>
+        <OrderDesk orderId={order.id} paid={customer.paid === true} notes={privateNotes(customer.privateNotes)} />
+      </section>
     </div>
   );
 }

@@ -4,6 +4,7 @@
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { releaseExpiredStockReservations } from "@/lib/order-stock";
+import { notifyOrderStatus } from "@/lib/order-notify";
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
 
@@ -249,10 +250,10 @@ export async function updateOrderStatusAction(orderId: string, status: string) {
   }
   try {
     if (!process.env.DATABASE_URL) throw new Error("Baza nije povezana.");
-    await db.$transaction(async (tx) => {
+    const notice = await db.$transaction(async (tx) => {
       const order = await tx.order.findUnique({ where: { id: orderId }, include: { orderItems: true } });
       if (!order) throw new Error("Porudžbina nije pronađena.");
-      const info = order.customerInfo as { shippingMethod?: string } | null;
+      const info = order.customerInfo as { shippingMethod?: string; email?: string; firstName?: string } | null;
       if (status === "shipped" && info?.shippingMethod === "store_pickup") {
         throw new Error("Porudžbina za preuzimanje u radnji ne može biti označena kao poslata.");
       }
@@ -273,6 +274,7 @@ export async function updateOrderStatusAction(orderId: string, status: string) {
           });
         }
       }
+      if (order.status === status) return null;
       await tx.order.update({
         where: { id: orderId },
         data: {
@@ -280,11 +282,63 @@ export async function updateOrderStatusAction(orderId: string, status: string) {
           stockReservedUntil: status === "pending" ? order.stockReservedUntil : null,
         },
       });
+      return {
+        email: info?.email ?? "",
+        firstName: info?.firstName ?? "",
+        orderNumber: order.orderNumber,
+        status,
+      };
     });
+    if (notice) await notifyOrderStatus(notice);
     revalidatePath("/admin/orders");
     revalidatePath(`/admin/orders/${orderId}`);
     return { success: true };
   } catch (e: unknown) {
     throw new Error(e instanceof Error ? e.message : "Ažuriranje statusa porudžbine nije uspelo.");
   }
+}
+
+function customerRecord(value: Prisma.JsonValue) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return { ...(value as Record<string, unknown>) };
+}
+
+async function saveCustomerInfo(orderId: string, info: Record<string, unknown>) {
+  await db.order.update({
+    where: { id: orderId },
+    data: { customerInfo: info as Prisma.InputJsonValue },
+  });
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+}
+
+export async function setOrderPaidAction(orderId: string, paid: boolean) {
+  await requireAdmin();
+  if (!orderId || !process.env.DATABASE_URL) throw new Error("Porudžbina nije pronađena.");
+  const order = await db.order.findUnique({ where: { id: orderId } });
+  if (!order) throw new Error("Porudžbina nije pronađena.");
+  const info = customerRecord(order.customerInfo);
+  info.paid = paid;
+  info.paidAt = paid ? new Date().toISOString() : null;
+  await saveCustomerInfo(orderId, info);
+  return { success: true };
+}
+
+export async function addOrderNoteAction(orderId: string, message: string) {
+  await requireAdmin();
+  const text = message.trim();
+  if (!orderId || text.length < 2 || text.length > 1000) {
+    throw new Error("Beleška mora imati između 2 i 1000 karaktera.");
+  }
+  if (!process.env.DATABASE_URL) throw new Error("Baza nije povezana.");
+  const order = await db.order.findUnique({ where: { id: orderId } });
+  if (!order) throw new Error("Porudžbina nije pronađena.");
+  const info = customerRecord(order.customerInfo);
+  const existing = Array.isArray(info.privateNotes) ? info.privateNotes : [];
+  info.privateNotes = [
+    ...existing,
+    { id: crypto.randomUUID(), message: text, createdAt: new Date().toISOString() },
+  ];
+  await saveCustomerInfo(orderId, info);
+  return { success: true };
 }

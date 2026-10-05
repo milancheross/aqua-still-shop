@@ -99,3 +99,26 @@ export async function notifyOrderCreated(input: OrderEmailInput) {
     console.error("Shop order email failed:", error);
   }
 }
+
+export async function notifyOrderStatus(input: { email: string; firstName: string; orderNumber: string; status: string }) {
+  const labels: Record<string, string> = {
+    processing: "Porudžbina je primljena i u obradi.",
+    shipped: "Porudžbina je poslata.",
+    delivered: "Porudžbina je isporučena.",
+    ready_for_pickup: "Porudžbina je spremna za preuzimanje u radnji na Zlatiboru.",
+    picked_up: "Porudžbina je preuzeta.",
+    cancelled: "Porudžbina je otkazana. Ako ste već platili, javite se radnji.",
+  };
+  const line = labels[input.status];
+  if (!line || !input.email) return;
+
+  try {
+    await sendEmail(
+      input.email,
+      `Aqua Still ${input.orderNumber}`,
+      [`Poštovani ${input.firstName || "kupče"},`, "", `${input.orderNumber}: ${line}`, "", "Aqua Still Zlatibor"].join("\n"),
+    );
+  } catch (error) {
+    console.error("Order status email failed:", error);
+  }
+}

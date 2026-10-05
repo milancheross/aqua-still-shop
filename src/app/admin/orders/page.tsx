@@ -10,8 +10,30 @@ import {
   reservationDeadline,
 } from "@/lib/order-present";
 
-export default async function AdminOrdersPage() {
+export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string }> }) {
+  const params = await searchParams;
   const orders = await getAdminOrders();
+  const status = params.status ?? "";
+  const query = (params.q ?? "").trim().toLowerCase();
+  const filters = [
+    ["", "Sve"],
+    ["pending", "Na čekanju"],
+    ["processing", "U obradi"],
+    ["shipped", "Poslato"],
+    ["ready_for_pickup", "Za preuzimanje"],
+    ["delivered", "Isporučeno"],
+    ["cancelled", "Otkazano"],
+  ];
+  const visible = orders.filter((order) => {
+    if (status && order.status !== status) return false;
+    if (!query) return true;
+    const customer = order.customerInfo;
+    const haystack = [order.orderNumber, customer.firstName, customer.lastName, customer.email, customer.phone]
+      .map((value) => String(value ?? ""))
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(query);
+  });
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
@@ -20,8 +42,23 @@ export default async function AdminOrdersPage() {
         <p className="text-slate-500 text-xs mt-1">Pregledajte prispele porudžbine i pratite statuse isporuke i preuzimanja. Porudžbine na čekanju drže zalihe 48 sati, pa se same otkazuju ako ostanu nepotvrđene. Premestite prihvaćenu porudžbinu u obradu.</p>
       </div>
 
+      <form className="flex flex-wrap items-center gap-2" action="/admin/orders">
+        {filters.map(([value, label]) => (
+          <Link
+            key={value || "all"}
+            href={value ? `/admin/orders?status=${value}` : "/admin/orders"}
+            className={`rounded-full px-3 py-1.5 text-[11px] font-bold ${status === value ? "bg-slate-900 text-white" : "bg-white text-slate-600 border border-slate-200"}`}
+          >
+            {label}
+          </Link>
+        ))}
+        <input name="q" defaultValue={params.q ?? ""} placeholder="Broj, ime, telefon ili email" className="ml-auto min-w-52 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:border-cyan-500" />
+        {status ? <input type="hidden" name="status" value={status} /> : null}
+        <button className="rounded-xl bg-cyan-600 px-4 py-2 text-xs font-bold text-white">Traži</button>
+      </form>
+
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-        {orders.length === 0 ? (
+        {visible.length === 0 ? (
           <div className="py-16 text-center space-y-3">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mx-auto">
               <ShoppingCart className="w-8 h-8" />
@@ -44,7 +81,7 @@ export default async function AdminOrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {orders.map((order) => {
+                {visible.map((order) => {
                   const customer = order.customerInfo;
                   const isStorePickup = customer.shippingMethod === "store_pickup";
                   const reservation = order.status === "pending"
@@ -70,7 +107,12 @@ export default async function AdminOrdersPage() {
                           </span>
                         )}
                       </td>
-                      <td className="py-4 px-4 font-black text-cyan-700">{formatPrice(order.total)}</td>
+                      <td className="py-4 px-4 font-black text-cyan-700">
+                        {formatPrice(order.total)}
+                        <span className={`mt-1 block text-[10px] ${order.customerInfo.paid === true ? "text-emerald-600" : "text-slate-400"}`}>
+                          {order.customerInfo.paid === true ? "Plaćeno" : "Nije plaćeno"}
+                        </span>
+                      </td>
                       <td className="py-4 px-4">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 font-bold rounded-full text-[10px] ${orderStatusClass(order.status)}`}>
                           {orderStatusLabel(order.status)}
@@ -85,7 +127,10 @@ export default async function AdminOrdersPage() {
                         {new Date(order.createdAt).toLocaleDateString("sr-RS")} {new Date(order.createdAt).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" })}
                       </td>
                       <td className="py-4 px-4 text-right">
-                        <OrderStatusSelect orderId={order.id} status={order.status} shippingMethod={customer.shippingMethod} />
+                        <div className="flex items-center justify-end gap-2">
+                          <Link href={`/admin/orders/${order.id}`} className="rounded-xl bg-slate-900 px-3 py-2 text-[11px] font-bold text-white">Detalji</Link>
+                          <OrderStatusSelect orderId={order.id} status={order.status} shippingMethod={customer.shippingMethod} />
+                        </div>
                       </td>
                     </tr>
                   );
