@@ -1,6 +1,6 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
-async function prepareCart(page: Parameters<typeof test>[0] extends never ? never : any) {
+async function prepareCart(page: Page) {
   await page.goto("/proizvod/makita-dhp485z-aku-udarna-busilica-18v");
   await page.getByRole("button", { name: /dodaj u korpu/i }).first().click();
   await page.goto("/placanje");
