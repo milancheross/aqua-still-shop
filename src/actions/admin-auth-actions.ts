@@ -49,7 +49,7 @@ export async function loginAdminAction(formData: FormData) {
 
   await Promise.all(buckets.map((bucket) => clearRateLimitBucket(bucket)));
   await createAdminSession(user.email!);
-  redirect("/admin");
+  redirect(user.role === "warehouse" ? "/magacin" : "/admin");
 }
 
 export async function logoutAdminAction() {
