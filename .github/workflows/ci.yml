@@ -39,6 +39,12 @@ jobs:
       DATABASE_URL: postgresql://aquastill:aquastill_ci@localhost:5432/aquastill_ci?schema=public
       NEXTAUTH_SECRET: ci-only-secret-not-for-production
       NEXTAUTH_URL: http://localhost:3000
+      ADMIN_EMAIL: admin@aquastill.test
+      ADMIN_PASSWORD_HASH: $2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+      ADMIN_SESSION_SECRET: ci-admin-session-secret-32-characters-long
+      ADMIN_INITIAL_EMAIL: admin@aquastill.test
+      ADMIN_INITIAL_PASSWORD: password
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
 
     steps:
       - name: Checkout repository
@@ -71,5 +77,14 @@ jobs:
       - name: ESLint
         run: pnpm lint
 
+      - name: Seed test database
+        run: pnpm db:seed
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: Production build
         run: pnpm build
+
+      - name: Critical E2E flows
+        run: pnpm test:e2e
