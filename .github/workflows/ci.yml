@@ -7,6 +7,7 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Critical E2E validation runs on every PR.
 permissions:
   contents: read
 
