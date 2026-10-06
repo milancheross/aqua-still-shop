@@ -66,6 +66,9 @@ model Product {
   inStock          Boolean      @default(true) @map("in_stock")
   stockQuantity    Int          @default(0) @map("stock_quantity")
   wmsLocation      String?      @map("wms_location")
+  warehouseLocationId String?   @map("warehouse_location_id")
+  warehouseLocation WarehouseLocation? @relation(fields: [warehouseLocationId], references: [id], onDelete: SetNull)
+  stockMovements   StockMovement[]
   shortDescription String?      @map("short_description")
   description      String?
   images           String[]     @default([])
@@ -79,6 +82,41 @@ model Product {
   orderItems       OrderItem[]
 
   @@map("products")
+}
+
+
+
+model WarehouseLocation {
+  id          String   @id
+  code        String   @unique
+  rowNumber   Int      @map("row_number")
+  columnNumber Int     @map("column_number")
+  levelNumber Int      @map("level_number")
+  label       String
+  isActive    Boolean  @default(true) @map("is_active")
+  products    Product[]
+  movements   StockMovement[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([rowNumber, columnNumber, levelNumber])
+  @@map("warehouse_locations")
+}
+
+model StockMovement {
+  id         String            @id @default(cuid())
+  productId  String            @map("product_id")
+  product    Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type       String
+  quantity   Int
+  locationId String?           @map("location_id")
+  location   WarehouseLocation? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  note       String?
+  createdAt  DateTime          @default(now()) @map("created_at")
+
+  @@index([productId, createdAt])
+  @@index([locationId, createdAt])
+  @@map("stock_movements")
 }
 
 model Order {
