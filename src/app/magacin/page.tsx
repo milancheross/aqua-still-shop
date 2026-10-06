@@ -1,11 +1,11 @@
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireWarehouseAccess } from "@/lib/admin-auth";
 import { getWarehouseData } from "@/actions/warehouse-actions";
 import { WarehouseClient } from "./warehouse-client";
 
 export const dynamic = "force-dynamic";
 
 export default async function WarehousePage() {
-  await requireAdmin();
+  await requireWarehouseAccess();
   const data = await getWarehouseData();
   return <WarehouseClient initialData={data} />;
 }
