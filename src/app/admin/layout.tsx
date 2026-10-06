@@ -32,6 +32,7 @@ const adminNavItems = [
   { name: "Navigacija", href: "/admin/navigation", icon: Menu },
   { name: "Porudžbine", href: "/admin/orders", icon: ShoppingCart },
   { name: "Kupci", href: "/admin/customers", icon: Users },
+  { name: "Korisnici i pristup", href: "/admin/users", icon: Users },
   { name: "SEO", href: "/admin/seo", icon: Search },
   { name: "Dizajn sajta", href: "/admin/design", icon: Palette },
   { name: "Podešavanja", href: "/admin/settings", icon: Settings },
