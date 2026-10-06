@@ -48,9 +48,8 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
     window.location.reload();
   }
 
-  async function doMovement(form: HTMLFormElement) {
+  async function doMovement(formData: FormData) {
     setMessage("");
-    const formData = new FormData(form);
     startTransition(async () => {
       try {
         await recordWarehouseMovement(formData);
@@ -238,7 +237,7 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
                   </div>
 
                   {tab !== "proizvodi" && (
-                    <form action={(fd)=>doMovement(Object.assign(document.createElement("form"), { } as HTMLFormElement))} className="space-y-3">
+                    <form action={(formData) => doMovement(formData)} className="space-y-3">
                       <input type="hidden" name="productId" value={selected.id} />
                       <input type="hidden" name="type" value={tab==="prijem"?"receipt":tab==="izdavanje"?"issue":tab==="premeštanje"?"transfer":"stocktake"} />
                       <label className="block text-xs font-bold">Količina
@@ -246,7 +245,7 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
                       </label>
                       {(tab==="prijem" || tab==="premeštanje" || tab==="provera") && (
                         <label className="block text-xs font-bold">Lokacija
-                          <select name="locationId" defaultValue={selected.warehouseLocation?.code ?? ""} className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
+                          <select name="locationId" defaultValue={selected.warehouseLocation?.code ? locationOptions.find((location) => location.code === selected.warehouseLocation?.code)?.id ?? "" : ""} className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm">
                             <option value="">Bez promene</option>
                             {locationOptions.map((location)=> <option key={location.id} value={location.id}>{location.code}</option>)}
                           </select>
