@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireWarehouseAccess } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 
 const MOVEMENT_TYPES = ["receipt", "issue", "transfer", "stocktake"] as const;
@@ -17,7 +17,7 @@ function numberValue(value: FormDataEntryValue | null) {
 }
 
 export async function getWarehouseData() {
-  await requireAdmin();
+  await requireWarehouseAccess();
 
   const [productCount, lowStockCount, outOfStockCount, unassignedCount, locationCount, recentMovements, products] =
     await Promise.all([
@@ -59,7 +59,7 @@ export async function getWarehouseData() {
 }
 
 export async function searchWarehouseProduct(value: string) {
-  await requireAdmin();
+  await requireWarehouseAccess();
   const query = value.trim();
   if (!query) return null;
 
@@ -80,7 +80,7 @@ export async function searchWarehouseProduct(value: string) {
 }
 
 export async function assignWarehouseLocation(productId: string, locationId: string) {
-  await requireAdmin();
+  await requireWarehouseAccess();
   if (!productId || !locationId) throw new Error("Proizvod i lokacija su obavezni.");
 
   const [product, location] = await Promise.all([
@@ -102,7 +102,7 @@ export async function assignWarehouseLocation(productId: string, locationId: str
 }
 
 export async function recordWarehouseMovement(formData: FormData) {
-  await requireAdmin();
+  await requireWarehouseAccess();
 
   const productId = text(formData.get("productId"));
   const type = text(formData.get("type")) as MovementType;
