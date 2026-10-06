@@ -237,10 +237,10 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
                   </div>
 
                   {tab !== "proizvodi" && (
-                    <form action={(formData) => doMovement(formData)} className="space-y-3">
+                    <form onSubmit={(event) => { event.preventDefault(); void doMovement(new FormData(event.currentTarget)); }} className="space-y-3">
                       <input type="hidden" name="productId" value={selected.id} />
                       <input type="hidden" name="type" value={tab==="prijem"?"receipt":tab==="izdavanje"?"issue":tab==="premeštanje"?"transfer":"stocktake"} />
-                      <label className="block text-xs font-bold">Količina
+                      <label className="block text-xs font-bold">{tab==="provera" ? "Stvarno stanje" : "Količina"}
                         <input name="quantity" type="number" min="1" defaultValue={1} className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm" required />
                       </label>
                       {(tab==="prijem" || tab==="premeštanje" || tab==="provera") && (
