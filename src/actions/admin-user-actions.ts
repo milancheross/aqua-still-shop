@@ -34,7 +34,6 @@ export async function createAdminUser(formData: FormData) {
   });
 
   revalidatePath("/admin/users");
-  return { success:true };
 }
 
 export async function updateAdminUser(userId: string, formData: FormData) {
@@ -53,7 +52,6 @@ export async function updateAdminUser(userId: string, formData: FormData) {
   await db.user.update({ where:{id:userId}, data });
   revalidatePath("/admin/users");
   revalidatePath("/admin");
-  return { success:true };
 }
 
 export async function deactivateAdminUser(userId: string) {
@@ -62,5 +60,4 @@ export async function deactivateAdminUser(userId: string) {
   if (current.id === userId) throw new Error("Ne možete deaktivirati sopstveni nalog.");
   await db.user.update({ where:{id:userId}, data:{isActive:false} });
   revalidatePath("/admin/users");
-  return { success:true };
 }
