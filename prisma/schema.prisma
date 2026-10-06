@@ -242,7 +242,8 @@ model User {
   password      String?
   emailVerified DateTime? @map("email_verified")
   image         String?
-  role          String    @default("editor") // editor, admin
+  role          String    @default("editor") // admin, warehouse, editor
+  isActive      Boolean   @default(true) @map("is_active")
   accounts      Account[]
   sessions      Session[]
   cart          Cart?
