@@ -205,7 +205,7 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input value={query} onChange={(e)=>setQuery(e.target.value)} onKeyDown={(e)=>{if(e.key==="Enter") findProduct(query);}} placeholder="Unesite šifru proizvoda..." className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-semibold outline-none focus:border-blue-500 focus:bg-white" />
               </div>
-              <button onClick={scanOrFind} disabled={busy} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 text-sm font-black text-white hover:bg-blue-700 disabled:opacity-50">
+              <button onClick={() => { if (query.trim()) findProduct(query); else setScannerOpen(true); }} disabled={busy} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 text-sm font-black text-white hover:bg-blue-700 disabled:opacity-50">
                 <ScanLine className="h-4 w-4" /> Pronađi / skeniraj
               </button>
             </div>
