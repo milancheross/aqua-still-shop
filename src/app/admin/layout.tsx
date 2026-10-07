@@ -30,7 +30,6 @@ const primaryMobileItems = [
   { name: "Početna", href: "/admin", icon: LayoutDashboard },
   { name: "Proizvodi", href: "/admin/products", icon: Package },
   { name: "Porudžbine", href: "/admin/orders", icon: ShoppingCart },
-  { name: "Magacin", href: "/magacin", icon: Warehouse },
 ];
 
 const secondaryMobileItems = adminNavItems.filter(
@@ -103,31 +102,33 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             {primaryMobileItems.map((item) => {
               const Icon = item.icon;
               return (
-                <Link key={item.href} href={item.href} className="flex min-h-14 flex-col items-center justify-center gap-1 text-[10px] font-bold text-slate-500 active:bg-cyan-50 active:text-cyan-700">
+                <Link key={item.href} href={item.href} className="flex min-h-11 flex-col items-center justify-center gap-0.5 px-1 text-[10px] font-bold text-slate-500 transition active:bg-cyan-50 active:text-cyan-700">
                   <Icon className="h-4 w-4" />
-                  {item.name}
+                  <span className="truncate">{item.name}</span>
                 </Link>
               );
             })}
-          </nav>
 
-          <details className="border-t border-slate-100 bg-slate-50 lg:hidden">
-            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center gap-2 text-xs font-black text-slate-700">
-              <MoreHorizontal className="h-4 w-4" />
-              Svi moduli
-            </summary>
-            <div className="grid grid-cols-2 gap-2 border-t border-slate-200 p-3">
-              {secondaryMobileItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link key={item.href} href={item.href} className="flex min-h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm">
-                    <Icon className="h-4 w-4 shrink-0 text-cyan-600" />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </details>
+            <details className="group relative">
+              <summary className="flex min-h-11 cursor-pointer list-none flex-col items-center justify-center gap-0.5 px-1 text-[10px] font-bold text-slate-500 transition active:bg-cyan-50 active:text-cyan-700">
+                <MoreHorizontal className="h-4 w-4" />
+                <span>Više</span>
+              </summary>
+              <div className="absolute right-2 top-full z-50 w-[calc(100vw-1rem)] max-w-sm rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
+                <div className="grid grid-cols-2 gap-2">
+                  {secondaryMobileItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link key={item.href} href={item.href} className="flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-700 transition hover:bg-cyan-50">
+                        <Icon className="h-4 w-4 shrink-0 text-cyan-600" />
+                        <span className="truncate">{item.name}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </details>
+          </nav>
         </header>
 
         <main className="min-w-0 overflow-x-hidden p-3 pb-8 sm:p-5 lg:p-8">
