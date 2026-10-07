@@ -36,13 +36,13 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   });
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="mx-auto w-full max-w-7xl space-y-5 sm:space-y-8">
       <div>
         <h1 className="text-2xl font-black text-slate-900">Upravljanje porudžbinama</h1>
         <p className="text-slate-500 text-xs mt-1">Pregledajte prispele porudžbine i pratite statuse isporuke i preuzimanja. Porudžbine na čekanju drže zalihe 48 sati, pa se same otkazuju ako ostanu nepotvrđene. Premestite prihvaćenu porudžbinu u obradu.</p>
       </div>
 
-      <form className="flex flex-wrap items-center gap-2" action="/admin/orders">
+      <form className="grid gap-2 sm:flex sm:flex-wrap sm:items-center" action="/admin/orders">
         {filters.map(([value, label]) => (
           <Link
             key={value || "all"}
@@ -52,7 +52,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             {label}
           </Link>
         ))}
-        <input name="q" defaultValue={params.q ?? ""} placeholder="Broj, ime, telefon ili email" className="ml-auto min-w-52 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:border-cyan-500" />
+        <input name="q" defaultValue={params.q ?? ""} placeholder="Broj, ime, telefon ili email" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs sm:ml-auto sm:w-auto sm:min-w-52 outline-none focus:border-cyan-500" />
         {status ? <input type="hidden" name="status" value={status} /> : null}
         <button className="rounded-xl bg-cyan-600 px-4 py-2 text-xs font-bold text-white">Traži</button>
       </form>
