@@ -48,10 +48,12 @@ export default function HomePageEditor({
   const handleSave = () => {
     startTransition(async () => {
       try {
-        await saveHomePage({ ...form, isPublished: published });
+        const result = await saveHomePage({ ...form, isPublished: published });
+        if (!result.success) {
+          throw new Error(result.error);
+        }
         setSuccess("Početna stranica je sačuvana.");
         setTimeout(() => setSuccess(""), 3000);
-        router.refresh();
       } catch (error: unknown) {
         alert(error instanceof Error ? error.message : "Čuvanje početne stranice nije uspelo.");
       }
