@@ -6,12 +6,28 @@ import Image from "next/image";
 import { Search, ShoppingCart, Menu, X, User, Heart, Globe, Share2, ChevronDown } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/utils";
+import type { ProductCategory } from "@/types";
 
 export default function Header() {
   const { cart, setIsCartOpen } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
+
+  React.useEffect(() => {
+    let active = true;
+    fetch("/api/catalog/categories", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error("Kategorije nisu dostupne.");
+        return response.json() as Promise<ProductCategory[]>;
+      })
+      .then((data) => {
+        if (active) setCategories(data);
+      })
+      .catch((error) => console.error("Storefront categories fetch failed:", error));
+    return () => { active = false; };
+  }, []);
 
   const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -148,15 +164,7 @@ export default function Header() {
                       <span className="hidden text-xs font-medium text-slate-400 sm:block">Izaberite grupu proizvoda</span>
                     </div>
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      {[
-                        { name: "Alati i oprema", slug: "alati", description: "Električni i ručni alati", icon: "⚒" },
-                        { name: "Vodovod i kanalizacija", slug: "vodovod", description: "Cevi, fiting i ventili", icon: "◉" },
-                        { name: "Kupatilska oprema", slug: "kupatila", description: "Sanitarije i baterije", icon: "▤" },
-                        { name: "Sistemi za navodnjavanje", slug: "navodnjavanje", description: "Oprema za baštu i plastenik", icon: "✳" },
-                        { name: "Grejanje", slug: "grejanje", description: "Oprema i instalacioni materijal", icon: "♨" },
-                        { name: "Elektromaterijal", slug: "elektromaterijal", description: "Materijal za instalacije", icon: "ϟ" },
-                        { name: "Oprema za majstore", slug: "majstori", description: "Pribor za svaki posao", icon: "⚙" },
-                      ].map((category) => (
+                      {categories.map((category) => (
                         <Link
                           key={category.slug}
                           href={`/katalog/${category.slug}`}
@@ -206,15 +214,7 @@ export default function Header() {
               Sve kategorije — ceo katalog
             </Link>
             <Link href="/katalog/akcija" onClick={() => setIsMenuOpen(false)} className="border-b border-slate-100 px-3 py-3 text-sm font-bold text-orange-600">Akcije</Link>
-            {[
-              { name: "Alati i oprema", slug: "alati" },
-              { name: "Vodovod i kanalizacija", slug: "vodovod" },
-              { name: "Kupatilska oprema i sanitarije", slug: "kupatila" },
-              { name: "Sistemi za navodnjavanje", slug: "navodnjavanje" },
-              { name: "Grejanje", slug: "grejanje" },
-              { name: "Elektromaterijal", slug: "elektromaterijal" },
-              { name: "Oprema za majstore", slug: "majstori" },
-            ].map((category) => (
+            {categories.map((category) => (
               <Link
                 key={category.slug}
                 href={`/katalog/${category.slug}`}
