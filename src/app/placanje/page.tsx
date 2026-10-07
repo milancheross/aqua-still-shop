@@ -86,15 +86,15 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="bg-slate-50 min-h-screen py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-black text-slate-900">Završetak kupovine (Checkout)</h1>
+    <div className="min-h-screen bg-slate-50 py-5 sm:py-12">
+      <div className="container mx-auto max-w-6xl px-3 sm:px-6 lg:px-8">
+        <div className="mb-5 sm:mb-8">
+          <h1 className="text-2xl font-black text-slate-900 sm:text-3xl">Završetak kupovine (Checkout)</h1>
           <p className="text-slate-500 text-sm mt-1">Izaberite način preuzimanja i popunite podatke.</p>
         </div>
 
         {errorMessage && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center gap-3 text-sm font-bold">
+          <div className="mb-4 flex items-start p-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center gap-3 text-sm font-bold">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <span>{errorMessage}</span>
           </div>
@@ -104,12 +104,12 @@ export default function CheckoutPage() {
           {/* SHIPPING & CUSTOMER FORM */}
           <div className="lg:col-span-7 space-y-6">
             {/* SHIPPING METHOD SELECTION */}
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
+            <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-8">
               <h2 className="text-lg font-black text-slate-900 pb-4 border-b border-slate-100 flex items-center gap-2">
                 <Truck className="w-5 h-5 text-cyan-600" /> Način preuzimanja
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                 <label className={`flex flex-col p-4 border-2 rounded-2xl cursor-pointer transition-all ${!isStorePickup ? "border-cyan-500 bg-cyan-50/50" : "border-slate-200 hover:border-slate-300"}`}>
                   <div className="flex items-center space-x-3 mb-2">
                     <input 
@@ -143,7 +143,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* CUSTOMER INFO FORM */}
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+            <div className="space-y-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-8">
               <h2 className="text-lg font-black text-slate-900 pb-4 border-b border-slate-100 flex items-center gap-2">
                 {isStorePickup ? <Store className="w-5 h-5 text-cyan-600" /> : <Truck className="w-5 h-5 text-cyan-600" />} 
                 {isStorePickup ? "Kontakt podaci za preuzimanje" : "Adresa za dostavu"}
@@ -159,7 +159,7 @@ export default function CheckoutPage() {
                     value={formData.firstName} 
                     onChange={handleChange}
                     placeholder="Petar" 
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-cyan-500 outline-none"
+                    className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-cyan-500 focus:bg-white"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -297,7 +297,7 @@ export default function CheckoutPage() {
 
           {/* ORDER SUMMARY SIDEBAR */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6 sticky top-28">
+            <div className="space-y-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-8 lg:sticky lg:top-28">
               <h2 className="text-lg font-black text-slate-900 pb-4 border-b border-slate-100">Pregled vaše porudžbine</h2>
 
               <div className="space-y-4 max-h-72 overflow-y-auto pr-2 divide-y divide-slate-100">
