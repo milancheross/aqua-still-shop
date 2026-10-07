@@ -11,8 +11,8 @@ import { DEFAULT_HOME } from "@/lib/home-content";
 export async function generateMetadata(): Promise<Metadata> {
   const home = await getHomeContent();
   return {
-    title: home?.seoTitle || undefined,
-    description: home?.seoDescription || undefined,
+    title: home?.seoTitle?.trim() || "Aqua Still Zlatibor | Alati, vodovodni materijal i kupatilska oprema",
+    description: home?.seoDescription?.trim() || "Aqua Still Zlatibor – alati, vodovodni i kanalizacioni materijal, kupatilska oprema, navodnjavanje i grejanje za svaki projekat.",
   };
 }
 
@@ -71,7 +71,6 @@ export default async function HomePage() {
             alt="Aqua Still — profesionalni alati i vodovodna oprema"
             fill
             priority
-            unoptimized
             sizes="100vw"
             className="absolute inset-0 z-0 object-cover object-center"
           />
@@ -104,7 +103,7 @@ export default async function HomePage() {
         </div>
         {!managedHeroImage && heroImage ? (
           <div className="pointer-events-none absolute bottom-5 right-5 z-20 hidden h-36 w-44 overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-sm lg:block">
-            <Image src={heroImage} alt={heroProduct?.name || "Proizvod iz ponude"} fill sizes="176px" unoptimized className="object-contain p-3" />
+            <Image src={heroImage} alt={heroProduct?.name || "Proizvod iz ponude"} fill sizes="176px" className="object-contain p-3" />
           </div>
         ) : null}
       </section>
@@ -126,7 +125,7 @@ export default async function HomePage() {
               <Link key={category.id} href={"/katalog/" + category.slug} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-lg">
                 <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-slate-100 to-cyan-50">
                   {category.imageUrl ? (
-                    <Image src={category.imageUrl} alt={category.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" unoptimized className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <Image src={category.imageUrl} alt={category.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-5xl font-black text-cyan-800/15">{category.name.slice(0, 1)}</div>
                   )}
