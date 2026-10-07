@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { Product, ProductCategory } from "@/types";
+import { getCategoryFilterDefinitions } from "@/lib/catalog-filters";
 import { 
   getProducts as getMockProducts, 
   getProductBySlug as getMockProductBySlug, 
@@ -41,6 +42,9 @@ export async function getDbProducts(options?: {
   maxPrice?: number;
   inStockOnly?: boolean;
   search?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  attributes?: Record<string, string | number | boolean>;
   sort?: "price-asc" | "price-desc" | "name" | "popular";
 }): Promise<Product[]> {
   if (!process.env.DATABASE_URL) {
@@ -80,6 +84,21 @@ export async function getDbProducts(options?: {
     if (options?.inStockOnly) {
       where.inStock = true;
       where.stockQuantity = { gt: 0 };
+    }
+
+    if (options?.minPrice !== undefined || options?.maxPrice !== undefined) {
+      where.price = {
+        ...(options.minPrice !== undefined ? { gte: options.minPrice } : {}),
+        ...(options.maxPrice !== undefined ? { lte: options.maxPrice } : {}),
+      };
+    }
+
+    if (options?.attributes) {
+      for (const [key, value] of Object.entries(options.attributes)) {
+        andFilters.push({
+          attributes: { path: [key], equals: value },
+        });
+      }
     }
 
     if (options?.search) {
@@ -249,7 +268,13 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
         itemCount: sub.itemCount,
         imageUrl: sub.imageUrl ?? undefined,
       })),
-      attributes: [],
+      attributes: getCategoryFilterDefinitions(c.slug).map((filter) => ({
+        key: filter.key,
+        label: filter.label,
+        type: filter.type,
+        options: filter.options,
+        unit: filter.unit,
+      })),
     }));
   } catch (error) {
     console.error("DB categories fetch failed:", error);
