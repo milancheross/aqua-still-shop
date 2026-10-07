@@ -109,6 +109,7 @@ export default async function HomePage() {
       "Električni i ručni alati za radionicu, montažu i svaki posao.",
       "Boje, lakovi, lepkovi i materijal za renoviranje.",
     ][index],
+    categorySlug: ["kupatilo", "basta-i-navodnjavanje", "alati", "boje-i-lakovi"][index],
     icon: projectIcons[index],
   }));
 
@@ -192,8 +193,8 @@ export default async function HomePage() {
             <p className="mt-1 max-w-2xl text-xs text-slate-500 sm:text-sm">Pronađite sve što vam treba za jednu konkretnu stvar.</p>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {projectCards.map(({ image, title, text, icon: Icon }) => (
-              <Link key={image.url} href="/katalog" className="group relative min-h-48 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+            {projectCards.map(({ image, title, text, categorySlug, icon: Icon }) => (
+              <Link key={image.url} href={"/katalog?category=" + categorySlug} className="group relative min-h-48 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
                 <Image src={image.url} alt={image.altText || title} fill sizes="(max-width: 640px) 100vw, 25vw" className="object-cover transition duration-500 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-4 text-white">
