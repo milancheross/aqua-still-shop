@@ -34,6 +34,51 @@ export default function AdminMediaPage() {
     loadMedia();
   }, []);
 
+
+  const MAX_ORIGINAL_UPLOAD_SIZE = 12 * 1024 * 1024;
+  const MAX_IMAGE_DIMENSION = 2400;
+  const TARGET_COMPRESSED_SIZE = 1.8 * 1024 * 1024;
+
+  const compressImageForUpload = async (file: File): Promise<File> => {
+    if (file.size === 0) throw new Error("Fajl " + file.name + " je prazan.");
+    if (file.size > MAX_ORIGINAL_UPLOAD_SIZE) {
+      throw new Error("Fajl " + file.name + " je prevelik. Original može imati najviše 12MB.");
+    }
+
+    const bitmap = await createImageBitmap(file);
+    try {
+      const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(bitmap.width, bitmap.height));
+      const width = Math.max(1, Math.round(bitmap.width * scale));
+      const height = Math.max(1, Math.round(bitmap.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Pregledač ne može da pripremi sliku za upload.");
+      context.drawImage(bitmap, 0, 0, width, height);
+
+      let quality = 0.82;
+      let blob: Blob | null = null;
+      while (quality >= 0.55) {
+        blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", quality));
+        if (blob && blob.size <= TARGET_COMPRESSED_SIZE) break;
+        quality -= 0.08;
+      }
+
+      if (!blob || blob.size > TARGET_COMPRESSED_SIZE) {
+        throw new Error("Slika " + file.name + " je i dalje prevelika nakon kompresije.");
+      }
+
+      const parts = file.name.split(".");
+      parts.pop();
+      const baseName = (parts.join(".") || "image").replaceAll(" ", "-");
+      return new File([blob], baseName + ".webp", { type: "image/webp", lastModified: Date.now() });
+    } finally {
+      bitmap.close();
+    }
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -43,18 +88,21 @@ export default function AdminMediaPage() {
     setIsUploading(true);
 
     let uploadedCount = 0;
+    let skippedCount = 0;
 
     try {
-      // Send files one by one so each server-action request stays under Vercel's
-      // 4.5 MB request-body limit, even when multiple images are selected.
+      // Compress in the browser before the request reaches Vercel.
       for (const file of Array.from(files)) {
+        const compressedFile = await compressImageForUpload(file);
         const formData = new FormData();
-        formData.append("files", file);
+        formData.append("files", compressedFile);
         formData.append("folder", selectedFolder === "all" ? "general" : selectedFolder);
         const res = await uploadMediaAction(formData);
         uploadedCount += res.uploaded.length;
+        skippedCount += res.skipped.length;
       }
-      setSuccessMessage(`Uspešno otpremljeno ${uploadedCount} slika.`);
+      const duplicateText = skippedCount > 0 ? " " + skippedCount + " duplikata je preskočeno." : "";
+      setSuccessMessage("Uspešno otpremljeno " + uploadedCount + " slika." + duplicateText);
     } catch (err: unknown) {
       setUploadError((err instanceof Error ? err.message : null) || "Greška pri otpremanju fajlova.");
       if (uploadedCount > 0) {
