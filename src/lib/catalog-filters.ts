@@ -21,12 +21,6 @@ export const CATEGORY_FILTERS: Record<string, CatalogFilterDefinition[]> = {
     { key: "prihvat", label: "Prihvat", type: "select" },
     { key: "materijal", label: "Materijal", type: "select" },
   ],
-  "elektricni-alat": [
-    { key: "napon", label: "Napon", type: "select" },
-    { key: "snaga", label: "Snaga", type: "select" },
-    { key: "prihvat", label: "Prihvat", type: "select" },
-    { key: "motor", label: "Tip motora", type: "select" },
-  ],
   vodovod: [
     { key: "precnik", label: "Prečnik / Dimenzija", type: "select" },
     { key: "materijal", label: "Materijal", type: "select" },
