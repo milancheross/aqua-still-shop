@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import { AlertCircle, Check, ImagePlus, Loader2, Plus, Save, Trash2, Upload, X } from "lucide-react";
-import { createAdminCategory, deleteAdminCategory, getAdminCategories, updateAdminCategory, updateAdminSubcategoryImage } from "@/actions/admin-cms-actions";
+import { createAdminCategory, deleteAdminCategory, getAdminCategories, updateAdminCategory, updateAdminSubcategory, updateAdminSubcategoryImage } from "@/actions/admin-cms-actions";
 import { uploadMediaAction } from "@/actions/media-actions";
 
 type Category = Awaited<ReturnType<typeof getAdminCategories>>[number];
@@ -14,6 +14,8 @@ export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState<CategoryForm>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
+  const [subcategoryForm, setSubcategoryForm] = useState({ name: "", slug: "", imageUrl: "" });
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -65,6 +67,46 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const startSubcategoryEdit = (subcategory: Category["subcategories"][number]) => {
+    setEditingSubcategoryId(subcategory.id);
+    setSubcategoryForm({
+      name: subcategory.name,
+      slug: subcategory.slug,
+      imageUrl: subcategory.imageUrl ?? "",
+    });
+    setError("");
+    setSuccess("");
+  };
+
+  const resetSubcategoryEdit = () => {
+    setEditingSubcategoryId(null);
+    setSubcategoryForm({ name: "", slug: "", imageUrl: "" });
+  };
+
+  const handleSubcategorySubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!editingSubcategoryId) return;
+    setError("");
+    setSuccess("");
+    startTransition(async () => {
+      try {
+        await updateAdminSubcategory(editingSubcategoryId, subcategoryForm);
+        setCategories((current) => current.map((category) => ({
+          ...category,
+          subcategories: category.subcategories.map((subcategory) =>
+            subcategory.id === editingSubcategoryId
+              ? { ...subcategory, ...subcategoryForm }
+              : subcategory
+          ),
+        })));
+        resetSubcategoryEdit();
+        setSuccess("Podkategorija je uspešno ažurirana.");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Izmena podkategorije nije uspela.");
+      }
+    });
+  };
+
   const handleSubcategoryImageUpload = async (subcategoryId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -85,6 +127,7 @@ export default function AdminCategoriesPage() {
           subcategory.id === subcategoryId ? { ...subcategory, imageUrl } : subcategory
         ),
       })));
+      if (editingSubcategoryId === subcategoryId) setSubcategoryForm((current) => ({ ...current, imageUrl }));
       setSuccess("Fotografija podkategorije je sačuvana i prikazana na sajtu.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Otpremanje slike podkategorije nije uspelo.");
@@ -174,13 +217,47 @@ export default function AdminCategoriesPage() {
               <div className="space-y-2 p-3 sm:p-4"><div><h3 className="line-clamp-2 text-sm font-bold text-slate-900">{category.name}</h3><p className="mt-1 truncate font-mono text-xs text-slate-500">/{category.slug}</p></div><div className="flex gap-2"><button type="button" onClick={() => startEdit(category)} className="min-h-10 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800">Uredi kategoriju</button><button type="button" onClick={() => handleDelete(category.id)} aria-label={`Obriši kategoriju ${category.name}`} className="min-h-10 rounded-lg border border-red-100 px-3 py-2 text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button></div>
                 {category.subcategories.length > 0 && <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
                   <p className="text-[11px] font-black uppercase tracking-wide text-slate-500">Podkategorije — zasebne fotografije</p>
-                  {category.subcategories.map((subcategory) => <div key={subcategory.id} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-2">
-                    <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
-                      {subcategory.imageUrl ? <Image src={subcategory.imageUrl} alt={subcategory.name} fill sizes="56px" className="object-contain p-1" /> : <div className="flex h-full items-center justify-center text-lg font-black text-slate-300">{subcategory.name.slice(0,1)}</div>}
+                  {category.subcategories.map((subcategory) => editingSubcategoryId === subcategory.id ? (
+                    <form key={subcategory.id} onSubmit={handleSubcategorySubmit} className="space-y-3 rounded-xl border border-cyan-200 bg-cyan-50/40 p-3">
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <label className="space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-wide text-slate-500">Naziv</span>
+                          <input required value={subcategoryForm.name} onChange={(e) => setSubcategoryForm((current) => ({ ...current, name: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-900 outline-none focus:border-cyan-500" />
+                        </label>
+                        <label className="space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-wide text-slate-500">Slug</span>
+                          <input required value={subcategoryForm.slug} onChange={(e) => setSubcategoryForm((current) => ({ ...current, slug: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 font-mono text-xs text-slate-900 outline-none focus:border-cyan-500" />
+                        </label>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <label className={`inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-cyan-200 bg-white px-2.5 text-[11px] font-bold text-cyan-800 hover:bg-cyan-50 ${uploading ? "pointer-events-none opacity-50" : ""}`}>
+                          <Upload className="h-3.5 w-3.5" />{subcategoryForm.imageUrl ? "Zameni sliku" : "Dodaj sliku"}
+                          <input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => void handleSubcategoryImageUpload(subcategory.id, event)} className="sr-only" />
+                        </label>
+                        <button type="submit" disabled={isPending || uploading} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-cyan-700 px-3 text-[11px] font-bold text-white hover:bg-cyan-800 disabled:bg-slate-300">
+                          <Save className="h-3.5 w-3.5" />Sačuvaj
+                        </button>
+                        <button type="button" onClick={resetSubcategoryEdit} className="inline-flex min-h-9 items-center rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-600 hover:bg-slate-50">Otkaži</button>
+                      </div>
+                      <p className="text-[10px] text-slate-500">Izmena naziva ili slug-a ažurira podkategoriju u bazi i na katalogu.</p>
+                    </form>
+                  ) : (
+                    <div key={subcategory.id} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-2">
+                      <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
+                        {subcategory.imageUrl ? <Image src={subcategory.imageUrl} alt={subcategory.name} fill sizes="56px" className="object-contain p-1" /> : <div className="flex h-full items-center justify-center text-lg font-black text-slate-300">{subcategory.name.slice(0,1)}</div>}
+                      </div>
+                      <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-slate-800">{subcategory.name}</p><p className="text-[10px] text-slate-500">{subcategory.imageUrl ? "Ima fotografiju" : "Nema fotografiju"}</p></div>
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        <button type="button" onClick={() => startSubcategoryEdit(subcategory)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-[11px] font-bold text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800">
+                          Uredi
+                        </button>
+                        <label className={`inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-cyan-200 bg-white px-2.5 text-[11px] font-bold text-cyan-800 hover:bg-cyan-50 ${uploading ? "pointer-events-none opacity-50" : ""}`}>
+                          <Upload className="h-3.5 w-3.5" />{subcategory.imageUrl ? "Zameni" : "Dodaj"}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => void handleSubcategoryImageUpload(subcategory.id, event)} className="sr-only" />
+                        </label>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-slate-800">{subcategory.name}</p><p className="text-[10px] text-slate-500">{subcategory.imageUrl ? "Ima fotografiju" : "Nema fotografiju"}</p></div>
-                    <label className={`inline-flex min-h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-cyan-200 bg-white px-2.5 text-[11px] font-bold text-cyan-800 hover:bg-cyan-50 ${uploading ? "pointer-events-none opacity-50" : ""}`}><Upload className="h-3.5 w-3.5" />{subcategory.imageUrl ? "Zameni" : "Dodaj"}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => void handleSubcategoryImageUpload(subcategory.id, event)} className="sr-only" /></label>
-                  </div>)}
+                  )
+                )}
                 </div>}
               </div>
             </article>)}
