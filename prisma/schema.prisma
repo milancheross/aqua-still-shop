@@ -12,6 +12,8 @@ model Category {
   name          String
   slug          String        @unique
   description   String?
+  seoTitle      String?       @map("seo_title")
+  seoDescription String?      @map("seo_description")
   imageUrl      String?       @map("image_url")
   itemCount     Int           @default(0) @map("item_count")
   iconName      String        @map("icon_name")
