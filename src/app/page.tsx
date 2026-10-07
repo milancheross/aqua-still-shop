@@ -33,6 +33,9 @@ export default async function HomePage() {
   const brandsList = await getDbBrands();
   const categories = await getDbCategories();
   const home = (await getHomeContent()) ?? DEFAULT_HOME;
+  const featuredCategories = categories.filter((category) => category.featured).length > 0
+    ? categories.filter((category) => category.featured).slice(0, 8)
+    : categories.slice(0, 8);
 
   const heroProduct = featuredProducts.find((product) => product.images?.some(Boolean));
   let managedHeroImage: string | undefined;
@@ -49,17 +52,6 @@ export default async function HomePage() {
     console.warn("Could not load managed hero image:", error);
   }
   const heroImage = managedHeroImage || heroProduct?.images.find(Boolean);
-
-  // Popular tiles are subcategories, not parent categories. Each uses its own admin-managed image.
-  const popularCategoriesGrid = categories
-    .flatMap((category) => category.subcategories.map((subcategory) => ({
-      id: subcategory.id,
-      name: subcategory.name,
-      slug: subcategory.slug,
-      categorySlug: category.slug,
-      imageUrl: subcategory.imageUrl,
-    })))
-    .slice(0, 8);
 
   const trustItems = [
     { title: "Brza dostava", subtitle: "na teritoriji Srbije", icon: Truck },
@@ -117,60 +109,35 @@ export default async function HomePage() {
         ) : null}
       </section>
 
-      {/* 2. SVE KATEGORIJE — isti izvor kao Admin */}
+      {/* 2. ISTAKNUTE KATEGORIJE — izbor kontroliše Admin */}
       <section className="container relative z-30 mx-auto -mt-8 px-4 sm:px-6 lg:px-8 md:-mt-10">
-        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-700">Katalog</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Sve kategorije</h2>
-            <p className="mt-2 text-sm text-slate-600">Kompletna ponuda kategorija i podkategorija. Prikaz je direktno povezan sa administracijom.</p>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-700">Brz pristup</p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Najtraženije kategorije</h2>
+            <p className="mt-2 max-w-2xl text-sm text-slate-600">Izabrane kategorije za najbrži dolazak do proizvoda. Kompletna struktura ostaje dostupna kroz „Sve kategorije“ i katalog.</p>
           </div>
-          <span className="w-fit rounded-full bg-white px-3 py-1.5 text-xs font-bold text-slate-500 shadow-sm ring-1 ring-slate-200">{categories.length} kategorija</span>
+          <Link href="/katalog" className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-black text-slate-700 shadow-sm transition hover:border-cyan-300 hover:text-cyan-700">Sve kategorije <ArrowRight className="h-4 w-4" /></Link>
         </div>
 
-        {categories.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {categories.map((category) => (
-              <article key={category.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-cyan-300 hover:shadow-md">
-                <Link href={`/katalog/${category.slug}`} className="group block">
-                  <div className="relative aspect-[16/7] overflow-hidden bg-gradient-to-br from-slate-100 to-cyan-50">
-                    {category.imageUrl ? (
-                      <Image src={category.imageUrl} alt={category.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw" unoptimized className="object-cover transition-transform duration-500 group-hover:scale-105" />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-5xl font-black text-cyan-800/15">{category.name.slice(0, 1)}</div>
-                    )}
-                    <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-black text-slate-700 shadow-sm">
-                      {category.subcategories.length} podkategorija
-                    </span>
-                  </div>
-                  <div className="p-4 pb-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="text-base font-black text-slate-900 group-hover:text-cyan-700 sm:text-lg">{category.name}</h3>
-                        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">{category.description || "Pogledajte kompletnu ponudu proizvoda."}</p>
-                      </div>
-                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-600 text-white"><ChevronRight className="h-4 w-4" /></span>
-                    </div>
-                  </div>
-                </Link>
-
-                {category.subcategories.length > 0 && (
-                  <div className="border-t border-slate-100 px-4 pb-4 pt-3">
-                    <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-slate-400">Podkategorije</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {category.subcategories.map((subcategory) => (
-                        <Link
-                          key={subcategory.id}
-                          href={`/katalog?category=${encodeURIComponent(category.slug)}&subcategory=${encodeURIComponent(subcategory.slug)}`}
-                          className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800"
-                        >
-                          {subcategory.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </article>
+        {featuredCategories.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+            {featuredCategories.map((category) => (
+              <Link key={category.id} href={"/katalog/" + category.slug} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-lg">
+                <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-slate-100 to-cyan-50">
+                  {category.imageUrl ? (
+                    <Image src={category.imageUrl} alt={category.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" unoptimized className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-5xl font-black text-cyan-800/15">{category.name.slice(0, 1)}</div>
+                  )}
+                  <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-black text-slate-700 shadow-sm">{category.subcategories.length} podkategorija</span>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-sm font-black text-slate-900 group-hover:text-cyan-700 sm:text-base">{category.name}</h3>
+                  <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">{category.description || "Pogledajte ponudu proizvoda."}</p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-black text-cyan-700">Pogledaj ponudu <ChevronRight className="h-3.5 w-3.5" /></span>
+                </div>
+              </Link>
             ))}
           </div>
         ) : (
