@@ -14,7 +14,8 @@ export default async function OrderConfirmationPage({ params, searchParams }: Or
   const { orderNumber } = await params;
   const { key } = await searchParams;
 
-  type OrderWithItems = Prisma.OrderGetPayload<{ include: { orderItems: true } }>;\n  let orderRecord: OrderWithItems | null = null;
+  type OrderWithItems = Prisma.OrderGetPayload<{ include: { orderItems: true } }>;
+  let orderRecord: OrderWithItems | null = null;
   try {
     if (process.env.DATABASE_URL) {
       orderRecord = await db.order.findUnique({
@@ -26,7 +27,17 @@ export default async function OrderConfirmationPage({ params, searchParams }: Or
     console.warn("Could not fetch order from DB:", error);
   }
 
-  type CustomerInfo = {\n    confirmationToken?: string;\n    firstName?: string;\n    lastName?: string;\n    phone?: string;\n    street?: string;\n    postalCode?: string;\n    city?: string;\n    shippingMethod?: string;\n  };\n  const storedInfo = orderRecord?.customerInfo as CustomerInfo | null;
+  type CustomerInfo = {
+    confirmationToken?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    street?: string;
+    postalCode?: string;
+    city?: string;
+    shippingMethod?: string;
+  };
+  const storedInfo = orderRecord?.customerInfo as CustomerInfo | null;
   const order = storedInfo?.confirmationToken && key && storedInfo.confirmationToken === key ? orderRecord : null;
   const customerInfo = order?.customerInfo as CustomerInfo | null;
   const items = order?.orderItems ?? [];
