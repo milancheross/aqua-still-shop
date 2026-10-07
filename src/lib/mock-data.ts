@@ -7,6 +7,9 @@ export const CATEGORIES: ProductCategory[] = AQUA_STILL_TAXONOMY.map((category) 
   name: category.name,
   slug: category.slug,
   description: category.description,
+  imageUrl: undefined,
+  featured: false,
+  sortOrder: 0,
   itemCount: 0,
   iconName: category.iconName as ProductCategory["iconName"],
   subcategories: category.subcategories.map((subcategory) => ({
