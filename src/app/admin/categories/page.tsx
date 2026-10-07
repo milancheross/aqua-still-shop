@@ -7,15 +7,15 @@ import { createAdminCategory, deleteAdminCategory, getAdminCategories, updateAdm
 import { uploadMediaAction } from "@/actions/media-actions";
 
 type Category = Awaited<ReturnType<typeof getAdminCategories>>[number];
-type CategoryForm = { name: string; slug: string; description: string; imageUrl: string };
-const emptyForm: CategoryForm = { name: "", slug: "", description: "", imageUrl: "" };
+type CategoryForm = { name: string; slug: string; description: string; seoTitle: string; seoDescription: string; imageUrl: string };
+const emptyForm: CategoryForm = { name: "", slug: "", description: "", seoTitle: "", seoDescription: "", imageUrl: "" };
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState<CategoryForm>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
-  const [subcategoryForm, setSubcategoryForm] = useState({ name: "", slug: "", imageUrl: "" });
+  const [subcategoryForm, setSubcategoryForm] = useState({ name: "", slug: "", description: "", seoTitle: "", seoDescription: "", imageUrl: "" });
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -72,6 +72,9 @@ export default function AdminCategoriesPage() {
     setSubcategoryForm({
       name: subcategory.name,
       slug: subcategory.slug,
+      description: subcategory.description ?? "",
+      seoTitle: subcategory.seoTitle ?? "",
+      seoDescription: subcategory.seoDescription ?? "",
       imageUrl: subcategory.imageUrl ?? "",
     });
     setError("");
@@ -80,7 +83,7 @@ export default function AdminCategoriesPage() {
 
   const resetSubcategoryEdit = () => {
     setEditingSubcategoryId(null);
-    setSubcategoryForm({ name: "", slug: "", imageUrl: "" });
+    setSubcategoryForm({ name: "", slug: "", description: "", seoTitle: "", seoDescription: "", imageUrl: "" });
   };
 
   const handleSubcategorySubmit = (event: React.FormEvent) => {
@@ -160,7 +163,7 @@ export default function AdminCategoriesPage() {
 
   const startEdit = (category: Category) => {
     setEditingId(category.id);
-    setForm({ name: category.name, slug: category.slug, description: category.description ?? "", imageUrl: category.imageUrl ?? "" });
+    setForm({ name: category.name, slug: category.slug, description: category.description ?? "", seoTitle: category.seoTitle ?? "", seoDescription: category.seoDescription ?? "", imageUrl: category.imageUrl ?? "" });
     setError("");
     setSuccess("");
   };
@@ -197,6 +200,14 @@ export default function AdminCategoriesPage() {
           <label className="block space-y-1.5"><span className="text-xs font-bold uppercase tracking-wide text-slate-600">Naziv *</span><input required value={form.name} onChange={(e) => handleNameChange(e.target.value)} placeholder="Npr. Kupatilska oprema" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-900 outline-none focus:border-cyan-500 focus:bg-white focus:ring-2 focus:ring-cyan-100" /></label>
           <label className="block space-y-1.5"><span className="text-xs font-bold uppercase tracking-wide text-slate-600">Slug *</span><input required value={form.slug} onChange={(e) => setForm((current) => ({ ...current, slug: e.target.value }))} placeholder="kupatila" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 font-mono text-sm text-cyan-800 outline-none focus:border-cyan-500 focus:bg-white focus:ring-2 focus:ring-cyan-100" /></label>
           <label className="block space-y-1.5"><span className="text-xs font-bold uppercase tracking-wide text-slate-600">Opis</span><textarea rows={3} value={form.description} onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))} placeholder="Kratak opis kategorije..." className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-900 outline-none focus:border-cyan-500 focus:bg-white focus:ring-2 focus:ring-cyan-100" /></label>
+          <div className="space-y-3 rounded-xl border border-cyan-100 bg-cyan-50/40 p-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-wide text-cyan-800">SEO podešavanja</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-500">Opciono. Ako ostavite prazno, stranica može koristiti naziv i opis kategorije kao podrazumevane vrednosti.</p>
+            </div>
+            <label className="block space-y-1.5"><span className="text-xs font-bold uppercase tracking-wide text-slate-600">SEO naslov</span><input value={form.seoTitle} onChange={(e) => setForm((current) => ({ ...current, seoTitle: e.target.value }))} maxLength={60} placeholder="Npr. Vodovodni materijal | Aqua Still Zlatibor" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" /><p className="text-[10px] text-slate-400">{form.seoTitle.length}/60 karaktera</p></label>
+            <label className="block space-y-1.5"><span className="text-xs font-bold uppercase tracking-wide text-slate-600">SEO opis</span><textarea rows={3} value={form.seoDescription} onChange={(e) => setForm((current) => ({ ...current, seoDescription: e.target.value }))} maxLength={160} placeholder="Kratak opis za Google rezultate pretrage..." className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" /><p className="text-[10px] text-slate-400">{form.seoDescription.length}/160 karaktera</p></label>
+          </div>
           <div className="space-y-2">
             <span className="text-xs font-bold uppercase tracking-wide text-slate-600">Fotografija kategorije</span>
             {form.imageUrl ? <div className="relative aspect-[16/9] overflow-hidden rounded-xl border border-slate-200 bg-slate-50"><Image src={form.imageUrl} alt="Pregled fotografije kategorije" fill sizes="(max-width: 1024px) 100vw, 40vw" className="object-cover" /><button type="button" onClick={() => setForm((current) => ({ ...current, imageUrl: "" }))} aria-label="Ukloni fotografiju" className="absolute right-2 top-2 rounded-lg bg-white/95 p-2 text-red-600 shadow"><X className="h-4 w-4" /></button></div> : <div className="flex aspect-[16/9] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-400"><ImagePlus className="h-8 w-8" /></div>}
@@ -227,6 +238,20 @@ export default function AdminCategoriesPage() {
                         <label className="space-y-1">
                           <span className="text-[10px] font-black uppercase tracking-wide text-slate-500">Slug</span>
                           <input required value={subcategoryForm.slug} onChange={(e) => setSubcategoryForm((current) => ({ ...current, slug: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 font-mono text-xs text-slate-900 outline-none focus:border-cyan-500" />
+                        </label>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <label className="space-y-1 sm:col-span-2">
+                          <span className="text-[10px] font-black uppercase tracking-wide text-slate-500">Opis</span>
+                          <textarea rows={2} value={subcategoryForm.description} onChange={(e) => setSubcategoryForm((current) => ({ ...current, description: e.target.value }))} placeholder="Kratak opis podkategorije..." className="w-full resize-y rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500" />
+                        </label>
+                        <label className="space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-wide text-slate-500">SEO naslov</span>
+                          <input value={subcategoryForm.seoTitle} maxLength={60} onChange={(e) => setSubcategoryForm((current) => ({ ...current, seoTitle: e.target.value }))} placeholder="SEO naslov" className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500" />
+                        </label>
+                        <label className="space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-wide text-slate-500">SEO opis</span>
+                          <textarea rows={2} value={subcategoryForm.seoDescription} maxLength={160} onChange={(e) => setSubcategoryForm((current) => ({ ...current, seoDescription: e.target.value }))} placeholder="Opis za Google" className="w-full resize-y rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500" />
                         </label>
                       </div>
                       <div className="flex flex-wrap gap-2">
