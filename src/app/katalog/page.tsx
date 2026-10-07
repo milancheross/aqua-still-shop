@@ -137,6 +137,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         <p className="text-sm text-slate-500">
           Prikazano <strong className="text-slate-900">{products.length}</strong> artikala.
         </p>
+        {activeSubcategory?.description && (
+          <p className="max-w-3xl text-sm leading-relaxed text-slate-600">{activeSubcategory.description}</p>
+        )}
       </div>
 
       {activeCategory?.imageUrl && (
