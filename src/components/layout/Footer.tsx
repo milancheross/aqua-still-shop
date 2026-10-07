@@ -7,10 +7,10 @@ export default function Footer() {
 
   return (
     <footer className="bg-slate-900 text-slate-300">
-      <div className="container mx-auto px-4 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-12 lg:grid-cols-4">
           {/* Brand Section */}
-          <div className="space-y-6">
+          <div className="space-y-4 pb-3 md:space-y-6 md:pb-0">
             <Link href="/" aria-label="Aqua Still Zlatibor — početna strana" className="relative flex h-12 w-[190px] items-center">
               <Image
                 src="/images/aqua-still-logo.png"
@@ -76,7 +76,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-xs space-y-4 md:space-y-0">
+        <div className="mt-6 flex flex-col items-center justify-between space-y-2 border-t border-slate-800 pt-5 text-center text-[10px] md:mt-12 md:flex-row md:space-y-0 md:pt-8 md:text-xs">
           <p>© {currentYear} Aqua Still Zlatibor. Sva prava zadržana.</p>
           <div className="flex space-x-6 uppercase tracking-tighter">
             <span>PIB: 123456789</span>
