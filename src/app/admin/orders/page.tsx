@@ -67,7 +67,38 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             <p className="text-xs text-slate-500">Porudžbine kupaca će se automatski pojaviti ovde nakon završetka checkout-a.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="space-y-3 lg:hidden">
+            {visible.map((order) => {
+              const customer = order.customerInfo;
+              const isStorePickup = customer.shippingMethod === "store_pickup";
+              const reservation = order.status === "pending"
+                ? formatReservationLeft(reservationDeadline(order.createdAt, order.stockReservedUntil))
+                : null;
+              return (
+                <article key={order.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <Link href={`/admin/orders/${order.id}`} className="font-mono text-sm font-black text-slate-900">{order.orderNumber}</Link>
+                      <p className="mt-1 text-xs font-bold text-slate-700">{String(customer.firstName ?? "")} {String(customer.lastName ?? "")}</p>
+                      <p className="text-[11px] text-slate-400">{String(customer.phone ?? "")}</p>
+                    </div>
+                    <span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${orderStatusClass(order.status)}`}>{orderStatusLabel(order.status)}</span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="rounded-xl bg-slate-50 p-3"><span className="block text-slate-400">Isporuka</span><strong>{isStorePickup ? "Preuzimanje u radnji" : "Dostava"}</strong></div>
+                    <div className="rounded-xl bg-slate-50 p-3"><span className="block text-slate-400">Iznos</span><strong className="text-cyan-700">{formatPrice(order.total)}</strong></div>
+                  </div>
+                  {reservation && <p className="mt-2 text-[10px] font-bold text-amber-700">Rezervacija: {reservation}</p>}
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <Link href={`/admin/orders/${order.id}`} className="inline-flex min-h-10 items-center justify-center rounded-xl bg-slate-900 text-xs font-black text-white">Detalji</Link>
+                    <OrderStatusSelect orderId={order.id} status={order.status} shippingMethod={customer.shippingMethod} />
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
