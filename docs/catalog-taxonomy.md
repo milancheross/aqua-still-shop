@@ -50,11 +50,10 @@ Zato se uzima **najbolji obrazac iz svake specijalizacije**, a ne jedan tuđi me
 3. **Kupatilska oprema i sanitarije**
 4. **Navodnjavanje i bašta**
 5. **Grejanje**
-6. **Mašine i radionica**
 7. **Boje, lakovi, lepkovi i hemija**
 8. **Elektro-oprema i rasveta**
 9. **Vijčana roba i pričvrsni materijal**
-10. **Građevinska i zaštitna oprema**
+9. **Građevinska i zaštitna oprema**
 10. **Kuća, dvorište i čišćenje**
 
 ## Detaljna struktura
@@ -72,6 +71,11 @@ Zato se uzima **najbolji obrazac iz svake specijalizacije**, a ne jedan tuđi me
 - Pribor za električne alate
 - Merni i obeležavajući alat
 - Tolsen i ostali ručni alati
+- Električne bušilice i odvijači
+- Električne brusilice
+- Burgije i pribor za bušenje
+- Brusne i rezne ploče
+- Električne pumpe i ventilatori
 
 ### 2. Vodovod i kanalizacija
 
@@ -148,6 +152,7 @@ Zato se uzima **najbolji obrazac iz svake specijalizacije**, a ne jedan tuđi me
 - Merdevine i platforme
 - Građevinska kolica
 - Mešalice za beton
+- Mešalice za boju i malter
 - Radne rukavice i zaštitna oprema
 - Građevinski i zidarski alat
 
