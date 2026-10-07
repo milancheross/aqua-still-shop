@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Mail, Phone, MapPin, MessageSquare, Share2 } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
+import ShareButton from "./ShareButton";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -24,12 +25,7 @@ export default function Footer() {
               Vaš pouzdan partner za vodovod, alate, kupatilsku opremu i sisteme za navodnjavanje na Zlatiboru i šire. Kvalitet i iskustvo od poverenja.
             </p>
             <div className="flex space-x-4">
-              <Link href="#" className="hover:text-white transition-colors">
-                <MessageSquare className="w-5 h-5" />
-              </Link>
-              <Link href="#" className="hover:text-white transition-colors">
-                <Share2 className="w-5 h-5" />
-              </Link>
+              <ShareButton ariaLabel="Podeli Aqua Still sajt" />
             </div>
           </div>
 
