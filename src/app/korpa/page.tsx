@@ -15,11 +15,11 @@ export default function CartPage() {
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - cart.subtotal);
 
   return (
-    <div className="bg-slate-50 min-h-screen py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="min-h-screen bg-slate-50 py-5 sm:py-12">
+      <div className="container mx-auto max-w-5xl px-3 sm:px-6 lg:px-8">
+        <div className="mb-5 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div>
-            <h1 className="text-3xl font-black text-slate-900">Korpa proizvoda</h1>
+            <h1 className="text-2xl font-black text-slate-900 sm:text-3xl">Korpa proizvoda</h1>
             <p className="text-slate-500 text-sm mt-1">Pregledajte izabrane artikle pre prelaska na plaćanje.</p>
           </div>
           {cart.items.length > 0 && (
@@ -33,7 +33,7 @@ export default function CartPage() {
         </div>
 
         {cart.items.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-6 shadow-sm">
+          <div className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-12">
             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mx-auto">
               <ShoppingBag className="w-10 h-10" />
             </div>
@@ -77,12 +77,12 @@ export default function CartPage() {
               </div>
 
               {/* Items Card */}
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm divide-y divide-slate-100 overflow-hidden px-6">
+              <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white px-3 shadow-sm divide-y divide-slate-100 sm:px-6">
                 {cart.items.map((item) => {
                   const currentPrice = item.product.salePrice ?? item.product.price;
                   return (
-                    <div key={item.product.id} className="py-6 first:pt-6 last:pb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <div className="relative w-24 h-24 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden shrink-0 p-2">
+                    <div key={item.product.id} className="flex flex-col gap-3 py-4 first:pt-4 last:pb-4 sm:flex-row sm:items-center sm:gap-4 sm:py-6">
+                      <div className="relative h-20 w-20 sm:h-24 sm:w-24 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden shrink-0 p-2">
                         <Image src={item.product.images[0]} alt={item.product.name} fill className="object-contain p-2" />
                       </div>
 
@@ -130,7 +130,7 @@ export default function CartPage() {
 
             {/* Summary Sidebar */}
             <div className="lg:col-span-4 space-y-6">
-              <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6 sticky top-28">
+              <div className="space-y-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-8 lg:sticky lg:top-28">
                 <h2 className="text-base font-black text-slate-900 pb-4 border-b border-slate-100">Pregled troškova</h2>
 
                 <div className="space-y-3 text-sm">
