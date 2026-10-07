@@ -81,7 +81,7 @@ export const SUBCATEGORY_ATTRIBUTES: Record<string, CatalogAttributeDefinition[]
   ],
 };
 
-export function getAttributeDefinitions(subcategorySlug?: string) {
+export function getAttributeDefinitions(subcategorySlug?: string | null) {
   return subcategorySlug ? SUBCATEGORY_ATTRIBUTES[subcategorySlug] ?? [] : [];
 }
 
