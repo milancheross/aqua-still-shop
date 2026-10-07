@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 import { getMissingRequiredAttributes } from "../src/lib/catalog-attribute-schema";
 
