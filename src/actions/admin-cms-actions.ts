@@ -23,7 +23,7 @@ export async function getAdminCategories() {
   }
 }
 
-export async function createAdminCategory(data: { name: string; slug: string; description?: string; iconName?: string; imageUrl?: string | null }) {
+export async function createAdminCategory(data: { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; iconName?: string; imageUrl?: string | null }) {
   await requireAdmin();
   if (!process.env.DATABASE_URL) {
     throw new Error("Baza podataka nije povezana (nedostaje DATABASE_URL).");
@@ -37,7 +37,9 @@ export async function createAdminCategory(data: { name: string; slug: string; de
     data: {
       name: data.name,
       slug: data.slug,
-      description: data.description || null,
+      description: data.description?.trim() || null,
+      seoTitle: data.seoTitle?.trim() || null,
+      seoDescription: data.seoDescription?.trim() || null,
       iconName: data.iconName || "wrench",
       imageUrl: data.imageUrl || null,
     },
@@ -49,7 +51,7 @@ export async function createAdminCategory(data: { name: string; slug: string; de
   return { success: true };
 }
 
-export async function updateAdminCategory(id: string, data: { name: string; slug: string; description?: string; imageUrl?: string | null }) {
+export async function updateAdminCategory(id: string, data: { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; imageUrl?: string | null }) {
   await requireAdmin();
   if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
   if (!data.name.trim() || !data.slug.trim()) throw new Error("Naziv i slug kategorije su obavezni.");
@@ -59,6 +61,8 @@ export async function updateAdminCategory(id: string, data: { name: string; slug
       name: data.name.trim(),
       slug: data.slug.trim(),
       description: data.description?.trim() || null,
+      seoTitle: data.seoTitle?.trim() || null,
+      seoDescription: data.seoDescription?.trim() || null,
       imageUrl: data.imageUrl || null,
     },
   });
@@ -71,7 +75,7 @@ export async function updateAdminCategory(id: string, data: { name: string; slug
 
 export async function updateAdminSubcategory(
   id: string,
-  data: { name: string; slug: string; imageUrl?: string | null }
+  data: { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; imageUrl?: string | null }
 ) {
   await requireAdmin();
   if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
@@ -89,6 +93,9 @@ export async function updateAdminSubcategory(
       data: {
         name,
         slug,
+        description: data.description?.trim() || null,
+        seoTitle: data.seoTitle?.trim() || null,
+        seoDescription: data.seoDescription?.trim() || null,
         imageUrl: data.imageUrl || null,
       },
     });
