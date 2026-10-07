@@ -48,8 +48,8 @@ export default function Header() {
               <Link href="/kontakt" className="hover:text-white transition-colors">Kontakt</Link>
             </div>
             <div className="flex items-center space-x-3 text-slate-400">
-              <Link href="#" className="hover:text-white transition-colors" title="Global"><Globe className="w-3.5 h-3.5" /></Link>
-              <Link href="#" className="hover:text-white transition-colors" title="Social"><Share2 className="w-3.5 h-3.5" /></Link>
+              <button type="button" aria-label="Izbor jezika" title="Izbor jezika" className="hover:text-white transition-colors"><Globe className="w-3.5 h-3.5" /></button>
+              <button type="button" aria-label="Podeli Aqua Still Shop" title="Podeli" className="hover:text-white transition-colors"><Share2 className="w-3.5 h-3.5" /></button>
             </div>
           </div>
         </div>
@@ -105,6 +105,8 @@ export default function Header() {
             </Link>
 
             <button 
+              type="button"
+              aria-label={totalItems > 0 ? `Otvori korpu, ${totalItems} artikala` : "Otvori praznu korpu"}
               onClick={() => setIsCartOpen(true)}
               className="flex min-h-10 items-center space-x-2 rounded-xl bg-slate-900 px-3 py-2 text-white transition-colors shadow-sm group sm:space-x-3 sm:rounded-full sm:px-4 sm:py-2.5"
             >
@@ -123,6 +125,9 @@ export default function Header() {
             </button>
 
             <button 
+              type="button"
+              aria-label={isMenuOpen ? "Zatvori mobilni meni" : "Otvori mobilni meni"}
+              aria-expanded={isMenuOpen}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="lg:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-full"
             >
