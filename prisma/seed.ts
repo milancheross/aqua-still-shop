@@ -498,6 +498,7 @@ async function main() {
   ];
 
   for (const prod of productsData) {
+    const { categorySlug, subcategorySlug, categoryName, subcategoryName, ...productData } = prod;
     const missingAttributes = getMissingRequiredAttributes(prod.subcategorySlug, prod.attributes);
     if (missingAttributes.length > 0) {
       throw new Error("Product " + prod.sku + " is missing required attributes: " + missingAttributes.join(", "));
@@ -512,11 +513,13 @@ async function main() {
         stockQuantity: prod.stockQuantity,
       },
       create: {
-        ...prod,
-        category: { connect: { slug: prod.categorySlug } },
-        ...(prod.subcategorySlug
-          ? { subcategory: { connect: { slug: prod.subcategorySlug } } }
+        ...productData,
+        category: { connect: { slug: categorySlug } },
+        ...(subcategorySlug
+          ? { subcategory: { connect: { slug: subcategorySlug } } }
           : {}),
+        categoryName,
+        subcategoryName,
       },
     });
   }
