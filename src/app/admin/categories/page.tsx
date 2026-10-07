@@ -267,18 +267,21 @@ export default function AdminCategoriesPage() {
                       <p className="text-[10px] text-slate-500">Izmena naziva ili slug-a ažurira podkategoriju u bazi i na katalogu.</p>
                     </form>
                   ) : (
-                    <div key={subcategory.id} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-2">
-                      <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
-                        {subcategory.imageUrl ? <Image src={subcategory.imageUrl} alt={subcategory.name} fill sizes="56px" className="object-contain p-1" /> : <div className="flex h-full items-center justify-center text-lg font-black text-slate-300">{subcategory.name.slice(0,1)}</div>}
+                    <div key={subcategory.id} className="grid grid-cols-[72px_minmax(0,1fr)] gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                      <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                        {subcategory.imageUrl ? <Image src={subcategory.imageUrl} alt={subcategory.name} fill sizes="72px" className="object-contain p-1" /> : <div className="flex h-full items-center justify-center text-2xl font-black text-slate-300">{subcategory.name.slice(0,1)}</div>}
                       </div>
-                      <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-slate-800">{subcategory.name}</p><p className="text-[10px] text-slate-500">{subcategory.imageUrl ? "Ima fotografiju" : "Nema fotografiju"}</p></div>
-                      <div className="flex shrink-0 items-center gap-1.5">
-                        <button type="button" onClick={() => startSubcategoryEdit(subcategory)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-[11px] font-bold text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800">
-                          Uredi
-                        </button>
-                        <label className={`inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-cyan-200 bg-white px-2.5 text-[11px] font-bold text-cyan-800 hover:bg-cyan-50 ${uploading ? "pointer-events-none opacity-50" : ""}`}>
-                          <Upload className="h-3.5 w-3.5" />{subcategory.imageUrl ? "Zameni" : "Dodaj"}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => void handleSubcategoryImageUpload(subcategory.id, event)} className="sr-only" />
-                        </label>
+                      <div className="min-w-0">
+                        <p className="break-words text-sm font-bold leading-snug text-slate-900">{subcategory.name}</p>
+                        <p className="mt-1 text-[11px] text-slate-500">{subcategory.imageUrl ? "Ima fotografiju" : "Nema fotografiju"}</p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button type="button" onClick={() => startSubcategoryEdit(subcategory)} className="inline-flex min-h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800">
+                            Uredi
+                          </button>
+                          <label className={`inline-flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-cyan-200 bg-white px-3 text-[11px] font-bold text-cyan-800 hover:bg-cyan-50 ${uploading ? "pointer-events-none opacity-50" : ""}`}>
+                            <Upload className="h-3.5 w-3.5" />{subcategory.imageUrl ? "Zameni sliku" : "Dodaj sliku"}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => void handleSubcategoryImageUpload(subcategory.id, event)} className="sr-only" />
+                          </label>
+                        </div>
                       </div>
                     </div>
                   )
