@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 import { getMissingRequiredAttributes } from "../src/lib/catalog-attribute-schema";
 
@@ -511,7 +511,7 @@ async function main() {
         salePrice: prod.salePrice,
         stockQuantity: prod.stockQuantity,
       },
-      create: prod as any,
+      create: prod as Prisma.ProductCreateInput,
     });
   }
 
