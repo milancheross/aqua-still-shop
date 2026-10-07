@@ -29,8 +29,8 @@ type CatalogProductOptions = {
 
 function devMockProducts(options?: CatalogProductOptions): Product[] {
   if (!mockCatalogEnabled()) return [];
-  const { attributes, ...mockOptions } = options ?? {};
-  let products = getMockProducts(mockOptions);
+  const { attributes, sort, ...mockOptions } = options ?? {};
+  let products = getMockProducts({ ...mockOptions, sort: sort === "newest" ? undefined : sort });
   if (options?.minPrice !== undefined) {
     products = products.filter((product) => (product.salePrice ?? product.price) >= options.minPrice!);
   }
