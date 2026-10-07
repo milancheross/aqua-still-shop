@@ -36,6 +36,21 @@ export default async function HomePage() {
   const categories = await getDbCategories();
   const home = (await getHomeContent()) ?? DEFAULT_HOME;
 
+  const [projectImages, tipImages] = await Promise.all([
+    db.mediaAsset.findMany({
+      where: { folder: "projects" },
+      orderBy: { createdAt: "desc" },
+      take: 4,
+      select: { url: true, filename: true, altText: true },
+    }),
+    db.mediaAsset.findMany({
+      where: { folder: "tips" },
+      orderBy: { createdAt: "desc" },
+      take: 4,
+      select: { url: true, filename: true, altText: true },
+    }),
+  ]);
+
   const featuredCategories = categories.filter((category) => category.featured).length > 0
     ? categories.filter((category) => category.featured).slice(0, 8)
     : categories.slice(0, 8);
@@ -68,8 +83,8 @@ export default async function HomePage() {
     { title: "Podrška kupcima", subtitle: "Tu smo za sva pitanja", icon: Headphones },
   ];
 
-  const projectCards = featuredCategories.slice(0, 4).map((category, index) => ({
-    category,
+  const projectCards = projectImages.map((image, index) => ({
+    image,
     title: ["Uredite svoje kupatilo", "Sredite svoje dvorište", "Dopunite svoj alat", "Obnovite svoj dom"][index],
     text: [
       "Od slavina do tuš kabina — sve za moderno i funkcionalno kupatilo.",
@@ -80,7 +95,7 @@ export default async function HomePage() {
     icon: projectIcons[index],
   }));
 
-  return (
+
     <div className="flex flex-col bg-slate-50 pb-16 overflow-x-hidden">
       <section className="relative isolate min-h-[430px] overflow-hidden bg-slate-950 sm:min-h-[500px] lg:min-h-[560px]">
         {managedHeroImage ? (
@@ -159,9 +174,9 @@ export default async function HomePage() {
             <p className="mt-1 max-w-2xl text-xs text-slate-500 sm:text-sm">Pronađite sve što vam treba za jednu konkretnu stvar.</p>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {projectCards.map(({ category, title, text, icon: Icon }) => (
-              <Link key={category.id} href={"/katalog/" + category.slug} className="group relative min-h-48 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-                {category.imageUrl ? <Image src={category.imageUrl} alt={title} fill sizes="(max-width: 640px) 100vw, 25vw" className="object-cover transition duration-500 group-hover:scale-105" /> : null}
+            {projectCards.map(({ image, title, text, icon: Icon }) => (
+              <Link key={image.url} href="/katalog" className="group relative min-h-48 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+                <Image src={image.url} alt={image.altText || title} fill sizes="(max-width: 640px) 100vw, 25vw" className="object-cover transition duration-500 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-4 text-white">
                   <Icon className="mb-2 h-5 w-5 text-cyan-300" />
@@ -238,7 +253,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {featuredCategories.length > 0 && (
+      {tipImages.length > 0 && (
         <section className="container mx-auto px-4 pt-8 sm:px-6 lg:px-8">
           <div className="mb-5 flex items-center justify-between">
             <div>
@@ -248,13 +263,13 @@ export default async function HomePage() {
             <Link href="/katalog" className="text-xs font-bold text-cyan-700">Istraži ponudu <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {featuredCategories.slice(0, 4).map((category, index) => (
-              <Link key={category.id} href={"/katalog/" + category.slug} className="group relative aspect-[1.45] overflow-hidden rounded-xl">
-                {category.imageUrl ? <Image src={category.imageUrl} alt={category.name} fill sizes="25vw" className="object-cover transition duration-500 group-hover:scale-105" /> : null}
+            {tipImages.map((image, index) => (
+              <Link key={image.url} href="/katalog" className="group relative aspect-[1.45] overflow-hidden rounded-xl">
+                <Image src={image.url} alt={image.altText || "Aqua Still savet"} fill sizes="25vw" className="object-cover transition duration-500 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent" />
                 <div className="absolute bottom-0 p-3 text-white sm:p-4">
                   <span className="rounded bg-white/90 px-1.5 py-1 text-[8px] font-black uppercase text-slate-800">{["Vodič", "Korisni savet", "Inspiracija", "Uradi sam"][index]}</span>
-                  <h3 className="mt-2 text-sm font-black leading-tight">{["Kako izabrati pravu opremu?", "Renoviranje bez greške", "Sredite svoje dvorište", "Napravite pravi izbor"][index]}</h3>
+                  <h3 className="mt-2 text-sm font-black leading-tight">{["Kako izabrati pravu pumpu za vodu?", "Renoviranje kupatila – od čega početi?", "Sistemi za navodnjavanje za vaše dvorište", "Farbanje zida korak po korak"][index]}</h3>
                 </div>
               </Link>
             ))}
