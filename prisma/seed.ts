@@ -511,7 +511,13 @@ async function main() {
         salePrice: prod.salePrice,
         stockQuantity: prod.stockQuantity,
       },
-      create: prod as Prisma.ProductCreateInput,
+      create: {
+        ...prod,
+        category: { connect: { slug: prod.categorySlug } },
+        ...(prod.subcategorySlug
+          ? { subcategory: { connect: { slug: prod.subcategorySlug } } }
+          : {}),
+      },
     });
   }
 
