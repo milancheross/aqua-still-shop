@@ -216,6 +216,7 @@ model MediaAsset {
   size      Int
   altText   String?  @map("alt_text")
   folder    String   @default("general") // logo, hero, products, categories, etc.
+  checksum  String?  @unique
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("media_assets")
