@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { del, put } from "@vercel/blob";
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
@@ -15,8 +16,14 @@ export interface MediaItem {
   createdAt: string;
 }
 
+export interface UploadMediaResult {
+  success: true;
+  uploaded: MediaItem[];
+  skipped: Array<{ filename: string; reason: "duplicate" }>;
+}
+
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-const MAX_SIZE = 4 * 1024 * 1024; // Keep below Vercel's server action request limit.
+const MAX_COMPRESSED_SIZE = 3 * 1024 * 1024; // Leave headroom below Vercel's server-action request limit.
 
 function getSafeFolder(value: FormDataEntryValue | null): string {
   const folder = typeof value === "string" ? value.trim().toLowerCase() : "general";
@@ -32,6 +39,16 @@ function getSafeFilename(value: string): string {
     .replace(/-+/g, "-")
     .replace(/^[-.]+|[-.]+$/g, "");
   return cleaned || "image";
+}
+
+function getWebpFilename(value: string): string {
+  const base = getSafeFilename(value).replace(/\.[^/.]+$/, "");
+  return `${base || "image"}.webp`;
+}
+
+async function getChecksum(file: File): Promise<string> {
+  const buffer = Buffer.from(await file.arrayBuffer());
+  return createHash("sha256").update(buffer).digest("hex");
 }
 
 export async function getMediaAssets(): Promise<MediaItem[]> {
@@ -55,7 +72,7 @@ export async function getMediaAssets(): Promise<MediaItem[]> {
   }));
 }
 
-export async function uploadMediaAction(formData: FormData) {
+export async function uploadMediaAction(formData: FormData): Promise<UploadMediaResult> {
   await requireAdmin();
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
@@ -70,16 +87,30 @@ export async function uploadMediaAction(formData: FormData) {
   }
 
   const uploaded: MediaItem[] = [];
+  const skipped: UploadMediaResult["skipped"] = [];
 
   for (const file of files) {
     if (!ALLOWED_MIME_TYPES.has(file.type)) {
       throw new Error(`Nedozvoljen format fajla: ${file.name}. Dozvoljeni su JPG, PNG i WebP.`);
     }
-    if (file.size === 0 || file.size > MAX_SIZE) {
-      throw new Error(`Fajl ${file.name} je prazan ili prevelik. Maksimalna veličina je 4MB.`);
+
+    if (file.size === 0 || file.size > MAX_COMPRESSED_SIZE) {
+      throw new Error(
+        `Fajl ${file.name} je prazan ili prevelik nakon kompresije. Maksimalna veličina je 3MB.`,
+      );
     }
 
-    const filename = getSafeFilename(file.name);
+    const checksum = await getChecksum(file);
+    const existing = await db.mediaAsset.findUnique({
+      where: { checksum },
+    });
+
+    if (existing) {
+      skipped.push({ filename: file.name, reason: "duplicate" });
+      continue;
+    }
+
+    const filename = file.type === "image/webp" ? getWebpFilename(file.name) : getSafeFilename(file.name);
     const blob = await put(`${folder}/${filename}`, file, {
       access: "public",
       addRandomSuffix: true,
@@ -93,6 +124,7 @@ export async function uploadMediaAction(formData: FormData) {
           url: blob.url,
           mimeType: file.type,
           size: file.size,
+          checksum,
           altText: filename.replace(/\.[^/.]+$/, ""),
           folder,
         },
@@ -109,25 +141,40 @@ export async function uploadMediaAction(formData: FormData) {
         createdAt: asset.createdAt.toISOString(),
       });
     } catch (error) {
-      // Avoid leaving an orphaned Blob if the database write fails.
+      // A concurrent identical upload can win the unique checksum constraint.
+      // Never leave the Blob orphaned in that case.
       await del(blob.url).catch((deleteError: unknown) => {
         console.error("Failed to clean up uploaded Blob:", deleteError);
       });
-      throw new Error("Slika je otpremljena, ali nije sačuvana u bazi. Proverite bazu i pokušajte ponovo.");
+
+      const duplicate = await db.mediaAsset.findUnique({ where: { checksum } });
+      if (duplicate) {
+        skipped.push({ filename: file.name, reason: "duplicate" });
+        continue;
+      }
+
+      throw new Error(
+        "Slika je otpremljena, ali nije sačuvana u bazi. Proverite bazu i pokušajte ponovo.",
+      );
     }
   }
 
-  return { success: true, uploaded };
+  return { success: true, uploaded, skipped };
 }
 
-export async function updateMediaAssetAction(id: string, data: { altText?: string; filename?: string; folder?: string }) {
+export async function updateMediaAssetAction(
+  id: string,
+  data: { altText?: string; filename?: string; folder?: string },
+) {
   await requireAdmin();
   await db.mediaAsset.update({
     where: { id },
     data: {
       ...(data.altText !== undefined ? { altText: data.altText } : {}),
       ...(data.filename !== undefined ? { filename: getSafeFilename(data.filename) } : {}),
-      ...(data.folder !== undefined ? { folder: /^[a-z0-9_-]{1,40}$/.test(data.folder) ? data.folder : "general" } : {}),
+      ...(data.folder !== undefined
+        ? { folder: /^[a-z0-9_-]{1,40}$/.test(data.folder) ? data.folder : "general" }
+        : {}),
     },
   });
   return { success: true };
@@ -147,7 +194,9 @@ export async function deleteMediaAssetAction(id: string, url: string) {
   });
 
   if (productsUsingImage) {
-    throw new Error(`Brisanje nije dozvoljeno. Ova fotografija se koristi na proizvodu: "${productsUsingImage.name}".`);
+    throw new Error(
+      `Brisanje nije dozvoljeno. Ova fotografija se koristi na proizvodu: "${productsUsingImage.name}".`,
+    );
   }
 
   await del(asset.url);
