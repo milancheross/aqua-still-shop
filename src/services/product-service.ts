@@ -54,7 +54,7 @@ export async function getDbProducts(options?: {
   inStockOnly?: boolean;
   search?: string;
   attributes?: Record<string, string | number | boolean>;
-  sort?: "price-asc" | "price-desc" | "name" | "popular";
+  sort?: "price-asc" | "price-desc" | "name" | "popular" | "newest";
 }): Promise<Product[]> {
   if (!process.env.DATABASE_URL) {
     return devMockProducts(options);
@@ -129,7 +129,7 @@ export async function getDbProducts(options?: {
       where.AND = andFilters;
     }
 
-    let orderBy: Prisma.ProductOrderByWithRelationInput = { isFeatured: "desc" };
+    let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: "desc" };
     if (options?.sort) {
       switch (options.sort) {
         case "price-asc":
@@ -142,8 +142,11 @@ export async function getDbProducts(options?: {
           orderBy = { name: "asc" };
           break;
         case "popular":
-        default:
           orderBy = { isFeatured: "desc" };
+          break;
+        case "newest":
+        default:
+          orderBy = { createdAt: "desc" };
           break;
       }
     }
