@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { Product, ProductCategory } from "@/types";
+import { getCategoryFilterDefinitions } from "@/lib/catalog-filters";
 import { 
   getProducts as getMockProducts, 
   getProductBySlug as getMockProductBySlug, 
@@ -14,9 +15,33 @@ function mockCatalogEnabled() {
   return process.env.NODE_ENV !== "production";
 }
 
-function devMockProducts(options?: Parameters<typeof getMockProducts>[0]): Product[] {
+type CatalogProductOptions = {
+  categorySlug?: string;
+  subcategorySlug?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  inStockOnly?: boolean;
+  search?: string;
+  attributes?: Record<string, string | number | boolean>;
+  sort?: "price-asc" | "price-desc" | "name" | "popular" | "newest";
+};
+
+function devMockProducts(options?: CatalogProductOptions): Product[] {
   if (!mockCatalogEnabled()) return [];
-  const products = getMockProducts(options);
+  const { attributes, sort, ...mockOptions } = options ?? {};
+  let products = getMockProducts({ ...mockOptions, sort: sort === "newest" ? undefined : sort });
+  if (options?.minPrice !== undefined) {
+    products = products.filter((product) => (product.salePrice ?? product.price) >= options.minPrice!);
+  }
+  if (options?.maxPrice !== undefined) {
+    products = products.filter((product) => (product.salePrice ?? product.price) <= options.maxPrice!);
+  }
+  if (options?.attributes) {
+    products = products.filter((product) =>
+      Object.entries(options.attributes!).every(([key, value]) => String(product.attributes[key]) === String(value)),
+    );
+  }
   if (options?.categorySlug === "akcija") {
     return products.filter((product) => product.salePrice != null || product.isPromo);
   }
@@ -41,7 +66,8 @@ export async function getDbProducts(options?: {
   maxPrice?: number;
   inStockOnly?: boolean;
   search?: string;
-  sort?: "price-asc" | "price-desc" | "name" | "popular";
+  attributes?: Record<string, string | number | boolean>;
+  sort?: "price-asc" | "price-desc" | "name" | "popular" | "newest";
 }): Promise<Product[]> {
   if (!process.env.DATABASE_URL) {
     return devMockProducts(options);
@@ -82,6 +108,21 @@ export async function getDbProducts(options?: {
       where.stockQuantity = { gt: 0 };
     }
 
+    if (options?.minPrice !== undefined || options?.maxPrice !== undefined) {
+      where.price = {
+        ...(options.minPrice !== undefined ? { gte: options.minPrice } : {}),
+        ...(options.maxPrice !== undefined ? { lte: options.maxPrice } : {}),
+      };
+    }
+
+    if (options?.attributes) {
+      for (const [key, value] of Object.entries(options.attributes)) {
+        andFilters.push({
+          attributes: { path: [key], equals: value },
+        });
+      }
+    }
+
     if (options?.search) {
       const q = options.search.trim();
       if (q) {
@@ -101,7 +142,7 @@ export async function getDbProducts(options?: {
       where.AND = andFilters;
     }
 
-    let orderBy: Prisma.ProductOrderByWithRelationInput = { isFeatured: "desc" };
+    let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: "desc" };
     if (options?.sort) {
       switch (options.sort) {
         case "price-asc":
@@ -114,8 +155,11 @@ export async function getDbProducts(options?: {
           orderBy = { name: "asc" };
           break;
         case "popular":
-        default:
           orderBy = { isFeatured: "desc" };
+          break;
+        case "newest":
+        default:
+          orderBy = { createdAt: "desc" };
           break;
       }
     }
@@ -249,7 +293,13 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
         itemCount: sub.itemCount,
         imageUrl: sub.imageUrl ?? undefined,
       })),
-      attributes: [],
+      attributes: getCategoryFilterDefinitions(c.slug).map((filter) => ({
+        key: filter.key,
+        label: filter.label,
+        type: filter.type,
+        options: filter.options,
+        unit: filter.unit,
+      })),
     }));
   } catch (error) {
     console.error("DB categories fetch failed:", error);
