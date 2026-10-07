@@ -36,36 +36,37 @@ export default async function HomePage() {
   const categories = await getDbCategories();
   const home = (await getHomeContent()) ?? DEFAULT_HOME;
 
-  const [projectImages, tipImages] = await Promise.all([
+  const projectFilenames = [
+    "01-kupatilo-projekat.webp",
+    "02-dvoriste-navodnjavanje.webp",
+    "03-radionica-alati.webp",
+    "04-obnova-doma-farbanje.webp",
+  ];
+  const tipFilenames = [
+    "05-vodena-pumpa-vodic.webp",
+    "06-renoviranje-kupatila-savet.webp",
+    "07-navodnjavanje-inspiracija.webp",
+    "08-farbanje-uradi-sam.webp",
+  ];
+
+  const [projectMedia, tipMedia] = await Promise.all([
     db.mediaAsset.findMany({
-      where: {
-        OR: [
-          { folder: "projects" },
-          { folder: "general", filename: { startsWith: "01-kupatilo-projekat" } },
-          { folder: "general", filename: { startsWith: "02-dvoriste-navodnjavanje" } },
-          { folder: "general", filename: { startsWith: "03-radionica-alati" } },
-          { folder: "general", filename: { startsWith: "04-obnova-doma-farbanje" } },
-        ],
-      },
-      orderBy: { createdAt: "asc" },
-      take: 4,
+      where: { filename: { in: projectFilenames } },
       select: { url: true, filename: true, altText: true },
     }),
     db.mediaAsset.findMany({
-      where: {
-        OR: [
-          { folder: "tips" },
-          { folder: "general", filename: { startsWith: "05-vodena-pumpa-vodic" } },
-          { folder: "general", filename: { startsWith: "06-renoviranje-kupatila-savet" } },
-          { folder: "general", filename: { startsWith: "07-navodnjavanje-inspiracija" } },
-          { folder: "general", filename: { startsWith: "08-farbanje-uradi-sam" } },
-        ],
-      },
-      orderBy: { createdAt: "asc" },
-      take: 4,
+      where: { filename: { in: tipFilenames } },
       select: { url: true, filename: true, altText: true },
     }),
   ]);
+
+  const projectImages = projectFilenames
+    .map((filename) => projectMedia.find((item) => item.filename === filename))
+    .filter((item): item is (typeof projectMedia)[number] => Boolean(item));
+
+  const tipImages = tipFilenames
+    .map((filename) => tipMedia.find((item) => item.filename === filename))
+    .filter((item): item is (typeof tipMedia)[number] => Boolean(item));
 
   const featuredCategories = categories.filter((category) => category.featured).length > 0
     ? categories.filter((category) => category.featured).slice(0, 8)
