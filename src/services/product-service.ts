@@ -17,7 +17,18 @@ function mockCatalogEnabled() {
 
 function devMockProducts(options?: Parameters<typeof getMockProducts>[0]): Product[] {
   if (!mockCatalogEnabled()) return [];
-  const products = getMockProducts(options);
+  let products = getMockProducts(options);
+  if (options?.minPrice !== undefined) {
+    products = products.filter((product) => (product.salePrice ?? product.price) >= options.minPrice!);
+  }
+  if (options?.maxPrice !== undefined) {
+    products = products.filter((product) => (product.salePrice ?? product.price) <= options.maxPrice!);
+  }
+  if (options?.attributes) {
+    products = products.filter((product) =>
+      Object.entries(options.attributes!).every(([key, value]) => String(product.attributes[key]) === String(value)),
+    );
+  }
   if (options?.categorySlug === "akcija") {
     return products.filter((product) => product.salePrice != null || product.isPromo);
   }
