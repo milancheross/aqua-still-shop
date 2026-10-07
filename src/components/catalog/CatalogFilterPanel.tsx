@@ -16,7 +16,7 @@ export default function CatalogFilterPanel({ children, activeCount }: CatalogFil
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="mb-3 flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-900 shadow-sm lg:hidden"
+        className="sticky top-[116px] z-20 mb-3 flex min-h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-900 shadow-sm lg:hidden"
         aria-expanded={open}
         aria-controls="catalog-filter-panel"
       >
