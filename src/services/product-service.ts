@@ -270,7 +270,7 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
 
   try {
     const [cats, categoryCounts, subcategoryCounts] = await Promise.all([
-      db.category.findMany({ include: { subcategories: true } }),
+      db.category.findMany({ include: { subcategories: true }, orderBy: { name: "asc" } }),
       db.product.groupBy({
         by: ["categorySlug"],
         _count: { _all: true },
@@ -293,11 +293,7 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
         .filter((entry) => entry.subcategorySlug)
         .map((entry) => [entry.subcategorySlug!, entry._count._all]),
     );
-    const orderMap = new Map(AQUA_STILL_CATEGORY_ORDER.map((slug, index) => [slug, index]));
-
-    return cats
-      .sort((a, b) => (orderMap.get(a.slug) ?? 999) - (orderMap.get(b.slug) ?? 999))
-      .map((c) => ({
+    return cats.map((c) => ({
         id: c.id,
         name: c.name,
         slug: c.slug,
