@@ -47,14 +47,48 @@ export default function AdminCategoriesPage() {
     }));
   };
 
+  const compressImageForUpload = async (file: File): Promise<File> => {
+    if (!file.type.startsWith("image/")) return file;
+
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      image.src = objectUrl;
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error("Slika nije mogla da se obradi."));
+      });
+
+      const maxDimension = 2400;
+      const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+      const width = Math.max(1, Math.round(image.naturalWidth * scale));
+      const height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext("2d");
+      if (!context) return file;
+      context.drawImage(image, 0, 0, width, height);
+
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.82));
+      if (!blob || blob.size >= file.size) return file;
+
+      const baseName = file.name.replace(/\.[^/.]+$/, "");
+      return new File([blob], baseName + ".webp", { type: "image/webp", lastModified: Date.now() });
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  };
+
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     setError("");
     setUploading(true);
     try {
+      const optimizedFile = await compressImageForUpload(file);
       const data = new FormData();
-      data.append("files", file);
+      data.append("files", optimizedFile);
       data.append("folder", "categories");
       const result = await uploadMediaAction(data);
       setForm((current) => ({ ...current, imageUrl: result.uploaded[0]?.url ?? current.imageUrl }));
