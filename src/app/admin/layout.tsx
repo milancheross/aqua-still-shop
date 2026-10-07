@@ -36,7 +36,7 @@ const adminNavItems = [
   { name: "SEO", href: "/admin/seo", icon: Search },
   { name: "Dizajn sajta", href: "/admin/design", icon: Palette },
   { name: "Podešavanja", href: "/admin/settings", icon: Settings },
-  { name: "Magacin", href: "/magacin", icon: Warehouse },
+  { name: "Magacin", href: "/magacin", icon: Warehouse },\n  { name: "POS integracija", href: "/admin/integracije/pos", icon: RefreshCw },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
