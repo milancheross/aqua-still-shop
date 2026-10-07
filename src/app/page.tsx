@@ -112,6 +112,7 @@ export default async function HomePage() {
   }));
 
 
+  return (
     <div className="flex flex-col bg-slate-50 pb-16 overflow-x-hidden">
       <section className="relative isolate min-h-[430px] overflow-hidden bg-slate-950 sm:min-h-[500px] lg:min-h-[560px]">
         {managedHeroImage ? (
