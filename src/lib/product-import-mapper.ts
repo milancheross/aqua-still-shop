@@ -125,7 +125,11 @@ function normalizeText(value: string): string {
 function parseNumber(value: string | number | null | undefined): number | null {
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
   if (value == null || value.trim() === "") return null;
-  const parsed = Number(value.trim().replace(/\s/g, "").replace(/(rsd|din)$/i, "").replace(",", "."));
+  const raw = value.trim().replace(/\s/g, "").replace(/(rsd|din)$/i, "");
+  const normalized = raw.includes(",") && raw.includes(".")
+    ? raw.replace(/\./g, "").replace(",", ".")
+    : raw.replace(",", ".");
+  const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
@@ -192,7 +196,8 @@ export function mapExternalProduct(input: ExternalProductRecord): ProductImportR
     errors.push({ field: "stockQuantity", message: "Stanje mora biti validan broj >= 0." });
   }
 
-  const vatRate = parseNumber(input.vatRate ?? 0.2);
+  const parsedVatRate = parseNumber(input.vatRate ?? 0.2);
+  const vatRate = parsedVatRate != null && parsedVatRate > 1 ? parsedVatRate / 100 : parsedVatRate;
   if (vatRate == null || vatRate < 0 || vatRate > 1) {
     errors.push({ field: "vatRate", message: "PDV stopa mora biti decimalna vrednost od 0 do 1." });
   }
