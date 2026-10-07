@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import {
   ArrowDownToLine, ArrowLeftRight, ArrowUpFromLine, Boxes, CheckCircle2,
   ChevronRight, ClipboardCheck, LayoutGrid, MapPin, PackageSearch,
@@ -32,7 +32,7 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Product | null>(null);
   const [busy, startTransition] = useTransition();
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("");\n  const [scannerOpen, setScannerOpen] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -74,8 +74,10 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
     });
   }
 
-  async function scanOrFind() {
-    if (!query.trim()) return;
+  const findProduct = useCallback((value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    setQuery(trimmed);
     startTransition(async () => {
       try {
         const result = await searchWarehouseProduct(query);
@@ -94,6 +96,11 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
       }
     });
   }
+
+  const handleBarcodeDetected = useCallback((value: string) => {
+    setScannerOpen(false);
+    findProduct(value);
+  }, [findProduct]);
 
   const stats = [
     { label:"Artikli", value:data.stats.productCount, icon:Boxes, tone:"bg-blue-50 text-blue-700" },
@@ -127,7 +134,7 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
         {stats.map(({label,value,icon:Icon,tone}) => (
           <div key={label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${tone}`}><Icon className="h-4 w-4" /></div>
@@ -137,13 +144,13 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
         ))}
       </div>
 
-      <nav className="sticky top-0 z-20 -mx-1 overflow-x-auto rounded-2xl bg-white/95 p-1 shadow-sm backdrop-blur">
-        <div className="flex min-w-max gap-1">
+      <nav className="sticky top-0 z-20 -mx-1 rounded-2xl bg-white/95 p-1 shadow-sm backdrop-blur">
+        <div className="grid grid-cols-2 gap-1 sm:flex sm:min-w-max">
           {[
             ["pregled","Pregled"],["proizvodi","Proizvodi"],["prijem","Prijem"],["izdavanje","Izdavanje"],
             ["premeštanje","Premeštanje"],["provera","Provera stanja"],["lokacije","Lokacije"]
           ].map(([key,label]) => (
-            <button key={key} onClick={() => setTab(key)} className={`rounded-xl px-3 py-2.5 text-xs font-black transition ${tab===key ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-slate-100"}`}>
+            <button key={key} onClick={() => setTab(key)} className={`min-h-10 rounded-xl px-2 py-2 text-[11px] font-black transition sm:px-3 sm:text-xs ${tab===key ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-slate-100"}`}>
               {label}
             </button>
           ))}
@@ -194,7 +201,7 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
             <div className="flex flex-col gap-3 sm:flex-row">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input value={query} onChange={(e)=>setQuery(e.target.value)} onKeyDown={(e)=>{if(e.key==="Enter") scanOrFind();}} placeholder="Unesite šifru proizvoda..." className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-semibold outline-none focus:border-blue-500 focus:bg-white" />
+                <input value={query} onChange={(e)=>setQuery(e.target.value)} onKeyDown={(e)=>{if(e.key==="Enter") findProduct(query);}} placeholder="Unesite šifru proizvoda..." className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-semibold outline-none focus:border-blue-500 focus:bg-white" />
               </div>
               <button onClick={scanOrFind} disabled={busy} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 text-sm font-black text-white hover:bg-blue-700 disabled:opacity-50">
                 <ScanLine className="h-4 w-4" /> Pronađi / skeniraj
@@ -283,7 +290,7 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
         </section>
       )}
 
-      <div className="text-center text-[11px] text-slate-400">Zaliha je vezana za isti Product zapis koji koristi webshop. Magacin vodi lokaciju i istoriju promena u istoj PostgreSQL bazi.</div>
+      {scannerOpen && <BarcodeScanner onDetected={handleBarcodeDetected} onClose={() => setScannerOpen(false)} />}\n\n    <div className="text-center text-[11px] text-slate-400">Zaliha je vezana za isti Product zapis koji koristi webshop. Magacin vodi lokaciju i istoriju promena u istoj PostgreSQL bazi.</div>
     </div>
   );
 }
