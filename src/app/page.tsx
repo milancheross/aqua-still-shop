@@ -38,14 +38,30 @@ export default async function HomePage() {
 
   const [projectImages, tipImages] = await Promise.all([
     db.mediaAsset.findMany({
-      where: { folder: "projects" },
-      orderBy: { createdAt: "desc" },
+      where: {
+        OR: [
+          { folder: "projects" },
+          { folder: "general", filename: { startsWith: "01-kupatilo-projekat" } },
+          { folder: "general", filename: { startsWith: "02-dvoriste-navodnjavanje" } },
+          { folder: "general", filename: { startsWith: "03-radionica-alati" } },
+          { folder: "general", filename: { startsWith: "04-obnova-doma-farbanje" } },
+        ],
+      },
+      orderBy: { createdAt: "asc" },
       take: 4,
       select: { url: true, filename: true, altText: true },
     }),
     db.mediaAsset.findMany({
-      where: { folder: "tips" },
-      orderBy: { createdAt: "desc" },
+      where: {
+        OR: [
+          { folder: "tips" },
+          { folder: "general", filename: { startsWith: "05-vodena-pumpa-vodic" } },
+          { folder: "general", filename: { startsWith: "06-renoviranje-kupatila-savet" } },
+          { folder: "general", filename: { startsWith: "07-navodnjavanje-inspiracija" } },
+          { folder: "general", filename: { startsWith: "08-farbanje-uradi-sam" } },
+        ],
+      },
+      orderBy: { createdAt: "asc" },
       take: 4,
       select: { url: true, filename: true, altText: true },
     }),
