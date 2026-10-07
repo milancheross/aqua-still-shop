@@ -109,7 +109,7 @@ export default async function HomePage() {
       "Električni i ručni alati za radionicu, montažu i svaki posao.",
       "Boje, lakovi, lepkovi i materijal za renoviranje.",
     ][index],
-    categorySlug: ["kupatilo", "basta-i-navodnjavanje", "alati", "boje-i-lakovi"][index],
+    categorySlug: ["kupatila", "navodnjavanje", "alati", "boje-lakovi-hemija"][index],
     icon: projectIcons[index],
   }));
 
