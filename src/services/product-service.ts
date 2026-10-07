@@ -268,15 +268,35 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
   }
 
   try {
-    const cats = await db.category.findMany({
-      include: {
-        subcategories: true,
-      },
-    });
+    const [cats, categoryCounts, subcategoryCounts] = await Promise.all([
+      db.category.findMany({
+        include: {
+          subcategories: true,
+        },
+      }),
+      db.product.groupBy({
+        by: ["categorySlug"],
+        _count: { _all: true },
+      }),
+      db.product.groupBy({
+        by: ["subcategorySlug"],
+        where: { subcategorySlug: { not: null } },
+        _count: { _all: true },
+      }),
+    ]);
 
     if (!cats || cats.length === 0) {
       return mockCatalogEnabled() ? getMockCategories() : [];
     }
+
+    const categoryCountMap = new Map(
+      categoryCounts.map((entry) => [entry.categorySlug, entry._count._all]),
+    );
+    const subcategoryCountMap = new Map(
+      subcategoryCounts
+        .filter((entry) => entry.subcategorySlug)
+        .map((entry) => [entry.subcategorySlug!, entry._count._all]),
+    );
 
     return cats.map((c) => ({
       id: c.id,
@@ -284,13 +304,13 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
       slug: c.slug,
       description: c.description ?? "",
       imageUrl: c.imageUrl ?? undefined,
-      itemCount: c.itemCount,
+      itemCount: categoryCountMap.get(c.slug) ?? 0,
       iconName: (c.iconName as ProductCategory["iconName"]) || "wrench",
       subcategories: c.subcategories.map((sub) => ({
         id: sub.id,
         name: sub.name,
         slug: sub.slug,
-        itemCount: sub.itemCount,
+        itemCount: subcategoryCountMap.get(sub.slug) ?? 0,
         imageUrl: sub.imageUrl ?? undefined,
       })),
       attributes: getCategoryFilterDefinitions(c.slug).map((filter) => ({
