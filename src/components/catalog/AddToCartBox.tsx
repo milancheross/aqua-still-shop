@@ -46,12 +46,12 @@ export default function AddToCartBox({ product }: AddToCartBoxProps) {
 
   return (
     <div className="pt-4 border-t border-slate-100 space-y-4">
-      <div className="flex items-center gap-4">
+      <div className="grid grid-cols-[auto_1fr] gap-3 sm:flex sm:items-center sm:gap-4">
         {/* Quantity Selector */}
-        <div className="flex items-center border border-slate-200 rounded-2xl overflow-hidden bg-slate-50 p-1">
+        <div className="flex h-12 items-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-1">
           <button
             onClick={handleDecrease}
-            className="w-10 h-10 flex items-center justify-center hover:bg-slate-200 text-slate-700 rounded-xl transition-colors"
+            className="flex h-10 w-10 items-center justify-center hover:bg-slate-200 text-slate-700 rounded-xl transition-colors"
             title="Smanji količinu"
           >
             <Minus className="w-4 h-4" />
@@ -69,7 +69,7 @@ export default function AddToCartBox({ product }: AddToCartBoxProps) {
         {/* Add to Cart Button */}
         <button
           onClick={handleAddToCart}
-          className={`flex-1 py-4 px-6 rounded-2xl font-bold text-sm uppercase tracking-wider transition-all shadow-xl flex items-center justify-center gap-2 ${
+          className={`min-h-12 flex-1 rounded-2xl px-4 py-3 font-bold text-sm uppercase tracking-wider transition-all shadow-xl flex items-center justify-center gap-2 ${
             addedSuccess
               ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/25"
               : "bg-cyan-600 hover:bg-cyan-700 text-white shadow-cyan-600/25 active:scale-[0.98]"
