@@ -15,8 +15,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aqua Still Zlatibor | Vodovod, Alati i Navodnjavanje",
-  description: "Vodeća prodavnica za vodovodni materijal, profesionalne alate i sisteme za navodnjavanje na Zlatiboru. 1.000+ artikala na stanju.",
+  metadataBase: process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL) : undefined,
+  title: {
+    default: "Aqua Still Zlatibor | Alati, vodovodni materijal i kupatilska oprema",
+    template: "%s | Aqua Still Zlatibor",
+  },
+  description: "Aqua Still Zlatibor – alati, vodovodni i kanalizacioni materijal, kupatilska oprema, navodnjavanje i grejanje za svaki projekat.",
+  applicationName: "Aqua Still Shop",
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    type: "website",
+    locale: "sr_RS",
+    siteName: "Aqua Still Shop",
+    title: "Aqua Still Zlatibor | Alati, vodovodni materijal i kupatilska oprema",
+    description: "Alati, vodovodni materijal, kupatilska oprema, navodnjavanje i grejanje na jednom mestu.",
+  },
 };
 
 export default function RootLayout({
