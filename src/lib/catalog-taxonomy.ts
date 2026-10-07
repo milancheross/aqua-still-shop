@@ -174,6 +174,7 @@ export const AQUA_STILL_TAXONOMY: CatalogTaxonomyCategory[] = [
       { id: "sub-mesalice-beton", name: "Mešalice za beton", slug: "mesalice-za-beton" },
       { id: "sub-zastitna-oprema", name: "Radne rukavice i zaštitna oprema", slug: "radne-rukavice-zastitna-oprema" },
       { id: "sub-gradjevinski-alat", name: "Građevinski i zidarski alat", slug: "gradjevinski-alat" },
+      { id: "sub-mesalice", name: "Mešalice za boju i malter", slug: "mesalice-boju-malter" },
     ],
   },
   {
