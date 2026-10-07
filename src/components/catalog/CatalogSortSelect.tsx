@@ -24,6 +24,7 @@ export default function CatalogSortSelect({ defaultValue }: CatalogSortSelectPro
       onChange={handleChange}
       className="w-full sm:w-auto px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:border-cyan-500 outline-none cursor-pointer"
     >
+      <option value="newest">Najnovije</option>
       <option value="popular">Najpopularnije</option>
       <option value="price-asc">Cena: od niže ka višoj</option>
       <option value="price-desc">Cena: od više ka nižoj</option>
