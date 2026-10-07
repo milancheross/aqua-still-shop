@@ -44,7 +44,7 @@ export default function Header() {
         <div className="flex items-center justify-between gap-4 md:gap-8">
           {/* Logo Image */}
           <Link href="/" className="flex items-center shrink-0">
-            <div className="relative h-10 sm:h-12 w-[150px] sm:w-[200px]">
+            <div className="relative h-9 w-[132px] sm:h-12 sm:w-[200px]">
               <Image 
                 src="/images/aqua-still-logo.png" 
                 alt="Aqua Still Zlatibor Logo" 
@@ -90,7 +90,7 @@ export default function Header() {
 
             <button 
               onClick={() => setIsCartOpen(true)}
-              className="flex items-center space-x-3 bg-slate-900 hover:bg-cyan-600 text-white px-4 py-2.5 rounded-full transition-colors shadow-sm group"
+              className="flex min-h-10 items-center space-x-2 rounded-xl bg-slate-900 px-3 py-2 text-white transition-colors shadow-sm group sm:space-x-3 sm:rounded-full sm:px-4 sm:py-2.5"
             >
               <div className="relative">
                 <ShoppingCart className="w-5 h-5" />
@@ -116,13 +116,13 @@ export default function Header() {
         </div>
       </div>
 
-      <form action="/katalog" method="GET" className="flex gap-2 border-t border-slate-100 bg-white px-4 pb-3 md:hidden">
+      <form action="/katalog" method="GET" className="flex gap-2 border-t border-slate-100 bg-white px-3 pb-3 pt-2 md:hidden">
         <label htmlFor="mobile-store-search" className="sr-only">Pretraga proizvoda</label>
         <input id="mobile-store-search" type="search" name="q" placeholder="Pretraži proizvode..." className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-cyan-500 focus:bg-white focus:ring-2 focus:ring-cyan-100" />
         <button type="submit" aria-label="Pretraži" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-cyan-600 px-4 text-sm font-bold text-white hover:bg-cyan-700"><Search className="h-4 w-4" /><span>Traži</span></button>
       </form>
       {/* Main category navigation */}
-      <div className="relative z-40 bg-slate-900 text-white">
+      <div className="relative z-40 hidden bg-slate-900 text-white md:block">
         <div className="container mx-auto px-4 flex items-center gap-3">
           <div className="relative py-2">
             <button
@@ -200,9 +200,9 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="lg:hidden absolute left-0 top-full z-50 max-h-[80vh] w-full overflow-y-auto border-b border-slate-200 bg-white text-slate-800 shadow-xl">
-          <nav aria-label="Mobilna navigacija" className="flex flex-col p-4">
-            <Link href="/katalog" onClick={() => setIsMenuOpen(false)} className="mb-2 rounded-lg bg-cyan-50 px-3 py-3 text-sm font-bold text-cyan-800">
+        <div className="lg:hidden absolute left-0 top-full z-[60] max-h-[80vh] w-full overflow-y-auto border-b border-slate-200 bg-white text-slate-800 shadow-xl">
+          <nav aria-label="Mobilna navigacija" className="flex flex-col gap-1 p-3">
+            <Link href="/katalog" onClick={() => setIsMenuOpen(false)} className="mb-1 flex min-h-12 items-center rounded-xl bg-cyan-50 px-4 py-3 text-sm font-black text-cyan-800">
               Sve kategorije — ceo katalog
             </Link>
             <Link href="/katalog/akcija" onClick={() => setIsMenuOpen(false)} className="border-b border-slate-100 px-3 py-3 text-sm font-bold text-orange-600">Akcije</Link>
