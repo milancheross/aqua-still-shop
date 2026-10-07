@@ -283,6 +283,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 <option value="vodovod">Vodovod i kanalizacija</option>
                 <option value="kupatila">Kupatilska oprema i sanitarije</option>
                 <option value="navodnjavanje">Sistemi za navodnjavanje</option>
+                <option value="grejanje">Grejanje</option>
+                <option value="elektromaterijal">Elektromaterijal</option>
+                <option value="majstori">Oprema za majstore</option>
               </select>
             </div>
           </div>
