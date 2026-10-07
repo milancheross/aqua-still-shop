@@ -47,7 +47,7 @@ export async function importPosCsvAction(csv: string): Promise<PosImportResult> 
       const data = {
         barcode: row.barcode ?? existing.barcode,
         price: decimal(row.price, Number(existing.price)),
-        salePrice: row.salePrice ?? existing.salePrice === null ? null : Number(existing.salePrice),
+        salePrice: row.salePrice !== undefined ? row.salePrice : existing.salePrice === null ? null : Number(existing.salePrice),
         vatRate: decimal(row.vatRate, Number(existing.vatRate)),
         unit: row.unit ?? existing.unit,
         stockQuantity: row.stockQuantity ?? existing.stockQuantity,
