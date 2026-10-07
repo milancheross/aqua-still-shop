@@ -140,13 +140,23 @@ export async function saveHomePage(input: HomeContent & { isPublished: boolean }
     seoDescription: content.seoDescription || null,
     isPublished: input.isPublished,
   };
-  await db.page.upsert({
-    where: { slug: HOME_SLUG },
-    update: data,
-    create: data,
-  });
+  try {
+    await db.page.upsert({
+      where: { slug: HOME_SLUG },
+      update: data,
+      create: data,
+    });
+  } catch (error) {
+    console.error("Error saving homepage:", error);
+    return {
+      success: false,
+      error: "Početna stranica nije sačuvana. Proverite vezu sa bazom i pokušajte ponovo.",
+    };
+  }
+
+  // The public homepage must be invalidated, but the editor does not need
+  // a forced server refresh after a successful save.
   revalidatePath("/");
-  revalidatePath("/admin/editor");
   revalidatePath("/admin/pages");
   return { success: true };
 }
