@@ -171,7 +171,7 @@ export default function Header() {
                           onClick={() => setIsCategoriesOpen(false)}
                           className="group flex min-w-0 items-center gap-3 rounded-xl border border-transparent p-3 transition hover:border-cyan-100 hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
                         >
-                          <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-lg font-black text-cyan-700 transition group-hover:bg-white">{category.icon}</span>
+                          <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-lg font-black text-cyan-700 transition group-hover:bg-white">{category.name.slice(0, 1)}</span>
                           <span className="min-w-0">
                             <span className="block truncate text-sm font-bold text-slate-800 group-hover:text-cyan-800">{category.name}</span>
                             <span className="mt-0.5 block truncate text-xs text-slate-500">{category.description}</span>
