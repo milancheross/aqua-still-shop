@@ -69,6 +69,41 @@ export async function updateAdminCategory(id: string, data: { name: string; slug
   return { success: true };
 }
 
+export async function updateAdminSubcategory(
+  id: string,
+  data: { name: string; slug: string; imageUrl?: string | null }
+) {
+  await requireAdmin();
+  if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
+
+  const name = data.name.trim();
+  const slug = data.slug.trim();
+
+  if (!name || !slug) {
+    throw new Error("Naziv i slug podkategorije su obavezni.");
+  }
+
+  try {
+    const updated = await db.subcategory.update({
+      where: { id },
+      data: {
+        name,
+        slug,
+        imageUrl: data.imageUrl || null,
+      },
+    });
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/");
+    revalidatePath("/katalog");
+    revalidatePath("/katalog/" + slug);
+
+    return { success: true, subcategory: updated };
+  } catch (e: unknown) {
+    throw new Error(e instanceof Error ? e.message : "Izmena podkategorije nije uspela.");
+  }
+}
+
 export async function updateAdminSubcategoryImage(id: string, imageUrl: string | null) {
   await requireAdmin();
   if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
