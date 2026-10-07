@@ -15,7 +15,7 @@ export async function getAdminCategories() {
     if (!process.env.DATABASE_URL) return [];
     return await db.category.findMany({
       include: { subcategories: true },
-      orderBy: { name: "asc" },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     });
   } catch (e) {
     console.error("Error fetching admin categories:", e);
@@ -23,7 +23,7 @@ export async function getAdminCategories() {
   }
 }
 
-export async function createAdminCategory(data: { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; iconName?: string; imageUrl?: string | null }) {
+export async function createAdminCategory(data: { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; iconName?: string; imageUrl?: string | null; featured?: boolean; sortOrder?: number }) {
   await requireAdmin();
   if (!process.env.DATABASE_URL) {
     throw new Error("Baza podataka nije povezana (nedostaje DATABASE_URL).");
@@ -42,6 +42,8 @@ export async function createAdminCategory(data: { name: string; slug: string; de
       seoDescription: data.seoDescription?.trim() || null,
       iconName: data.iconName || "wrench",
       imageUrl: data.imageUrl || null,
+      featured: data.featured ?? false,
+      sortOrder: Number.isFinite(data.sortOrder) ? Math.max(0, Math.trunc(data.sortOrder!)) : 0,
     },
   });
 
@@ -51,7 +53,7 @@ export async function createAdminCategory(data: { name: string; slug: string; de
   return { success: true };
 }
 
-export async function updateAdminCategory(id: string, data: { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; imageUrl?: string | null }) {
+export async function updateAdminCategory(id: string, data: { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; imageUrl?: string | null; featured?: boolean; sortOrder?: number }) {
   await requireAdmin();
   if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
   if (!data.name.trim() || !data.slug.trim()) throw new Error("Naziv i slug kategorije su obavezni.");
@@ -64,6 +66,8 @@ export async function updateAdminCategory(id: string, data: { name: string; slug
       seoTitle: data.seoTitle?.trim() || null,
       seoDescription: data.seoDescription?.trim() || null,
       imageUrl: data.imageUrl || null,
+      featured: data.featured ?? false,
+      sortOrder: Number.isFinite(data.sortOrder) ? Math.max(0, Math.trunc(data.sortOrder!)) : 0,
     },
   });
   revalidatePath("/admin/categories");
