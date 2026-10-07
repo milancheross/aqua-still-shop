@@ -211,15 +211,32 @@ export default async function HomePage() {
 
       {featuredCategories.length > 0 && (
         <section className="container mx-auto px-4 pt-10 sm:px-6 lg:px-8">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-black text-slate-900 sm:text-2xl">{home.popularTitle}</h2>
-            <Link href="/katalog" className="text-xs font-bold text-cyan-700">Pogledaj sve <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-700">Brzo do ponude</p>
+              <h2 className="mt-1 text-xl font-black tracking-tight text-slate-900 sm:text-2xl">{home.popularTitle}</h2>
+            </div>
+            <Link href="/katalog" className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-cyan-700 transition hover:text-cyan-900">
+              Pogledaj sve <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
             {featuredCategories.map((category) => (
-              <Link key={category.id} href={"/katalog/" + category.slug} className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-cyan-300 hover:text-cyan-700">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-cyan-700">{category.name.slice(0, 1)}</span>
-                {category.name}
+              <Link
+                key={category.id}
+                href={"/katalog/" + category.slug}
+                className="group flex min-h-14 items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-3 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-md"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-black text-cyan-700 transition group-hover:bg-cyan-50">
+                  {category.name.slice(0, 1)}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-black text-slate-800 sm:text-sm">{category.name}</span>
+                  {category.itemCount > 0 ? (
+                    <span className="mt-0.5 block text-[10px] text-slate-400">{category.itemCount} proizvoda</span>
+                  ) : null}
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-cyan-600" />
               </Link>
             ))}
           </div>
