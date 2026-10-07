@@ -1,4 +1,5 @@
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Filter, Search, ArrowUpDown, X, Check, ChevronDown } from "lucide-react";
@@ -14,6 +15,36 @@ interface CatalogPageProps {
 
 function firstParam(value: string | string[] | undefined): string | undefined {
   return typeof value === "string" ? value : undefined;
+}
+
+export async function generateMetadata({
+  searchParams,
+}: CatalogPageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const selectedCategory = firstParam(params.category);
+  const selectedSubcategory = firstParam(params.subcategory);
+  const categories = await getDbCategories();
+  const category = categories.find((item) => item.slug === selectedCategory);
+  const subcategory = category?.subcategories.find((item) => item.slug === selectedSubcategory);
+
+  if (subcategory) {
+    return {
+      title: subcategory.seoTitle || `${subcategory.name} | Aqua Still Zlatibor`,
+      description: subcategory.seoDescription || subcategory.description || category?.description || `Pogledajte ponudu proizvoda iz kategorije ${subcategory.name} u Aqua Still Zlatibor.`,
+    };
+  }
+
+  if (category) {
+    return {
+      title: category.seoTitle || `${category.name} | Aqua Still Zlatibor`,
+      description: category.seoDescription || category.description || `Pogledajte ponudu ${category.name} u Aqua Still Zlatibor.`,
+    };
+  }
+
+  return {
+    title: "Katalog proizvoda | Aqua Still Zlatibor",
+    description: "Alati, vodovodni materijal, kupatilska oprema, elektro-oprema i ostali proizvodi Aqua Still Zlatibor.",
+  };
 }
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
