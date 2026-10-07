@@ -127,6 +127,7 @@ export default function AdminCategoriesPage() {
           subcategory.id === subcategoryId ? { ...subcategory, imageUrl } : subcategory
         ),
       })));
+      if (editingSubcategoryId === subcategoryId) setSubcategoryForm((current) => ({ ...current, imageUrl }));
       setSuccess("Fotografija podkategorije je sačuvana i prikazana na sajtu.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Otpremanje slike podkategorije nije uspelo.");
