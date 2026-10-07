@@ -43,6 +43,11 @@ export const AQUA_STILL_TAXONOMY: CatalogTaxonomyCategory[] = [
       { id: "sub-pribor-alati", name: "Pribor za električne alate", slug: "pribor-za-alate" },
       { id: "sub-merni-alat", name: "Merni i obeležavajući alat", slug: "merni-alat" },
       { id: "sub-tolsen-rucni", name: "Tolsen i ostali ručni alati", slug: "tolsen-rucni-alati" },
+      { id: "sub-elektricne-busilice", name: "Električne bušilice i odvijači", slug: "elektricne-busilice-odvijaci" },
+      { id: "sub-elektricne-brusilice", name: "Električne brusilice", slug: "elektricne-brusilice" },
+      { id: "sub-burgije", name: "Burgije i pribor za bušenje", slug: "burgije-pribor-busenje" },
+      { id: "sub-brusne-ploce", name: "Brusne i rezne ploče", slug: "brusne-rezne-ploce" },
+      { id: "sub-elektro-pumpe", name: "Električne pumpe i ventilatori", slug: "elektricne-pumpe-ventilatori" },
     ],
   },
   {
@@ -112,21 +117,6 @@ export const AQUA_STILL_TAXONOMY: CatalogTaxonomyCategory[] = [
       { id: "sub-pribor-grejanje", name: "Pribor za grejanje", slug: "pribor-za-grejanje" },
       { id: "sub-cevi-grejanje", name: "Cevi i fiting za grejanje", slug: "cevi-fiting-grejanje" },
       { id: "sub-pumpe-grejanje", name: "Cirkulacione pumpe", slug: "cirkulacione-pumpe" },
-    ],
-  },
-  {
-    id: "cat-elektricni-alati",
-    name: "Mašine i radionica",
-    slug: "elektricni-alat",
-    description: "Električne mašine, mešalice, pumpe i oprema za radionicu i gradilište.",
-    iconName: "drill",
-    subcategories: [
-      { id: "sub-elektricne-busilice", name: "Električne bušilice i odvijači", slug: "elektricne-busilice-odvijaci" },
-      { id: "sub-elektricne-brusilice", name: "Električne brusilice", slug: "elektricne-brusilice" },
-      { id: "sub-burgije", name: "Burgije i pribor za bušenje", slug: "burgije-pribor-busenje" },
-      { id: "sub-brusne-ploce", name: "Brusne i rezne ploče", slug: "brusne-rezne-ploce" },
-      { id: "sub-mesalice", name: "Mešalice za boju i malter", slug: "mesalice-boju-malter" },
-      { id: "sub-elektro-pumpe", name: "Električne pumpe i ventilatori", slug: "elektricne-pumpe-ventilatori" },
     ],
   },
   {
