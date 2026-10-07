@@ -3,6 +3,8 @@ export interface ProductCategory {
   name: string;
   slug: string;
   description: string;
+  seoTitle?: string;
+  seoDescription?: string;
   imageUrl?: string;
   itemCount: number;
   iconName: "wrench" | "droplet" | "bath" | "sprout" | "layers";
@@ -10,6 +12,9 @@ export interface ProductCategory {
     id: string;
     name: string;
     slug: string;
+    description?: string;
+    seoTitle?: string;
+    seoDescription?: string;
     itemCount: number;
     imageUrl?: string;
   }[];
