@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { Product, ProductCategory } from "@/types";
 import { getCategoryFilterDefinitions } from "@/lib/catalog-filters";
+import { AQUA_STILL_CATEGORY_ORDER } from "@/lib/catalog-taxonomy";
 import { 
   getProducts as getMockProducts, 
   getProductBySlug as getMockProductBySlug, 
@@ -268,39 +269,59 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
   }
 
   try {
-    const cats = await db.category.findMany({
-      include: {
-        subcategories: true,
-      },
-    });
+    const [cats, categoryCounts, subcategoryCounts] = await Promise.all([
+      db.category.findMany({ include: { subcategories: true } }),
+      db.product.groupBy({
+        by: ["categorySlug"],
+        _count: { _all: true },
+      }),
+      db.product.groupBy({
+        by: ["subcategorySlug"],
+        _count: { _all: true },
+      }),
+    ]);
 
     if (!cats || cats.length === 0) {
       return mockCatalogEnabled() ? getMockCategories() : [];
     }
 
-    return cats.map((c) => ({
-      id: c.id,
-      name: c.name,
-      slug: c.slug,
-      description: c.description ?? "",
-      imageUrl: c.imageUrl ?? undefined,
-      itemCount: c.itemCount,
-      iconName: (c.iconName as ProductCategory["iconName"]) || "wrench",
-      subcategories: c.subcategories.map((sub) => ({
-        id: sub.id,
-        name: sub.name,
-        slug: sub.slug,
-        itemCount: sub.itemCount,
-        imageUrl: sub.imageUrl ?? undefined,
-      })),
-      attributes: getCategoryFilterDefinitions(c.slug).map((filter) => ({
-        key: filter.key,
-        label: filter.label,
-        type: filter.type,
-        options: filter.options,
-        unit: filter.unit,
-      })),
-    }));
+    const categoryCountMap = new Map(
+      categoryCounts.map((entry) => [entry.categorySlug, entry._count._all]),
+    );
+    const subcategoryCountMap = new Map(
+      subcategoryCounts
+        .filter((entry) => entry.subcategorySlug)
+        .map((entry) => [entry.subcategorySlug!, entry._count._all]),
+    );
+    const orderMap = new Map(AQUA_STILL_CATEGORY_ORDER.map((slug, index) => [slug, index]));
+
+    return cats
+      .sort((a, b) => (orderMap.get(a.slug) ?? 999) - (orderMap.get(b.slug) ?? 999))
+      .map((c) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        description: c.description ?? "",
+        imageUrl: c.imageUrl ?? undefined,
+        itemCount: categoryCountMap.get(c.slug) ?? 0,
+        iconName: (c.iconName as ProductCategory["iconName"]) || "wrench",
+        subcategories: c.subcategories
+          .sort((a, b) => a.name.localeCompare(b.name, "sr"))
+          .map((sub) => ({
+            id: sub.id,
+            name: sub.name,
+            slug: sub.slug,
+            itemCount: subcategoryCountMap.get(sub.slug) ?? 0,
+            imageUrl: sub.imageUrl ?? undefined,
+          })),
+        attributes: getCategoryFilterDefinitions(c.slug).map((filter) => ({
+          key: filter.key,
+          label: filter.label,
+          type: filter.type,
+          options: filter.options,
+          unit: filter.unit,
+        })),
+      }));
   } catch (error) {
     console.error("DB categories fetch failed:", error);
     return mockCatalogEnabled() ? getMockCategories() : [];
