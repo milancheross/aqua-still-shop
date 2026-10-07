@@ -9,6 +9,7 @@ export default function AdminMediaPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFolder, setSelectedFolder] = useState("all");
+  const [uploadFolder, setUploadFolder] = useState("general");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -83,7 +84,7 @@ export default function AdminMediaPage() {
         const compressedFile = await compressImageForUpload(file);
         const formData = new FormData();
         formData.append("files", compressedFile);
-        formData.append("folder", selectedFolder === "all" ? "general" : selectedFolder);
+        formData.append("folder", uploadFolder);
         const res = await uploadMediaAction(formData);
         uploadedCount += res.uploaded.length;
         skippedCount += res.skipped.length;
@@ -169,12 +170,20 @@ export default function AdminMediaPage() {
           <input type="text" placeholder="Pretraži po nazivu ili alt tekstu..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-xs outline-none focus:border-cyan-500 focus:bg-white" />
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
         </div>
-        <div className="flex w-full items-center gap-2 overflow-x-auto sm:w-auto">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <label className="flex shrink-0 items-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-bold text-cyan-800">
+            Folder za upload:
+            <select value={uploadFolder} onChange={(e) => setUploadFolder(e.target.value)} className="bg-transparent font-bold outline-none">
+              {folders.filter((folder) => folder !== "all").map((folder) => <option key={folder} value={folder}>{folder === "hero-mobile" ? "hero-mobile" : folder}</option>)}
+            </select>
+          </label>
+          <div className="flex items-center gap-2 overflow-x-auto">
           {folders.map((folder) => (
             <button key={folder} onClick={() => setSelectedFolder(folder)} className={"shrink-0 rounded-xl px-3 py-1.5 text-xs font-bold transition-colors " + (selectedFolder === folder ? "bg-cyan-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200")}>
               {folder === "all" ? "Sve slike" : folder === "hero-mobile" ? "Hero mobile" : folder}
             </button>
           ))}
+          </div>
         </div>
       </div>
 
