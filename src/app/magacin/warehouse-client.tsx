@@ -97,7 +97,7 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
         setMessage(error instanceof Error ? error.message : "Pretraga nije uspela.");
       }
     });
-  }
+  }, []);
 
   const handleBarcodeDetected = useCallback((value: string) => {
     setScannerOpen(false);
