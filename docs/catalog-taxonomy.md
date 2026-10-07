@@ -55,7 +55,7 @@ Zato se uzima **najbolji obrazac iz svake specijalizacije**, a ne jedan tuđi me
 8. **Elektro-oprema i rasveta**
 9. **Vijčana roba i pričvrsni materijal**
 10. **Građevinska i zaštitna oprema**
-11. **Kuća, dvorište i čišćenje**
+10. **Kuća, dvorište i čišćenje**
 
 ## Detaljna struktura
 
@@ -118,16 +118,7 @@ Zato se uzima **najbolji obrazac iz svake specijalizacije**, a ne jedan tuđi me
 - Cevi i fiting za grejanje
 - Cirkulacione pumpe
 
-### 6. Mašine i radionica
-
-- Električne bušilice i odvijači
-- Električne brusilice
-- Burgije i pribor za bušenje
-- Brusne i rezne ploče
-- Mešalice za boju i malter
-- Električne pumpe i ventilatori
-
-### 7. Boje, lakovi, lepkovi i hemija
+### 6. Boje, lakovi, lepkovi i hemija
 
 - Boje za zidove
 - Lakovi i impregnacije
@@ -136,7 +127,7 @@ Zato se uzima **najbolji obrazac iz svake specijalizacije**, a ne jedan tuđi me
 - Hidroizolacioni materijali
 - Zaptivne mase i kitovi
 
-### 8. Elektro-oprema i rasveta
+### 7. Elektro-oprema i rasveta
 
 - LED rasveta
 - Kablovi i produžni kablovi
@@ -144,7 +135,7 @@ Zato se uzima **najbolji obrazac iz svake specijalizacije**, a ne jedan tuđi me
 - Baterije i akumulatori
 - Merni i ispitni uređaji
 
-### 9. Vijčana roba i pričvrsni materijal
+### 8. Vijčana roba i pričvrsni materijal
 
 - Šrafovi i tiplovi
 - Ekseri
@@ -152,7 +143,7 @@ Zato se uzima **najbolji obrazac iz svake specijalizacije**, a ne jedan tuđi me
 - Metalni elementi za pričvršćivanje
 - Ankeri i specijalno pričvršćivanje
 
-### 10. Građevinska i zaštitna oprema
+### 9. Građevinska i zaštitna oprema
 
 - Merdevine i platforme
 - Građevinska kolica
@@ -160,7 +151,7 @@ Zato se uzima **najbolji obrazac iz svake specijalizacije**, a ne jedan tuđi me
 - Radne rukavice i zaštitna oprema
 - Građevinski i zidarski alat
 
-### 11. Kuća, dvorište i čišćenje
+### 10. Kuća, dvorište i čišćenje
 
 - Četke i oprema za čišćenje
 - Kante i kanisteri
@@ -305,3 +296,41 @@ Pre masovnog unosa proizvoda treba zaključati:
 7. mapiranje proizvoda iz postojećeg programa na kasi/ERP-u
 
 Tek nakon toga ima smisla praviti veliki import proizvoda.
+
+
+## Trenutni seed proizvodi — mapiranje
+
+Svi trenutno seedovani proizvodi imaju validnu master kategoriju i podkategoriju. Mapiranje je zasnovano na njihovom postojećem nazivu, opisu i postojećim `categorySlug`/`subcategorySlug` vrednostima u projektu.
+
+| SKU | Proizvod | Kategorija | Podkategorija |
+|---|---|---|---|
+| MAK-DHP485Z | Makita DHP485Z | Alati i oprema | Aku bušilice i odvijači |
+| BOS-GSB18V50 | Bosch GSB 18V-50 | Alati i oprema | Aku bušilice i odvijači |
+| DEW-DWE4206 | DeWalt DWE4206 | Alati i oprema | Ugaone brusilice |
+| UNI-1201CB | Unior garnitura ključeva | Alati i oprema | Ručni alati i ključevi |
+| PES-3SK110-1000 | Peštan 3P kanalizaciona cev | Vodovod i kanalizacija | Cevi |
+| PES-PPR25-PN20 | Peštan PP-R cev | Vodovod i kanalizacija | Cevi |
+| VAL-KV12-LEP | Valvex kugla ventil | Vodovod i kanalizacija | Ventili, zasuni i slavine |
+| PED-TOP2 | Pedrollo TOP 2 pumpa | Vodovod i kanalizacija | Pumpe za vodu i hidrofori |
+| GRO-32815000 | Grohe BauLoop | Kupatilska oprema i sanitarije | Slavine i baterije |
+| HAN-71400000 | Hansgrohe Logis | Kupatilska oprema i sanitarije | Slavine i baterije |
+| GEB-111300005 | Geberit Duofix Delta | Kupatilska oprema i sanitarije | Ugradni sistemi i vodokotlići |
+| RNB-5004PL-PC | Rain Bird 5004-Plus | Navodnjavanje i bašta | Rasprskivači i rotori |
+| GAR-18036 | Gardena Comfort FLEX | Navodnjavanje i bašta | Baštenska i tehnička creva |
+| HNT-PGV101 | Hunter PGV-101 | Navodnjavanje i bašta | Elektroventili i tajmeri |
+
+### Pravilo za sledeći import
+
+Ne treba automatski izmišljati nedostajuće tehničke atribute.
+
+Ako kasa/ERP dostavi samo:
+- naziv
+- SKU
+- EAN
+- cenu
+- brend
+- količinu
+
+proizvod može biti uvezen u odgovarajuću kategoriju, ali se tehnički atributi označavaju kao nepotpuni dok se ne potvrde iz dobavljačkog kataloga, deklaracije ili drugog pouzdanog izvora.
+
+To je namerno: **bolje je imati prazan atribut nego netačnu tehničku specifikaciju.**
