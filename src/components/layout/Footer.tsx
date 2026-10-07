@@ -8,9 +8,9 @@ export default function Footer() {
   return (
     <footer className="bg-slate-900 text-slate-300">
       <div className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-12 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:gap-12 lg:grid-cols-4">
           {/* Brand Section */}
-          <div className="space-y-4 pb-3 md:space-y-6 md:pb-0">
+          <div className="col-span-2 space-y-4 pb-3 md:col-span-1 md:space-y-6 md:pb-0">
             <Link href="/" aria-label="Aqua Still Zlatibor — početna strana" className="relative flex h-12 w-[190px] items-center">
               <Image
                 src="/images/aqua-still-logo.png"
