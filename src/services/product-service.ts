@@ -15,9 +15,22 @@ function mockCatalogEnabled() {
   return process.env.NODE_ENV !== "production";
 }
 
-function devMockProducts(options?: Parameters<typeof getMockProducts>[0]): Product[] {
+type CatalogProductOptions = {
+  categorySlug?: string;
+  subcategorySlug?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  inStockOnly?: boolean;
+  search?: string;
+  attributes?: Record<string, string | number | boolean>;
+  sort?: "price-asc" | "price-desc" | "name" | "popular" | "newest";
+};
+
+function devMockProducts(options?: CatalogProductOptions): Product[] {
   if (!mockCatalogEnabled()) return [];
-  let products = getMockProducts(options);
+  const { attributes, ...mockOptions } = options ?? {};
+  let products = getMockProducts(mockOptions);
   if (options?.minPrice !== undefined) {
     products = products.filter((product) => (product.salePrice ?? product.price) >= options.minPrice!);
   }
