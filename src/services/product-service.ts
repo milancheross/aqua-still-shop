@@ -269,7 +269,7 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
 
   try {
     const [cats, categoryCounts, subcategoryCounts] = await Promise.all([
-      db.category.findMany({ include: { subcategories: true }, orderBy: { name: "asc" } }),
+      db.category.findMany({ include: { subcategories: true }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),
       db.product.groupBy({
         by: ["categorySlug"],
         _count: { _all: true },
@@ -300,6 +300,8 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
         seoTitle: c.seoTitle ?? undefined,
         seoDescription: c.seoDescription ?? undefined,
         imageUrl: c.imageUrl ?? undefined,
+        featured: c.featured,
+        sortOrder: c.sortOrder,
         itemCount: categoryCountMap.get(c.slug) ?? 0,
         iconName: (c.iconName as ProductCategory["iconName"]) || "wrench",
         subcategories: c.subcategories
