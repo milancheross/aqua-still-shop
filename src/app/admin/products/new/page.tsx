@@ -23,9 +23,9 @@ export default function NewProductPage() {
     categoryName: "Alati i oprema",
     price: 0,
     salePrice: "" as string | number,
-    stockQuantity: 0,
+    stockQuantity: 10,
     inStock: true,
-    wmsLocation: "",
+    wmsLocation: "A-01-01",
     shortDescription: "",
     description: "",
     images: ["/placeholder-tool.svg"],
@@ -234,14 +234,10 @@ export default function NewProductPage() {
                 }}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-cyan-500 outline-none"
               >
-                <option value="">Izaberite kategoriju</option>
                 <option value="alati">Alati i oprema</option>
                 <option value="vodovod">Vodovod i kanalizacija</option>
                 <option value="kupatila">Kupatilska oprema i sanitarije</option>
                 <option value="navodnjavanje">Sistemi za navodnjavanje</option>
-                <option value="grejanje">Grejanje</option>
-                <option value="elektromaterijal">Elektromaterijal</option>
-                <option value="majstori">Oprema za majstore</option>
               </select>
             </div>
           </div>
