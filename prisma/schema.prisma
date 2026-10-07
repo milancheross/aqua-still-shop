@@ -225,7 +225,7 @@ model Page {
   id             String   @id @default(cuid())
   title          String
   slug           String   @unique
-  contentJson    Json     @default("[]")
+  contentJson    Json     @default("[]") @map("content_json")
   seoTitle       String?  @map("seo_title")
   seoDescription String?  @map("seo_description")
   isPublished    Boolean  @default(false) @map("is_published")
