@@ -28,7 +28,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const savedCart = localStorage.getItem("aquastill_cart");
     if (savedCart) {
       try {
-        setItems(JSON.parse(savedCart));
+        setItems(JSON.parse(savedCart) as CartItem[]);
       } catch (e) {
         console.error("Greška pri učitavanju korpe:", e);
       }
