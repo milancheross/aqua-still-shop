@@ -7,8 +7,8 @@ import { createAdminCategory, deleteAdminCategory, getAdminCategories, updateAdm
 import { uploadMediaAction } from "@/actions/media-actions";
 
 type Category = Awaited<ReturnType<typeof getAdminCategories>>[number];
-type CategoryForm = { name: string; slug: string; description: string; seoTitle: string; seoDescription: string; imageUrl: string };
-const emptyForm: CategoryForm = { name: "", slug: "", description: "", seoTitle: "", seoDescription: "", imageUrl: "" };
+type CategoryForm = { name: string; slug: string; description: string; seoTitle: string; seoDescription: string; imageUrl: string; featured: boolean; sortOrder: number };
+const emptyForm: CategoryForm = { name: "", slug: "", description: "", seoTitle: "", seoDescription: "", imageUrl: "", featured: false, sortOrder: 0 };
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -163,7 +163,7 @@ export default function AdminCategoriesPage() {
 
   const startEdit = (category: Category) => {
     setEditingId(category.id);
-    setForm({ name: category.name, slug: category.slug, description: category.description ?? "", seoTitle: category.seoTitle ?? "", seoDescription: category.seoDescription ?? "", imageUrl: category.imageUrl ?? "" });
+    setForm({ name: category.name, slug: category.slug, description: category.description ?? "", seoTitle: category.seoTitle ?? "", seoDescription: category.seoDescription ?? "", imageUrl: category.imageUrl ?? "", featured: category.featured, sortOrder: category.sortOrder });
     setError("");
     setSuccess("");
   };
@@ -208,6 +208,16 @@ export default function AdminCategoriesPage() {
             <label className="block space-y-1.5"><span className="text-xs font-bold uppercase tracking-wide text-slate-600">SEO naslov</span><input value={form.seoTitle} onChange={(e) => setForm((current) => ({ ...current, seoTitle: e.target.value }))} maxLength={60} placeholder="Npr. Vodovodni materijal | Aqua Still Zlatibor" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" /><p className="text-[10px] text-slate-400">{form.seoTitle.length}/60 karaktera</p></label>
             <label className="block space-y-1.5"><span className="text-xs font-bold uppercase tracking-wide text-slate-600">SEO opis</span><textarea rows={3} value={form.seoDescription} onChange={(e) => setForm((current) => ({ ...current, seoDescription: e.target.value }))} maxLength={160} placeholder="Kratak opis za Google rezultate pretrage..." className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" /><p className="text-[10px] text-slate-400">{form.seoDescription.length}/160 karaktera</p></label>
           </div>
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-cyan-200 bg-cyan-50/50 p-3">
+              <input type="checkbox" checked={form.featured} onChange={(e) => setForm((current) => ({ ...current, featured: e.target.checked }))} className="mt-0.5 h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500" />
+              <span><span className="block text-xs font-black uppercase tracking-wide text-cyan-800">Istaknuta na početnoj</span><span className="mt-1 block text-[11px] leading-relaxed text-slate-500">Prikaži ovu kategoriju u glavnom bloku „Najtraženije kategorije“.</span></span>
+            </label>
+            <label className="space-y-1.5">
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-600">Redosled</span>
+              <input type="number" min={0} step={1} value={form.sortOrder} onChange={(e) => setForm((current) => ({ ...current, sortOrder: Number(e.target.value) || 0 }))} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-bold text-slate-900 outline-none focus:border-cyan-500 focus:bg-white focus:ring-2 focus:ring-cyan-100" />
+            </label>
+          </div>
           <div className="space-y-2">
             <span className="text-xs font-bold uppercase tracking-wide text-slate-600">Fotografija kategorije</span>
             {form.imageUrl ? <div className="relative aspect-[16/9] overflow-hidden rounded-xl border border-slate-200 bg-slate-50"><Image src={form.imageUrl} alt="Pregled fotografije kategorije" fill sizes="(max-width: 1024px) 100vw, 40vw" className="object-cover" /><button type="button" onClick={() => setForm((current) => ({ ...current, imageUrl: "" }))} aria-label="Ukloni fotografiju" className="absolute right-2 top-2 rounded-lg bg-white/95 p-2 text-red-600 shadow"><X className="h-4 w-4" /></button></div> : <div className="flex aspect-[16/9] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-400"><ImagePlus className="h-8 w-8" /></div>}
@@ -225,7 +235,7 @@ export default function AdminCategoriesPage() {
           {loading ? <div className="rounded-2xl border border-slate-200 bg-white py-16 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-cyan-600" /></div> : categories.length === 0 ? <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Još nema kreiranih kategorija.</div> : <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {categories.map((category) => <article key={category.id} className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${editingId === category.id ? "border-cyan-500 ring-2 ring-cyan-100" : "border-slate-200"}`}>
               <div className="relative aspect-[16/8] bg-gradient-to-br from-slate-100 to-cyan-50">{category.imageUrl ? <Image src={category.imageUrl} alt={category.name} fill sizes="(max-width: 640px) 100vw, 30vw" className="object-cover" /> : <div className="absolute inset-0 flex items-center justify-center text-4xl font-black text-cyan-800/20">{category.name.slice(0,1)}</div>}<span className="absolute bottom-2 left-2 rounded-lg bg-white/90 px-2 py-1 text-[10px] font-bold text-slate-600">{category.imageUrl ? "Ima fotografiju" : "Bez fotografije"}</span></div>
-              <div className="space-y-2 p-3 sm:p-4"><div><h3 className="line-clamp-2 text-sm font-bold text-slate-900">{category.name}</h3><p className="mt-1 truncate font-mono text-xs text-slate-500">/{category.slug}</p></div><div className="flex gap-2"><button type="button" onClick={() => startEdit(category)} className="min-h-10 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800">Uredi kategoriju</button><button type="button" onClick={() => handleDelete(category.id)} aria-label={`Obriši kategoriju ${category.name}`} className="min-h-10 rounded-lg border border-red-100 px-3 py-2 text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button></div>
+              <div className="space-y-2 p-3 sm:p-4"><div><div className="flex flex-wrap items-center gap-1.5"><h3 className="line-clamp-2 text-sm font-bold text-slate-900">{category.name}</h3>{category.featured && <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-cyan-800">Početna</span>}</div><p className="mt-1 truncate font-mono text-xs text-slate-500">/{category.slug} · redosled {category.sortOrder}</p></div><div className="flex gap-2"><button type="button" onClick={() => startEdit(category)} className="min-h-10 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800">Uredi kategoriju</button><button type="button" onClick={() => handleDelete(category.id)} aria-label={`Obriši kategoriju ${category.name}`} className="min-h-10 rounded-lg border border-red-100 px-3 py-2 text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button></div>
                 {category.subcategories.length > 0 && <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
                   <p className="text-[11px] font-black uppercase tracking-wide text-slate-500">Podkategorije — zasebne fotografije</p>
                   {category.subcategories.map((subcategory) => editingSubcategoryId === subcategory.id ? (
