@@ -96,7 +96,7 @@ export default function HomePageEditor({
       <div className="grid flex-1 gap-0 lg:grid-cols-[420px_1fr]">
         <form className="space-y-5 overflow-y-auto border-r border-slate-800 bg-slate-950 p-6" onSubmit={(event) => { event.preventDefault(); handleSave(); }}>
           <p className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs leading-relaxed text-slate-400">
-            Slika banera i dalje dolazi iz Medijske biblioteke, folder <span className="font-bold text-cyan-300">hero</span>. Ovde se menja tekst početne stranice.
+            Desktop hero dolazi iz foldera <span className="font-bold text-cyan-300">hero</span>, a mobilni iz <span className="font-bold text-blue-300">hero-mobile</span>. Oba se podešavaju u Medijskoj biblioteci. Ovde se menja tekst početne stranice.
           </p>
           <Field label="Natpis iznad naslova" value={form.eyebrow} onChange={set("eyebrow")} />
           <Field label="Glavni naslov" value={form.title} onChange={set("title")} />
