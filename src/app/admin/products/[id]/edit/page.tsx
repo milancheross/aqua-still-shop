@@ -68,7 +68,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
           });
 
           if (p.attributes && typeof p.attributes === "object") {
-            const attrList = Object.entries(p.attributes as Record<string, any>).map(([key, value]) => ({
+            const attrList = Object.entries(p.attributes as Record<string, unknown>).map(([key, value]) => ({
               key,
               value: String(value),
             }));
