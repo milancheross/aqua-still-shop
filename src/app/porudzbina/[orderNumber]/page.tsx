@@ -1,7 +1,8 @@
 import React from "react";
 import Link from "next/link";
 import { CheckCircle2, Package, ArrowRight, Truck, MapPin, Phone, Mail } from "lucide-react";
-import { db } from "@/lib/db";\nimport type { Prisma } from "@prisma/client";
+import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { formatPrice } from "@/lib/utils";
 
 interface OrderConfirmationPageProps {
