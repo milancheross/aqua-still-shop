@@ -145,7 +145,7 @@ export default function AdminMediaPage() {
     return matchesSearch && (selectedFolder === "all" || item.folder === selectedFolder);
   });
 
-  const folders = ["all", "general", "products", "logo", "hero", "hero-mobile"];
+  const folders = ["all", "general", "products", "categories", "projects", "tips", "logo", "hero", "hero-mobile"];
 
   return (
     <div className="space-y-8">
