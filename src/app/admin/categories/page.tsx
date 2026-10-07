@@ -50,7 +50,7 @@ export default function AdminCategoriesPage() {
   const compressImageForUpload = async (file: File): Promise<File> => {
     if (!file.type.startsWith("image/")) return file;
 
-    const image = new Image();
+    const image = new window.Image();
     const objectUrl = URL.createObjectURL(file);
     try {
       image.src = objectUrl;
