@@ -28,6 +28,9 @@ model Subcategory {
   category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   name       String
   slug       String    @unique
+  description String?
+  seoTitle   String?   @map("seo_title")
+  seoDescription String? @map("seo_description")
   itemCount  Int       @default(0) @map("item_count")
   imageUrl   String?   @map("image_url")
   createdAt  DateTime  @default(now()) @map("created_at")
