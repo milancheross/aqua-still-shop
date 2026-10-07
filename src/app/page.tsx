@@ -278,11 +278,16 @@ export default async function HomePage() {
               <h2 className="text-xl font-black text-slate-900 sm:text-2xl">Korisni saveti, vodiči i inspiracija</h2>
               <p className="mt-1 text-xs text-slate-500 sm:text-sm">Kratki vodiči koji pomažu pri izboru proizvoda.</p>
             </div>
-            <Link href="/katalog" className="text-xs font-bold text-cyan-700">Istraži ponudu <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
+            <Link href="/saveti" className="text-xs font-bold text-cyan-700">Pogledaj sve savete <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {tipImages.map((image, index) => (
-              <Link key={image.url} href="/katalog" className="group relative aspect-[1.45] overflow-hidden rounded-xl">
+              <Link key={image.url} href={"/saveti/" + [
+  "kako-izabrati-pravu-pumpu-za-vodu",
+  "renoviranje-kupatila-od-cega-poceti",
+  "sistemi-za-navodnjavanje-za-vase-dvoriste",
+  "farbanje-zida-korak-po-korak",
+][index]} className="group relative aspect-[1.45] overflow-hidden rounded-xl">
                 <Image src={image.url} alt={image.altText || "Aqua Still savet"} fill sizes="25vw" className="object-cover transition duration-500 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent" />
                 <div className="absolute bottom-0 p-3 text-white sm:p-4">
