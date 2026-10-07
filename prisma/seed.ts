@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
+import { getMissingRequiredAttributes } from "../src/lib/catalog-attribute-schema";
 
 const prisma = new PrismaClient();
 
@@ -497,6 +498,11 @@ async function main() {
   ];
 
   for (const prod of productsData) {
+    const missingAttributes = getMissingRequiredAttributes(prod.subcategorySlug, prod.attributes);
+    if (missingAttributes.length > 0) {
+      throw new Error("Product " + prod.sku + " is missing required attributes: " + missingAttributes.join(", "));
+    }
+
     await prisma.product.upsert({
       where: { id: prod.id },
       update: {
