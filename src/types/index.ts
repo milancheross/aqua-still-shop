@@ -6,6 +6,8 @@ export interface ProductCategory {
   seoTitle?: string;
   seoDescription?: string;
   imageUrl?: string;
+  featured: boolean;
+  sortOrder: number;
   itemCount: number;
   iconName: "wrench" | "droplet" | "bath" | "sprout" | "layers";
   subcategories: {
