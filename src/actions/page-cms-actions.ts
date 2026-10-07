@@ -148,9 +148,10 @@ export async function saveHomePage(input: HomeContent & { isPublished: boolean }
     });
   } catch (error) {
     console.error("Error saving homepage:", error);
+    const message = error instanceof Error ? error.message : "Nepoznata greška baze.";
     return {
       success: false,
-      error: "Početna stranica nije sačuvana. Proverite vezu sa bazom i pokušajte ponovo.",
+      error: `Početna stranica nije sačuvana: ${message}`,
     };
   }
 
