@@ -67,6 +67,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             <p className="text-xs text-slate-500">Porudžbine kupaca će se automatski pojaviti ovde nakon završetka checkout-a.</p>
           </div>
         ) : (
+          <>
           <div className="space-y-3 lg:hidden">
             {visible.map((order) => {
               const customer = order.customerInfo;
@@ -169,6 +170,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </div>
