@@ -9,6 +9,7 @@ import {
 import {
   assignWarehouseLocation, recordWarehouseMovement, searchWarehouseProduct
 } from "@/actions/warehouse-actions";
+import BarcodeScanner from "@/components/warehouse/BarcodeScanner";
 
 type Product = {
   id: string; sku: string; barcode: string | null; name: string; brand: string;
@@ -32,7 +33,8 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Product | null>(null);
   const [busy, startTransition] = useTransition();
-  const [message, setMessage] = useState("");\n  const [scannerOpen, setScannerOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -80,7 +82,7 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
     setQuery(trimmed);
     startTransition(async () => {
       try {
-        const result = await searchWarehouseProduct(query);
+        const result = await searchWarehouseProduct(trimmed);
         if (!result) {
           setMessage("Proizvod nije pronađen po šifri, barkodu ili nazivu.");
           return;
@@ -290,7 +292,9 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
         </section>
       )}
 
-      {scannerOpen && <BarcodeScanner onDetected={handleBarcodeDetected} onClose={() => setScannerOpen(false)} />}\n\n    <div className="text-center text-[11px] text-slate-400">Zaliha je vezana za isti Product zapis koji koristi webshop. Magacin vodi lokaciju i istoriju promena u istoj PostgreSQL bazi.</div>
+      {scannerOpen && <BarcodeScanner onDetected={handleBarcodeDetected} onClose={() => setScannerOpen(false)} />}
+
+    <div className="text-center text-[11px] text-slate-400">Zaliha je vezana za isti Product zapis koji koristi webshop. Magacin vodi lokaciju i istoriju promena u istoj PostgreSQL bazi.</div>
     </div>
   );
 }
