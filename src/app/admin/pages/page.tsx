@@ -15,7 +15,7 @@ export default async function AdminPagesPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="mx-auto w-full max-w-6xl space-y-5 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Upravljanje stranicama</h1>
@@ -39,34 +39,7 @@ export default async function AdminPagesPage() {
             <p className="text-xs text-slate-500">Kliknite na dugme gore da kreirate prvu stranicu.</p>
           </div>
         ) : (
-          <div className="space-y-3 lg:hidden">
-            {pages.map((p) => (
-              <article key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2 className="truncate text-sm font-black text-slate-900">{p.title}</h2>
-                    <p className="mt-1 truncate font-mono text-[11px] text-cyan-700">/{p.slug}</p>
-                  </div>
-                  {p.isPublished ? (
-                    <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700">Objavljeno</span>
-                  ) : (
-                    <span className="shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700">Nacrt</span>
-                  )}
-                </div>
-                <p className="mt-3 text-[11px] text-slate-400">Izmenjeno: {new Date(p.updatedAt).toLocaleDateString("sr-RS")}</p>
-                <div className="mt-3 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3">
-                  {p.isPublished && <Link href={`/${p.slug}`} target="_blank" className="inline-flex min-h-10 items-center justify-center rounded-xl bg-slate-50 text-xs font-bold text-slate-700">Pregled</Link>}
-                  <Link href={p.slug === "pocetna" ? "/admin/editor?home=1" : `/admin/editor?id=${p.id}`} className="inline-flex min-h-10 items-center justify-center rounded-xl bg-cyan-50 text-xs font-bold text-cyan-700">Uredi</Link>
-                  <form action={handleDelete} onSubmit={(e) => { if (!confirm("Da li ste sigurni da želite da obrišete ovu stranicu?")) e.preventDefault(); }}>
-                    <input type="hidden" name="id" value={p.id} />
-                    <button type="submit" className="min-h-10 w-full rounded-xl bg-red-50 text-xs font-bold text-red-700">Obriši</button>
-                  </form>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="hidden overflow-x-auto lg:block">
+          <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
