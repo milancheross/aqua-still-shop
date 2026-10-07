@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { CheckCircle2, Package, ArrowRight, Truck, MapPin, Phone, Mail } from "lucide-react";
-import { db } from "@/lib/db";
+import { db } from "@/lib/db";\nimport type { Prisma } from "@prisma/client";
 import { formatPrice } from "@/lib/utils";
 
 interface OrderConfirmationPageProps {
@@ -13,7 +13,7 @@ export default async function OrderConfirmationPage({ params, searchParams }: Or
   const { orderNumber } = await params;
   const { key } = await searchParams;
 
-  let orderRecord: any = null;
+  type OrderWithItems = Prisma.OrderGetPayload<{ include: { orderItems: true } }>;\n  let orderRecord: OrderWithItems | null = null;
   try {
     if (process.env.DATABASE_URL) {
       orderRecord = await db.order.findUnique({
@@ -25,10 +25,10 @@ export default async function OrderConfirmationPage({ params, searchParams }: Or
     console.warn("Could not fetch order from DB:", error);
   }
 
-  const storedInfo = orderRecord?.customerInfo as any;
+  type CustomerInfo = {\n    confirmationToken?: string;\n    firstName?: string;\n    lastName?: string;\n    phone?: string;\n    street?: string;\n    postalCode?: string;\n    city?: string;\n    shippingMethod?: string;\n  };\n  const storedInfo = orderRecord?.customerInfo as CustomerInfo | null;
   const order = storedInfo?.confirmationToken && key && storedInfo.confirmationToken === key ? orderRecord : null;
-  const customerInfo = order?.customerInfo as any;
-  const items = order?.orderItems || order?.items || [];
+  const customerInfo = order?.customerInfo as CustomerInfo | null;
+  const items = order?.orderItems ?? [];
 
   return (
     <div className="bg-slate-50 min-h-screen py-16">
