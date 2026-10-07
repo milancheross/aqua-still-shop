@@ -25,10 +25,10 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     .slice(0, 4);
 
   return (
-    <div className="bg-slate-50 min-h-screen py-10">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <div className="min-h-screen bg-slate-50 py-5 sm:py-10">
+      <div className="container mx-auto space-y-6 px-3 sm:space-y-12 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
-        <div className="flex items-center space-x-2 text-xs text-slate-500 font-medium">
+        <div className="flex items-center gap-2 overflow-hidden text-[10px] font-medium text-slate-500 sm:text-xs">
           <Link href="/" className="hover:text-cyan-600">Početna</Link>
           <span>/</span>
           <Link href="/katalog" className="hover:text-cyan-600">Katalog</Link>
@@ -39,22 +39,22 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         </div>
 
         {/* Product Main Section */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 gap-5 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm sm:gap-10 sm:p-10 lg:grid-cols-12">
           {/* Images Gallery */}
           <div className="lg:col-span-6 space-y-4">
-            <div className="relative aspect-square bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden p-8 flex items-center justify-center">
+            <div className="relative aspect-square overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 p-3 sm:p-8">
               <Image
                 src={product.images[0] || "/placeholder-tool.svg"}
                 alt={product.name}
                 fill
-                className="object-contain p-4"
+                className="object-contain p-2 sm:p-4"
                 priority
               />
             </div>
           </div>
 
           {/* Product Details */}
-          <div className="lg:col-span-6 space-y-6">
+          <div className="space-y-5 lg:col-span-6 lg:space-y-6">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold bg-cyan-100 text-cyan-800 px-3 py-1 rounded-full uppercase tracking-wider">
@@ -62,7 +62,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 </span>
                 <span className="text-xs text-slate-400 font-mono">Šifra: {product.sku}</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">
+              <h1 className="text-xl font-black leading-tight text-slate-900 sm:text-3xl">
                 {product.name}
               </h1>
             </div>
@@ -78,7 +78,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             </div>
 
             {/* Price & Stock */}
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+            <div className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 {product.salePrice ? (
                   <div className="space-y-1">
@@ -91,7 +91,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 <span className="text-[11px] text-slate-500 mt-0.5 block">Cena je sa uračunatim PDV-om (20%)</span>
               </div>
 
-              <div className="text-right">
+              <div className="text-left sm:text-right">
                 {product.inStock && product.stockQuantity > 0 ? (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">
                     <Check className="w-3.5 h-3.5" /> Na stanju ({product.stockQuantity} {product.unit})
@@ -121,7 +121,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             {product.attributes && Object.keys(product.attributes).length > 0 && (
               <div className="space-y-2 pt-2 border-t border-slate-100">
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Tehničke karakteristike:</h4>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
                   {Object.entries(product.attributes).map(([key, val]) => (
                     <div key={key} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                       <span className="text-slate-400 uppercase text-[10px] block">{key}</span>
@@ -136,7 +136,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
         {/* Long Description */}
         {product.description && (
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm space-y-4">
+          <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-10">
             <h3 className="text-lg font-black text-slate-900">Detaljan opis proizvoda</h3>
             <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-line">{product.description}</p>
           </div>
@@ -146,7 +146,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         {relatedProducts.length > 0 && (
           <div className="space-y-6">
             <h3 className="text-xl font-black text-slate-900">Slični proizvodi</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
               {relatedProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
