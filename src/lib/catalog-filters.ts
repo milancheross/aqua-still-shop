@@ -14,11 +14,10 @@ const commonFilters: CatalogFilterDefinition[] = [
 
 export const CATEGORY_FILTERS: Record<string, CatalogFilterDefinition[]> = {
   alati: [
-    { key: "materijal", label: "Materijal", type: "select" },
-    { key: "prihvat", label: "Prihvat", type: "select" },
-    { key: "napon", label: "Napon", type: "select" },
-    { key: "snaga", label: "Snaga", type: "select" },
-    { key: "motor", label: "Motor", type: "select" },
+    { key: "napon", label: "Napon baterije", type: "select" },
+    { key: "snaga", label: "Snaga motora", type: "select" },
+    { key: "motor", label: "Tip motora", type: "select" },
+    { key: "prihvat", label: "Prihvat alata", type: "select" },
   ],
   "elektricni-alat": [
     { key: "napon", label: "Napon", type: "select" },
@@ -28,21 +27,20 @@ export const CATEGORY_FILTERS: Record<string, CatalogFilterDefinition[]> = {
     { key: "materijal", label: "Materijal", type: "select" },
   ],
   vodovod: [
+    { key: "precnik", label: "Prečnik / Dimenzija", type: "select" },
     { key: "materijal", label: "Materijal", type: "select" },
-    { key: "precnik", label: "Prečnik", type: "select" },
     { key: "pritisak", label: "Radni pritisak", type: "select" },
-    { key: "duzina", label: "Dužina", type: "select" },
   ],
   kupatila: [
-    { key: "materijal", label: "Materijal", type: "select" },
     { key: "zavrsna_obrada", label: "Završna obrada", type: "select" },
-    { key: "montaza", label: "Montaža", type: "select" },
-    { key: "kartusa", label: "Kartuša", type: "select" },
+    { key: "montaza", label: "Vrsta montaže", type: "select" },
+    { key: "kartusa", label: "Tip mešača", type: "select" },
+    { key: "materijal", label: "Materijal", type: "select" },
   ],
   navodnjavanje: [
-    { key: "prikljucak", label: "Priključak", type: "select" },
-    { key: "pritisak", label: "Pritisak", type: "select" },
-    { key: "duzina", label: "Dužina", type: "select" },
+    { key: "prikljucak", label: "Navoj / Priključak", type: "select" },
+    { key: "domet", label: "Domet rasprskivanja", type: "select" },
+    { key: "protok", label: "Protok vode", type: "select" },
     { key: "materijal", label: "Materijal", type: "select" },
     { key: "napon", label: "Napon", type: "select" },
   ],
