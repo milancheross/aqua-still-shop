@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { Product, ProductCategory } from "@/types";
 import { getCategoryFilterDefinitions } from "@/lib/catalog-filters";
-import { AQUA_STILL_CATEGORY_ORDER } from "@/lib/catalog-taxonomy";
 import { 
   getProducts as getMockProducts, 
   getProductBySlug as getMockProductBySlug, 
