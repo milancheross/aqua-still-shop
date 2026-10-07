@@ -31,7 +31,7 @@ export default function AdminBrandsPage() {
     }
   };
 
-  useEffect(() => { void loadData(); }, []);
+  // This effect intentionally hydrates client state from the server action on mount.\n  // eslint-disable-next-line react-hooks/set-state-in-effect\n  useEffect(() => { void loadData(); }, []);
 
   const resetForm = () => { setForm(emptyForm); setEditingId(null); };
 
