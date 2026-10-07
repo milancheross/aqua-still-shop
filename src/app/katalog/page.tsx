@@ -6,6 +6,7 @@ import { getDbProducts, getDbCategories, getDbBrands } from "@/services/product-
 import { getCategoryFilterDefinitions, getFilterValues } from "@/lib/catalog-filters";
 import ProductCard from "@/components/catalog/ProductCard";
 import CatalogSortSelect from "@/components/catalog/CatalogSortSelect";
+import CatalogFilterPanel from "@/components/catalog/CatalogFilterPanel";
 
 interface CatalogPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -119,7 +120,17 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       )}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-        <aside className="lg:col-span-1">
+        <CatalogFilterPanel activeCount={[
+          searchQuery,
+          selectedBrand,
+          selectedCategory,
+          selectedSubcategory,
+          inStockOnly ? "inStock" : "",
+          minPrice !== undefined ? "minPrice" : "",
+          maxPrice !== undefined ? "maxPrice" : "",
+          ...Object.keys(selectedAttributes),
+        ].filter(Boolean).length}>
+        <aside>
           <div className="sticky top-24 space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <h3 className="flex items-center gap-2 font-black text-slate-900">
@@ -240,6 +251,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             </form>
           </div>
         </aside>
+        </CatalogFilterPanel>
 
         <main className="space-y-6 lg:col-span-3">
           <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row">
