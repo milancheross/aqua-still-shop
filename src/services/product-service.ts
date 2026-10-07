@@ -53,8 +53,6 @@ export async function getDbProducts(options?: {
   maxPrice?: number;
   inStockOnly?: boolean;
   search?: string;
-  minPrice?: number;
-  maxPrice?: number;
   attributes?: Record<string, string | number | boolean>;
   sort?: "price-asc" | "price-desc" | "name" | "popular";
 }): Promise<Product[]> {
