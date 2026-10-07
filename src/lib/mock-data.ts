@@ -1,84 +1,28 @@
 import { ProductCategory, Product } from "@/types";
+import { AQUA_STILL_TAXONOMY } from "@/lib/catalog-taxonomy";
+import { getCategoryFilterDefinitions } from "@/lib/catalog-filters";
 
-export const CATEGORIES: ProductCategory[] = [
-  {
-    id: "cat-alati",
-    name: "Alati i oprema",
-    slug: "alati",
-    description: "Profesionalni i hobi električni i ručni alati, pribor i oprema za majstore i radionice.",
-    itemCount: 420,
-    iconName: "wrench",
-    subcategories: [
-      { id: "sub-aku-busilice", name: "Aku bušilice i odvijači", slug: "aku-busilice", itemCount: 110 },
-      { id: "sub-brusilice", name: "Ugaone brusilice", slug: "brusilice", itemCount: 85 },
-      { id: "sub-rucni-alat", name: "Ručni alati i ključevi", slug: "rucni-alat", itemCount: 145 },
-      { id: "sub-testere", name: "Testere i cirkulari", slug: "testere", itemCount: 80 },
-    ],
-    attributes: [
-      { key: "napon", label: "Napon baterije", type: "select", options: ["12V", "18V", "40V", "230V"] },
-      { key: "snaga", label: "Snaga motora", type: "select", options: ["500W - 800W", "850W - 1200W", "1500W+"] },
-      { key: "motor", label: "Tip motora", type: "select", options: ["Brushless (bez četkica)", "Sa četkicama"] },
-      { key: "prihvat", label: "Prihvat alata", type: "select", options: ["13 mm", "SDS-Plus", "SDS-Max", "1/2 cola"] },
-    ],
-  },
-  {
-    id: "cat-vodovod",
-    name: "Vodovod i kanalizacija",
-    slug: "vodovod",
-    description: "Cevi, fiting, ventili, pumpe i kompletan materijal za vodovodne instalacije.",
-    itemCount: 380,
-    iconName: "droplet",
-    subcategories: [
-      { id: "sub-cevi", name: "Cevi i kanali", slug: "cevi", itemCount: 120 },
-      { id: "sub-fiting", name: "Fiting i spojnice", slug: "fiting", itemCount: 130 },
-      { id: "sub-ventili", name: "Kugla ventili i zasuni", slug: "ventili", itemCount: 75 },
-      { id: "sub-pumpe-voda", name: "Pumpe za vodu i hidrofori", slug: "pumpe-za-vodu", itemCount: 55 },
-    ],
-    attributes: [
-      { key: "precnik", label: "Prečnik / Dimenzija", type: "select", options: ["1/2\"", "3/4\"", "1\"", "fi 25", "fi 32", "fi 50", "fi 110"] },
-      { key: "materijal", label: "Materijal", type: "select", options: ["PP-R", "PVC", "PE-HD", "Mesing", "Inox"] },
-      { key: "pritisak", label: "Radni pritisak", type: "select", options: ["PN 6", "PN 10", "PN 16", "PN 20", "PN 30"] },
-    ],
-  },
-  {
-    id: "cat-kupatila",
-    name: "Kupatilska oprema i sanitarije",
-    slug: "kupatila",
-    description: "Baterije za kadu i lavabo, sanitarije, tuš program i moderna oprema za kupatila.",
-    itemCount: 290,
-    iconName: "bath",
-    subcategories: [
-      { id: "sub-baterije", name: "Slavine i baterije", slug: "slavine-i-baterije", itemCount: 110 },
-      { id: "sub-sanitarije", name: "Sanitarije i ugradni sistemi", slug: "sanitarije", itemCount: 95 },
-      { id: "sub-tus-program", name: "Tuš kabine i stubovi", slug: "tus-program", itemCount: 50 },
-      { id: "sub-namestaj", name: "Kupatilski nameštaj", slug: "kupatilski-namestaj", itemCount: 35 },
-    ],
-    attributes: [
-      { key: "zavrsna_obrada", label: "Završna obrada", type: "select", options: ["Hrom sjaj", "Mat crna", "Brušeni inox", "Bela"] },
-      { key: "montaza", label: "Vrsta montaže", type: "select", options: ["Stojeća (na lavabo)", "Zidna", "Ugradna (skrivena)"] },
-      { key: "kartusa", label: "Tip mešača", type: "select", options: ["Keramički 28mm", "Keramički 35mm", "Termostatski"] },
-    ],
-  },
-  {
-    id: "cat-navodnjavanje",
-    name: "Sistemi za navodnjavanje",
-    slug: "navodnjavanje",
-    description: "Sve za profesionalno navodnjavanje voćnjaka, bašti, parkova i plastenika.",
-    itemCount: 215,
-    iconName: "sprout",
-    subcategories: [
-      { id: "sub-kap-po-kap", name: "Sistemi kap po kap", slug: "kap-po-kap", itemCount: 65 },
-      { id: "sub-prskalice", name: "Rasprskivači i rotori", slug: "prskalice", itemCount: 60 },
-      { id: "sub-creva", name: "Baštenska i tehnička creva", slug: "creva", itemCount: 50 },
-      { id: "sub-automatika", name: "Elektroventili i tajmeri", slug: "automatika", itemCount: 40 },
-    ],
-    attributes: [
-      { key: "prikljucak", label: "Navoj / Priključak", type: "select", options: ["1/2\"", "3/4\"", "1\"", "1 1/4\""] },
-      { key: "domet", label: "Domet rasprskivanja", type: "select", options: ["3 - 5 m", "5 - 10 m", "10 - 15 m"] },
-      { key: "protok", label: "Protok vode", type: "select", options: ["2 l/h", "4 l/h", "500 - 1500 l/h", "2000+ l/h"] },
-    ],
-  },
-];
+export const CATEGORIES: ProductCategory[] = AQUA_STILL_TAXONOMY.map((category) => ({
+  id: category.id,
+  name: category.name,
+  slug: category.slug,
+  description: category.description,
+  itemCount: 0,
+  iconName: category.iconName as ProductCategory["iconName"],
+  subcategories: category.subcategories.map((subcategory) => ({
+    id: subcategory.id,
+    name: subcategory.name,
+    slug: subcategory.slug,
+    itemCount: 0,
+  })),
+  attributes: getCategoryFilterDefinitions(category.slug).map((filter) => ({
+    key: filter.key,
+    label: filter.label,
+    type: filter.type,
+    options: filter.options,
+    unit: filter.unit,
+  })),
+}));
 
 export const PRODUCTS: Product[] = [
   // --- ALATI ---
@@ -375,8 +319,8 @@ export const PRODUCTS: Product[] = [
     brand: "Geberit",
     categorySlug: "kupatila",
     categoryName: "Kupatilska oprema i sanitarije",
-    subcategorySlug: "sanitarije",
-    subcategoryName: "Sanitarije i ugradni sistemi",
+    subcategorySlug: "ugradni-sistemi",
+    subcategoryName: "Ugradni sistemi i vodokotlići",
     price: 24900,
     salePrice: 21990,
     vatRate: 0.2,
@@ -478,6 +422,14 @@ export const PRODUCTS: Product[] = [
     isFeatured: false,
   },
 ];
+
+// Keep the development catalogue counts consistent with the actual mock products.
+for (const category of CATEGORIES) {
+  category.itemCount = PRODUCTS.filter((product) => product.categorySlug === category.slug).length;
+  for (const subcategory of category.subcategories) {
+    subcategory.itemCount = PRODUCTS.filter((product) => product.subcategorySlug === subcategory.slug).length;
+  }
+}
 
 export const BRANDS = Array.from(new Set(PRODUCTS.map((p) => p.brand))).sort();
 
