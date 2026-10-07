@@ -62,7 +62,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   const activeCategory = categories.find((category) => category.slug === selectedCategory);
   const activeSubcategory = activeCategory?.subcategories.find((subcategory) => subcategory.slug === selectedSubcategory);
-  const filterDefinitions = getCategoryFilterDefinitions(selectedCategory);
+  const filterDefinitions = getCategoryFilterDefinitions(selectedCategory, selectedSubcategory);
 
   const buildUrl = (changes: Record<string, string | null | undefined>) => {
     const query = new URLSearchParams();
