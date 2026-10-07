@@ -22,7 +22,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const selectedBrand = firstParam(params.brand);
   const selectedCategory = firstParam(params.category);
   const selectedSubcategory = firstParam(params.subcategory);
-  const sortOption = (firstParam(params.sort) ?? "popular") as "popular" | "price-asc" | "price-desc" | "name";
+  const sortOption = (firstParam(params.sort) ?? "newest") as "popular" | "price-asc" | "price-desc" | "name" | "newest";
   const inStockOnly = params.inStock === "true";
   const minPrice = Number.isFinite(Number(params.minPrice)) && firstParam(params.minPrice) ? Number(params.minPrice) : undefined;
   const maxPrice = Number.isFinite(Number(params.maxPrice)) && firstParam(params.maxPrice) ? Number(params.maxPrice) : undefined;
@@ -44,7 +44,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       categorySlug: selectedCategory,
       subcategorySlug: selectedSubcategory,
       inStockOnly,
-      sort: "popular",
+      sort: "newest",
     }),
     getDbProducts({
       search: searchQuery,
