@@ -75,12 +75,232 @@ function pickBundleProducts(products: Awaited<ReturnType<typeof getDbProducts>>,
 export function generateStaticParams() {
   return [
     { slug: "kako-izabrati-pravu-pumpu-za-vodu" },
+    { slug: "sistemi-za-navodnjavanje-za-vase-dvoriste" },
     ...Object.keys(articles).map((slug) => ({ slug })),
   ];
 }
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+
+  if (slug === "sistemi-za-navodnjavanje-za-vase-dvoriste") {
+    const [sprinklerProducts, dripProducts, automationProducts] = await Promise.all([
+      getDbProducts({ search: "rasprskiv", sort: "newest" }),
+      getDbProducts({ search: "kap po kap", sort: "newest" }),
+      getDbProducts({ search: "ventil", sort: "newest" }),
+    ]);
+
+    const sprinklerBundle = pickBundleProducts(
+      sprinklerProducts,
+      /rasprskiv|rotor|pop.?up|prskal/i,
+      2,
+    );
+    const usedSprinklers = new Set(sprinklerBundle.map((product) => product.id));
+    const pipeAndValves = pickBundleProducts(
+      [...sprinklerProducts, ...automationProducts],
+      /pehd|polietilen|cev|ventil|spojn|t.?kom|razvodnik/i,
+      4,
+      usedSprinklers,
+    );
+    const dripBundle = pickBundleProducts(
+      dripProducts,
+      /kap.?po.?kap|kapalj|traka/i,
+      2,
+    );
+    const usedDrip = new Set(dripBundle.map((product) => product.id));
+    const dripAccessories = pickBundleProducts(
+      [...dripProducts, ...automationProducts],
+      /filter|regulator|ventil|čep|cep|nastav|spojn/i,
+      4,
+      usedDrip,
+    );
+
+    return (
+      <main className="bg-slate-50">
+        <div className="container mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+          <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-cyan-700 hover:text-cyan-900">
+            <ArrowLeft className="h-4 w-4" /> Nazad na početnu
+          </Link>
+
+          <article className="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <header className="border-b border-slate-200 px-6 py-8 sm:px-10 sm:py-10">
+              <span className="inline-flex rounded-md bg-cyan-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-800">TEHNIČKI VODIČ</span>
+              <h1 className="mt-4 max-w-4xl text-3xl font-black leading-tight tracking-tight text-slate-900 sm:text-5xl">
+                Sistemi za navodnjavanje – proračun pritiska, zone i izbor opreme
+              </h1>
+              <p className="mt-5 max-w-4xl text-base leading-7 text-slate-600 sm:text-lg">
+                Pogrešno dimenzionisan sistem rezultira suvim delovima travnjaka, zapušenim kapaljkama ili padom pritiska zbog koga se rasprskivači ne podižu iz zemlje. Pre kupovine cevi i prskalica prvo izmerite izvor vode i podelite parcelu na hidraulički nezavisne zone.
+              </p>
+            </header>
+
+            <div className="space-y-10 px-6 py-8 sm:px-10 sm:py-10">
+              <section className="rounded-2xl border border-cyan-200 bg-cyan-50/60 p-5 sm:p-7">
+                <div className="flex items-center gap-3">
+                  <Calculator className="h-5 w-5 text-cyan-700" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-700">Pre kupovine</p>
+                    <h2 className="text-xl font-black text-slate-900">Izmerite izvor vode</h2>
+                  </div>
+                </div>
+                <p className="mt-3 text-sm leading-7 text-slate-700">
+                  Za osnovni proračun potrebne su dve vrednosti: raspoloživ <strong>protok Q</strong> i <strong>radni pritisak</strong>. Test kante daje brzu procenu protoka na konkretnoj tački uzimanja vode.
+                </p>
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-xl border border-cyan-100 bg-white p-5">
+                    <p className="text-xs font-black uppercase tracking-wide text-cyan-700">Test kante</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">Napravite merenje sa kantom od 10 l i štopericom. Otvorite slavinu do kraja i izmerite vreme punjenja <strong>t</strong> u sekundama.</p>
+                    <div className="mt-4 rounded-lg bg-slate-900 px-4 py-3 text-center text-base font-black text-white sm:text-lg">Q = (10 / t) × 3600 [l/h]</div>
+                    <p className="mt-3 text-xs leading-5 text-slate-500">Primer: 10 l za 20 s = 1.800 l/h = 1,8 m³/h.</p>
+                  </div>
+                  <div className="rounded-xl border border-cyan-100 bg-white p-5">
+                    <p className="text-xs font-black uppercase tracking-wide text-cyan-700">Radni pritisak</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">Izmerite manometrom. Statički pritisak bez protoka nije dovoljan za dimenzionisanje — proverite kako pritisak izgleda dok voda stvarno teče.</p>
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-center">
+                      <div className="rounded-lg bg-slate-50 p-3"><strong className="block text-sm text-slate-900">Rasprskivači</strong><span className="text-xs text-slate-600">često 2,5–3,5 bar</span></div>
+                      <div className="rounded-lg bg-slate-50 p-3"><strong className="block text-sm text-slate-900">Kap po kap</strong><span className="text-xs text-slate-600">često 1,0–1,5 bar</span></div>
+                    </div>
+                    <p className="mt-3 text-xs leading-5 text-slate-500">Tačan radni pritisak uvek proverite prema karakteristikama konkretnog rasprskivača, kapaljke i regulatora.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <div className="mb-5 flex items-center gap-3">
+                  <Gauge className="h-5 w-5 text-cyan-700" />
+                  <h2 className="text-2xl font-black text-slate-900">1. Podela na zone i hidraulička pravila</h2>
+                </div>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-700">Zona 01 · Travnjak</p>
+                    <h3 className="mt-2 text-lg font-black text-slate-900">Pop-up rasprskivači, rotori i sprej dizne</h3>
+                    <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                      <li>• Zbir potrošnje rasprskivača držite do približno <strong>80% izmerenog protoka</strong> kao konzervativnu rezervu za pad pritiska i promene uslova.</li>
+                      <li>• Primer: izvor 1.800 l/h × 80% = 1.440 l/h. Ako jedan rotor troši 450 l/h, praktično staju najviše 3 rotora.</li>
+                      <li>• Glavne/lateralne cevi birajte prema dužini, protoku i padu pritiska; PEHD Ø25 ili Ø32 mm može biti polazna veličina za manje sisteme, ali ne kao univerzalno pravilo.</li>
+                    </ul>
+                    {sprinklerBundle.length > 0 && (
+                      <div className="mt-5">
+                        <p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Rasprskivači iz kataloga</p>
+                        <div className="grid grid-cols-2 gap-3">{sprinklerBundle.map((product) => <ProductCard key={product.id} product={product} />)}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-700">Zona 02 · Bašta i živa ograda</p>
+                    <h3 className="mt-2 text-lg font-black text-slate-900">Kap po kap</h3>
+                    <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                      <li>• Ne mešajte kap po kap i pop-up rasprskivače na istoj zoni: imaju različite zahteve za pritisak i protok.</li>
+                      <li>• Regulator pritiska postavite prema zahtevima trake/kapaljki; <strong>1,2–1,4 bar</strong> je česta radna vrednost, ali proverite deklaraciju konkretnog proizvoda.</li>
+                      <li>• Potrošnja zavisi od razmaka kapaljki i protoka po kapaljci. Nemojте računati „po metru“ bez specifikacije proizvođača.</li>
+                    </ul>
+                    {dripBundle.length > 0 && (
+                      <div className="mt-5">
+                        <p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Kap po kap iz kataloga</p>
+                        <div className="grid grid-cols-2 gap-3">{dripBundle.map((product) => <ProductCard key={product.id} product={product} />)}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-7">
+                <div className="flex items-center gap-3">
+                  <ShieldCheck className="h-5 w-5 text-cyan-700" />
+                  <h2 className="text-2xl font-black text-slate-900">2. Filtracija i automatika</h2>
+                </div>
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 bg-white p-5">
+                    <h3 className="font-black text-slate-900">Filter prema kvalitetu vode</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">Kod bunara, reka i cisterni filter je praktično obavezan. Mrežasti ili diskasti filter birajte prema zaprljanosti vode i zahtevima sistema; 120 mesh je primer za finu filtraciju, ne univerzalna specifikacija za svaki sistem.</p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-5">
+                    <h3 className="font-black text-slate-900">Elektromagnetni ventili</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">Svaka zona može imati svoj ventil na kolektoru. Kontroler zatim otvara zone prema rasporedu. Izbor 24 V AC ili 9 V DC zavisi od konkretnog kontrolera i načina napajanja.</p>
+                  </div>
+                </div>
+                {pipeAndValves.length > 0 && (
+                  <div className="mt-6">
+                    <p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Armatura i razvod iz kataloga</p>
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{pipeAndValves.map((product) => <ProductCard key={product.id} product={product} />)}</div>
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-2xl border border-cyan-200 bg-cyan-50/60 p-5 sm:p-7">
+                <div className="flex items-center gap-3">
+                  <Droplets className="h-5 w-5 text-cyan-700" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-700">Paket 01</p>
+                    <h2 className="text-xl font-black text-slate-900">Zona travnjaka · pop-up rasprskivači i armatura</h2>
+                  </div>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-slate-700">Polazni paket za stabilan razvod. Pre naručivanja proverite broj zona, radijus i potrošnju izabranih rasprskivača.</p>
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  {[
+                    "Pop-up rotacioni rasprskivač · radijus prema konkretnom modelu, okvirno 4,5–9 m",
+                    "PEHD polietilenska cev Ø32 mm, 10 bar · kotur 50 ili 100 m",
+                    "Kompresione spojnice i T-komadi Ø32 mm sa navojnim izlazom 1/2″",
+                    "Elektromagnetni ventil 1″ sa kontrolom protoka · napon prema kontroleru",
+                  ].map((item) => <div key={item} className="rounded-xl border border-cyan-100 bg-white p-4 text-sm font-semibold text-slate-800">{item}</div>)}
+                </div>
+                <p className="mt-5 flex items-center gap-2 text-xs font-black text-emerald-700"><CheckCircle2 className="h-4 w-4" />Stanje se proverava prema trenutnom katalogu; ne prikazujemo fiksno obećanje isporuke 24/48 h.</p>
+              </section>
+
+              <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-7">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-700">Paket 02</p>
+                <h2 className="mt-1 text-xl font-black text-slate-900">Živa ograda i bašta · kap po kap</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-600">Paket sa regulacijom pritiska i filtracijom. Razmak kapaljki i protok po kapaljci moraju odgovarati biljkama i dužini laterala.</p>
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  {[
+                    "Cev za navodnjavanje kap po kap Ø16 mm · integrisane kapaljke prema izabranom modelu",
+                    "Linijski regulator pritiska 3/4″ · izlazna vrednost prema specifikaciji sistema",
+                    "Mrežasti filter za vodu 1″ · finoća filtracije prema kvalitetu vode i zahtevima kapaljki",
+                    "Završni čepovi, ubodni nastavci i pričvrsne kukice Ø16 mm",
+                  ].map((item) => <div key={item} className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-800">{item}</div>)}
+                </div>
+                {dripAccessories.length > 0 && (
+                  <div className="mt-6">
+                    <p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Prateća oprema iz kataloga</p>
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{dripAccessories.map((product) => <ProductCard key={product.id} product={product} />)}</div>
+                  </div>
+                )}
+                <p className="mt-5 flex items-center gap-2 text-xs font-black text-emerald-700"><CheckCircle2 className="h-4 w-4" />Dostupnost proveravajte na karticama proizvoda pre poručivanja.</p>
+              </section>
+
+              <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:p-6">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+                  <div>
+                    <h2 className="text-xl font-black text-slate-900">Kontrola pre kupovine</h2>
+                    <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                      <li>• Izmeren protok izvora u l/h ili m³/h.</li>
+                      <li>• Izmeren radni pritisak dok voda teče.</li>
+                      <li>• Parcela podeljena na zone prema potrošnji i pritisku.</li>
+                      <li>• Izabran prečnik cevi prema dužini trase i protoku, ne samo prema priključku.</li>
+                      <li>• Predviđeni filter, regulator i ventili.</li>
+                      <li>• Proverena izdašnost bunara/cisterne ako se sistem napaja iz sopstvenog izvora.</li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-2xl bg-slate-900 p-6 text-white sm:p-7">
+                <h2 className="text-xl font-black">Proračun zone pre poručivanja</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
+                  Pošaljite skicu dvorišta sa dimenzijama i rezultat testa kante — vreme punjenja u sekundama. Na osnovu toga možemo proceniti potreban broj rasprskivača, podelu zona i početnu dimenziju cevi pre konačnog izbora opreme.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link href="/katalog?category=navodnjavanje" className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-3 text-sm font-black text-white hover:bg-cyan-500">Otvori navodnjavanje <ArrowRight className="h-4 w-4" /></Link>
+                  <Link href="/" className="inline-flex items-center gap-2 rounded-xl border border-slate-700 px-5 py-3 text-sm font-black text-white hover:bg-slate-800">Nazad na početnu</Link>
+                </div>
+              </section>
+            </div>
+          </article>
+        </div>
+      </main>
+    );
+  }
 
   if (slug === "kako-izabrati-pravu-pumpu-za-vodu") {
     const pumpProducts = await getDbProducts({ subcategorySlug: "pumpe-za-vodu", sort: "newest" });
