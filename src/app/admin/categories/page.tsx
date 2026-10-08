@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import { AlertCircle, Check, ImagePlus, Loader2, Plus, Save, Trash2, Upload, X } from "lucide-react";
-import { createAdminCategory, deleteAdminCategory, getAdminCategories, updateAdminCategory, updateAdminSubcategory, updateAdminSubcategoryImage } from "@/actions/admin-cms-actions";
+import { createAdminCategory, createAdminSubcategory, deleteAdminCategory, getAdminCategories, updateAdminCategory, updateAdminSubcategory, updateAdminSubcategoryImage } from "@/actions/admin-cms-actions";
 import { uploadMediaAction } from "@/actions/media-actions";
 
 type Category = Awaited<ReturnType<typeof getAdminCategories>>[number];
@@ -15,6 +15,8 @@ export default function AdminCategoriesPage() {
   const [form, setForm] = useState<CategoryForm>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
+  const [creatingSubcategoryFor, setCreatingSubcategoryFor] = useState<string | null>(null);
+  const [newSubcategoryForm, setNewSubcategoryForm] = useState({ name: "", slug: "", description: "" });
   const [subcategoryForm, setSubcategoryForm] = useState({ name: "", slug: "", description: "", seoTitle: "", seoDescription: "", imageUrl: "" });
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -99,6 +101,40 @@ export default function AdminCategoriesPage() {
       setUploading(false);
       event.target.value = "";
     }
+  };
+
+  const handleNewSubcategoryNameChange = (name: string) => {
+    setNewSubcategoryForm((current) => ({
+      ...current,
+      name,
+      slug: name.toLowerCase().normalize("NFKD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+    }));
+  };
+
+  const handleCreateSubcategory = (categoryId: string) => {
+    const name = newSubcategoryForm.name.trim();
+    const slug = newSubcategoryForm.slug.trim();
+    if (!name || !slug) {
+      setError("Unesite naziv i slug podkategorije.");
+      return;
+    }
+    setError("");
+    setSuccess("");
+    startTransition(async () => {
+      try {
+        const result = await createAdminSubcategory({ categoryId, name, slug, description: newSubcategoryForm.description });
+        setCategories((current) => current.map((category) =>
+          category.id === categoryId
+            ? { ...category, subcategories: [...category.subcategories, result.subcategory] }
+            : category
+        ));
+        setNewSubcategoryForm({ name: "", slug: "", description: "" });
+        setCreatingSubcategoryFor(null);
+        setSuccess("Podkategorija je uspešno kreirana.");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Kreiranje podkategorije nije uspelo.");
+      }
+    });
   };
 
   const startSubcategoryEdit = (subcategory: Category["subcategories"][number]) => {
@@ -270,8 +306,26 @@ export default function AdminCategoriesPage() {
             {categories.map((category) => <article key={category.id} className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${editingId === category.id ? "border-cyan-500 ring-2 ring-cyan-100" : "border-slate-200"}`}>
               <div className="relative aspect-[16/8] bg-gradient-to-br from-slate-100 to-cyan-50">{category.imageUrl ? <Image src={category.imageUrl} alt={category.name} fill sizes="(max-width: 640px) 100vw, 30vw" className="object-cover" /> : <div className="absolute inset-0 flex items-center justify-center text-4xl font-black text-cyan-800/20">{category.name.slice(0,1)}</div>}<span className="absolute bottom-2 left-2 rounded-lg bg-white/90 px-2 py-1 text-[10px] font-bold text-slate-600">{category.imageUrl ? "Ima fotografiju" : "Bez fotografije"}</span></div>
               <div className="space-y-2 p-3 sm:p-4"><div><div className="flex flex-wrap items-center gap-1.5"><h3 className="line-clamp-2 text-sm font-bold text-slate-900">{category.name}</h3>{category.featured && <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-cyan-800">Početna</span>}</div><p className="mt-1 truncate font-mono text-xs text-slate-500">/{category.slug} · redosled {category.sortOrder}</p></div><div className="flex gap-2"><button type="button" onClick={() => startEdit(category)} className="min-h-10 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800">Uredi kategoriju</button><button type="button" onClick={() => handleDelete(category.id)} aria-label={`Obriši kategoriju ${category.name}`} className="min-h-10 rounded-lg border border-red-100 px-3 py-2 text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button></div>
-                {category.subcategories.length > 0 && <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
-                  <p className="text-[11px] font-black uppercase tracking-wide text-slate-500">Podkategorije — zasebne fotografije</p>
+                <div className="mt-3 border-t border-slate-100 pt-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[11px] font-black uppercase tracking-wide text-slate-500">Podkategorije</p>
+                    <button type="button" onClick={() => { setCreatingSubcategoryFor((current) => current === category.id ? null : category.id); setNewSubcategoryForm({ name: "", slug: "", description: "" }); setError(""); }} className="inline-flex items-center gap-1 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1.5 text-[10px] font-black text-cyan-800 hover:bg-cyan-100">
+                      <Plus className="h-3 w-3" /> Dodaj podkategoriju
+                    </button>
+                  </div>
+                  {creatingSubcategoryFor === category.id && (
+                    <div className="mt-2 space-y-2 rounded-xl border border-cyan-200 bg-cyan-50/40 p-3">
+                      <input value={newSubcategoryForm.name} onChange={(e) => handleNewSubcategoryNameChange(e.target.value)} placeholder="Npr. Usisivači za pepeo" className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-bold outline-none focus:border-cyan-500" />
+                      <input value={newSubcategoryForm.slug} onChange={(e) => setNewSubcategoryForm((current) => ({ ...current, slug: e.target.value }))} placeholder="usisivaci-za-pepeo" className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 font-mono text-xs text-cyan-800 outline-none focus:border-cyan-500" />
+                      <textarea rows={2} value={newSubcategoryForm.description} onChange={(e) => setNewSubcategoryForm((current) => ({ ...current, description: e.target.value }))} placeholder="Kratak opis podkategorije..." className="w-full resize-y rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs outline-none focus:border-cyan-500" />
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => handleCreateSubcategory(category.id)} disabled={isPending || !newSubcategoryForm.name.trim() || !newSubcategoryForm.slug.trim()} className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-cyan-700 px-3 text-[11px] font-bold text-white hover:bg-cyan-800 disabled:bg-slate-300"><Save className="h-3.5 w-3.5" /> Sačuvaj</button>
+                        <button type="button" onClick={() => setCreatingSubcategoryFor(null)} className="min-h-9 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-600 hover:bg-slate-50">Otkaži</button>
+                      </div>
+                    </div>
+                  )}
+                  {category.subcategories.length > 0 && <div className="mt-3 space-y-2">
+                    <p className="text-[10px] font-bold text-slate-400">Postojeće podkategorije — zasebne fotografije</p>
                   {category.subcategories.map((subcategory) => editingSubcategoryId === subcategory.id ? (
                     <form key={subcategory.id} onSubmit={handleSubcategorySubmit} className="space-y-3 rounded-xl border border-cyan-200 bg-cyan-50/40 p-3">
                       <div className="grid gap-2 sm:grid-cols-2">
@@ -329,8 +383,8 @@ export default function AdminCategoriesPage() {
                       </div>
                     </div>
                   )
-                )}
-                </div>}
+                  )}
+                  </div>}
               </div>
             </article>)}
           </div>}
