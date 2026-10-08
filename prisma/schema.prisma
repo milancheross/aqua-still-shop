@@ -73,6 +73,8 @@ model Product {
   inStock          Boolean      @default(true) @map("in_stock")
   stockQuantity    Int          @default(0) @map("stock_quantity")
   wmsLocation      String?      @map("wms_location")
+  posSource        String?      @map("pos_source")
+  posExternalId    String?      @map("pos_external_id")
   warehouseLocationId String?   @map("warehouse_location_id")
   warehouseLocation WarehouseLocation? @relation(fields: [warehouseLocationId], references: [id], onDelete: SetNull)
   stockMovements   StockMovement[]
@@ -88,6 +90,7 @@ model Product {
   cartItems        CartItem[]
   orderItems       OrderItem[]
 
+  @@index([posSource, posExternalId])
   @@map("products")
 }
 
