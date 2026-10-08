@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Filter, Search, ArrowUpDown, X, Check, ChevronDown } from "lucide-react";
+import { getCategoryIcon } from "@/lib/category-icons";
 import { getDbProducts, getDbCategories, getDbBrands } from "@/services/product-service";
 import { getCategoryFilterDefinitions, getFilterValues } from "@/lib/catalog-filters";
 import ProductCard from "@/components/catalog/ProductCard";
@@ -204,24 +205,36 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
                   <Link href={buildUrl({ category: null, subcategory: null })} className={`block rounded-lg px-3 py-2 text-xs font-bold ${!selectedCategory ? "bg-cyan-50 text-cyan-700" : "text-slate-600 hover:bg-slate-50"}`}>
                     Sve kategorije
                   </Link>
-                  {categories.map((cat) => (
-                    <div key={cat.id}>
-                      <Link href={buildUrl({ category: cat.slug, subcategory: null })} className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs ${selectedCategory === cat.slug ? "bg-cyan-50 font-bold text-cyan-700" : "font-medium text-slate-700 hover:bg-slate-50"}`}>
-                        <span>{cat.name}</span>
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">{cat.itemCount}</span>
-                      </Link>
-                      {selectedCategory === cat.slug && cat.subcategories.length > 0 && (
-                        <div className="ml-3 mt-1 space-y-0.5 border-l border-slate-200 pl-2">
-                          {cat.subcategories.map((sub) => (
-                            <Link key={sub.id} href={buildUrl({ category: cat.slug, subcategory: sub.slug })} className={`flex items-center justify-between rounded-md px-2 py-1.5 text-[11px] ${selectedSubcategory === sub.slug ? "bg-cyan-100 font-bold text-cyan-800" : "text-slate-600 hover:bg-slate-50"}`}>
-                              <span>{sub.name}</span>
-                              <span className="text-[10px] text-slate-400">{sub.itemCount}</span>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                  {categories.map((cat) => {
+                    const CategoryIcon = getCategoryIcon(cat.slug || cat.name);
+                    return (
+                      <div key={cat.id}>
+                        <Link href={buildUrl({ category: cat.slug, subcategory: null })} className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs ${selectedCategory === cat.slug ? "bg-cyan-50 font-bold text-cyan-700" : "font-medium text-slate-700 hover:bg-slate-50"}`}>
+                          <span className="flex min-w-0 items-center gap-2">
+                            <CategoryIcon className="h-4 w-4 shrink-0 text-slate-500" strokeWidth={2} />
+                            <span className="truncate">{cat.name}</span>
+                          </span>
+                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">{cat.itemCount}</span>
+                        </Link>
+                        {selectedCategory === cat.slug && cat.subcategories.length > 0 && (
+                          <div className="ml-3 mt-1 space-y-0.5 border-l border-slate-200 pl-2">
+                            {cat.subcategories.map((sub) => {
+                              const SubcategoryIcon = getCategoryIcon(sub.slug || sub.name);
+                              return (
+                                <Link key={sub.id} href={buildUrl({ category: cat.slug, subcategory: sub.slug })} className={`flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-[11px] ${selectedSubcategory === sub.slug ? "bg-cyan-100 font-bold text-cyan-800" : "text-slate-600 hover:bg-slate-50"}`}>
+                                  <span className="flex min-w-0 items-center gap-2">
+                                    <SubcategoryIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" strokeWidth={2} />
+                                    <span className="truncate">{sub.name}</span>
+                                  </span>
+                                  <span className="text-[10px] text-slate-400">{sub.itemCount}</span>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
