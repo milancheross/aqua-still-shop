@@ -210,9 +210,7 @@ export async function updateMediaAssetAction(
   return { success: true };
 }
 
-export async function deleteMediaAssetAction(id: string, url: string) {
-  await requireAdmin();
-
+async function deleteMediaAssetInternal(id: string, url: string) {
   const asset = await db.mediaAsset.findUnique({ where: { id } });
   if (!asset || asset.url !== url) {
     throw new Error("Fotografija nije pronađena.");
@@ -231,5 +229,42 @@ export async function deleteMediaAssetAction(id: string, url: string) {
 
   await del(asset.url);
   await db.mediaAsset.delete({ where: { id: asset.id } });
+}
+
+export async function deleteMediaAssetAction(id: string, url: string) {
+  await requireAdmin();
+  await deleteMediaAssetInternal(id, url);
   return { success: true };
+}
+
+export async function deleteMediaAssetsAction(items: Array<{ id: string; url: string }>) {
+  await requireAdmin();
+
+  if (items.length === 0) {
+    throw new Error("Niste izabrali nijednu fotografiju.");
+  }
+
+  const uniqueItems = Array.from(
+    new Map(items.map((item) => [item.id, item])).values(),
+  );
+
+  let deletedCount = 0;
+  const failed: string[] = [];
+
+  // Keep each asset's existing safety checks. A single protected image must
+  // not block deletion of the rest of the selection.
+  for (const item of uniqueItems) {
+    try {
+      await deleteMediaAssetInternal(item.id, item.url);
+      deletedCount += 1;
+    } catch (error) {
+      failed.push(error instanceof Error ? error.message : "Nepoznata greška.");
+    }
+  }
+
+  if (deletedCount === 0 && failed.length > 0) {
+    throw new Error(failed[0]);
+  }
+
+  return { success: true, deletedCount, failedCount: failed.length, failed };
 }

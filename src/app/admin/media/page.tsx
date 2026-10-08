@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useTransition } from "react";
 import { Upload, Search, Trash2, Copy, Edit2, Check, Image as ImageIcon, Loader2, AlertCircle } from "lucide-react";
-import { getMediaAssets, uploadMediaAction, updateMediaAssetAction, deleteMediaAssetAction, MediaItem } from "@/actions/media-actions";
+import { getMediaAssets, uploadMediaAction, updateMediaAssetAction, deleteMediaAssetAction, deleteMediaAssetsAction, MediaItem } from "@/actions/media-actions";
 
 export default function AdminMediaPage() {
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
@@ -14,6 +14,7 @@ export default function AdminMediaPage() {
   const [uploadError, setUploadError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editAlt, setEditAlt] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -101,6 +102,43 @@ export default function AdminMediaPage() {
     }
   };
 
+  const toggleSelected = (id: string) => {
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((value) => value !== id) : [...current, id],
+    );
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds((current) => {
+      const visibleIds = filteredMedia.map((item) => item.id);
+      const allSelected = visibleIds.length > 0 && visibleIds.every((id) => current.includes(id));
+      return allSelected
+        ? current.filter((id) => !visibleIds.includes(id))
+        : Array.from(new Set([...current, ...visibleIds]));
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    const selected = filteredMedia.filter((item) => selectedIds.includes(item.id));
+    if (selected.length === 0) return;
+    if (!confirm(`Da li ste sigurni da želite da obrišete ${selected.length} izabranih fotografija?\n\nFotografije koje se koriste na proizvodima neće biti obrisane.`)) return;
+
+    startTransition(async () => {
+      try {
+        const result = await deleteMediaAssetsAction(selected.map((item) => ({ id: item.id, url: item.url })));
+        setSelectedIds([]);
+        setSuccessMessage(
+          result.failedCount > 0
+            ? `Obrisano ${result.deletedCount} fotografija. ${result.failedCount} nije obrisano jer se koristi ili je došlo do greške.`
+            : `Uspešno obrisano ${result.deletedCount} fotografija.`,
+        );
+        await loadMedia();
+      } catch (err: unknown) {
+        setUploadError((err instanceof Error ? err.message : null) || "Grupno brisanje nije uspelo.");
+      }
+    });
+  };
+
   const handleDelete = async (id: string, url: string) => {
     if (!confirm("Da li ste sigurni da želite da obrišete ovu fotografiju?")) return;
     startTransition(async () => {
@@ -153,6 +191,7 @@ export default function AdminMediaPage() {
   });
 
   const folders = ["all", "general", "products", "categories", "projects", "tips", "logo", "hero", "hero-mobile"];
+  const allVisibleSelected = filteredMedia.length > 0 && filteredMedia.every((item) => selectedIds.includes(item.id));
 
   return (
     <div className="space-y-8">
@@ -193,6 +232,34 @@ export default function AdminMediaPage() {
         </div>
       </div>
 
+      {!loading && filteredMedia.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <label className="flex cursor-pointer items-center gap-2 text-xs font-bold text-slate-700">
+            <input
+              type="checkbox"
+              checked={allVisibleSelected}
+              onChange={toggleSelectAll}
+              className="h-4 w-4 rounded border-slate-300 accent-cyan-600"
+            />
+            Izaberi sve prikazane
+          </label>
+          {selectedIds.length > 0 && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold text-slate-500">{selectedIds.length} izabrano</span>
+              <button
+                type="button"
+                onClick={handleBulkDelete}
+                disabled={isPending}
+                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-xs font-black text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                Obriši izabrane
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <div className="space-y-3 py-20 text-center"><Loader2 className="mx-auto h-8 w-8 animate-spin text-cyan-600" /><p className="text-xs font-bold text-slate-400">Učitavanje medijske biblioteke...</p></div>
       ) : filteredMedia.length === 0 ? (
@@ -200,7 +267,16 @@ export default function AdminMediaPage() {
       ) : (
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {filteredMedia.map((item) => (
-            <div key={item.id} className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div key={item.id} className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="absolute z-10 m-2 rounded-lg bg-white/95 p-1 shadow-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(item.id)}
+                  onChange={() => toggleSelected(item.id)}
+                  aria-label={`Izaberi ${item.filename}`}
+                  className="h-4 w-4 rounded border-slate-300 accent-cyan-600"
+                />
+              </div>
               <div className="relative aspect-square overflow-hidden border-b border-slate-100 bg-slate-50 p-4">
                 <img src={item.url} alt={item.altText || item.filename} className="absolute inset-0 h-full w-full object-contain p-2 transition-transform group-hover:scale-105" loading="lazy" />
               </div>
