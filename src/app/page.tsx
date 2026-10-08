@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, ChevronRight, Search, MapPin, Truck, Store, ShieldCheck } from "lucide-react";
+import { ArrowRight, ChevronRight, MapPin, Truck, Store, ShieldCheck, SlidersHorizontal, PackageSearch } from "lucide-react";
 import { db } from "@/lib/db";
 import { getHomepageData } from "@/services/home-service";
 import { getHomeContent } from "@/actions/page-cms-actions";
@@ -120,57 +120,55 @@ export default async function HomePage() {
             fill
             priority
             sizes="100vw"
-            className="object-cover object-center opacity-65"
+            className="object-cover object-center opacity-55"
           />
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/60 to-slate-950/20" />
-        <div className="relative container mx-auto px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
-          <div className="grid items-center gap-8 lg:grid-cols-[1fr_1.05fr]">
-            <div className="max-w-xl">
-              <div className="mb-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">
-                <span className="h-px w-7 bg-cyan-400" />
-                Aqua Still · Zlatibor
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/65 to-slate-950/20" />
+        <div className="relative container mx-auto px-4 py-7 sm:px-6 lg:px-8 lg:py-8">
+          <div className="grid items-center gap-6 lg:grid-cols-[1.1fr_.9fr]">
+            <div className="max-w-2xl">
+              <div className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-cyan-300">
+                <span className="h-px w-6 bg-cyan-400" /> Aqua Still · Zlatibor
               </div>
-              <h1 className="text-3xl font-black leading-[1.02] tracking-tight sm:text-4xl lg:text-5xl">
+              <h1 className="text-2xl font-black leading-[1.04] tracking-tight sm:text-3xl lg:text-4xl">
                 {home.title || "Sve za vaš dom, projekat i profesionalni rad."}
               </h1>
-              <p className="mt-4 max-w-lg text-sm leading-relaxed text-slate-200 sm:text-base">
+              <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-200 sm:text-sm">
                 {home.description || "Alati, vodovod, kupatila, navodnjavanje, elektro-oprema i još mnogo toga."}
               </p>
             </div>
 
-            <div className="lg:pl-8">
-              <form action="/katalog" method="GET" className="rounded-2xl bg-white p-2 shadow-2xl shadow-black/30">
-                <label htmlFor="home-search" className="sr-only">Pretražite proizvode</label>
-                <div className="flex items-center gap-2">
-                  <Search className="ml-3 h-5 w-5 shrink-0 text-slate-400" />
-                  <input
-                    id="home-search"
-                    name="q"
-                    type="search"
-                    autoComplete="off"
-                    placeholder="Pretražite proizvod, kategoriju, brend, SKU ili barkod..."
-                    className="h-12 min-w-0 flex-1 bg-transparent px-1 text-sm font-medium text-slate-900 outline-none sm:text-base"
-                  />
-                  <button type="submit" className="h-12 rounded-xl bg-orange-600 px-5 text-xs font-black text-white transition hover:bg-orange-500 sm:px-7 sm:text-sm">
-                    Pretraži
-                  </button>
-                </div>
-              </form>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {quickLinks.slice(0, 5).map(([label, href]) => (
-                  <Link key={label} href={href} className="rounded-full border border-white/25 bg-black/20 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-sm transition hover:border-cyan-300 hover:bg-white/10">
-                    {label}
-                  </Link>
-                ))}
-              </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                [SlidersHorizontal, "Brzi filteri", "Izaberi kategoriju", "/katalog"],
+                [PackageSearch, "Pretraga po šifri", "SKU / barkod", "/katalog"],
+                [Truck, "Dostupnost", "Proveri stanje", "/katalog"],
+                [Store, "Preuzimanje", "Zlatibor", "/kontakt"],
+              ].map(([Icon, title, text, href]) => (
+                <Link key={title as string} href={href as string} className="group rounded-xl border border-white/15 bg-white/10 px-3 py-3 backdrop-blur-sm transition hover:border-cyan-300/50 hover:bg-white/15">
+                  <Icon className="mb-2 h-4 w-4 text-cyan-300" />
+                  <span className="block text-[10px] font-black uppercase tracking-wide text-white">{title as string}</span>
+                  <span className="mt-0.5 block text-[10px] text-slate-300">{text as string}</span>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       <section className="border-b border-slate-200 bg-white">
-        <div className="container mx-auto grid grid-cols-2 divide-x divide-slate-200 sm:grid-cols-4 lg:grid-cols-4">
+        <div className="container mx-auto px-4 py-3 sm:px-6 lg:px-8">
+          <div className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+            <span>Brza pretraga</span><span className="h-px w-6 bg-slate-300" />
+          </div>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {["Makita", "Wilo pumpe", "Slavine", "Fiting 1/2"", "Brusne i rezne ploče"].map((tag) => (
+              <Link key={tag} href={"/katalog?q=" + encodeURIComponent(tag)} className="rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-[11px] font-bold text-slate-700 transition hover:border-cyan-400 hover:bg-cyan-50 hover:text-cyan-800">
+                {tag}
+              </Link>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 divide-x divide-slate-200 sm:grid-cols-4">
           {[
             [Truck, "Brza isporuka", "na teritoriji Srbije"],
             [Store, "Preuzimanje u radnji", "Zlatibor"],
@@ -197,12 +195,12 @@ export default async function HomePage() {
           <Link href="/katalog" className="text-xs font-black text-cyan-700 hover:text-cyan-900">Sve kategorije <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
         </div>
 
-        <div className="grid auto-rows-[165px] gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredCategories.map((category, index) => (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {featuredCategories.slice(0, 8).map((category, index) => (
             <Link
               key={category.id}
               href={"/katalog/" + category.slug}
-              className={"group relative overflow-hidden rounded-2xl bg-slate-900 " + categoryLayout[index] + " " + categoryHeights[index]}
+              className="group relative aspect-[1.35] overflow-hidden rounded-2xl bg-slate-900"
             >
               {category.imageUrl ? (
                 <Image src={category.imageUrl} alt={category.name} fill sizes={index === 0 ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 1024px) 50vw, 25vw"} className="object-cover transition duration-500 group-hover:scale-105" />
@@ -212,7 +210,7 @@ export default async function HomePage() {
                 <div className="flex items-end justify-between gap-3">
                   <div>
                     <p className="mb-1 text-[9px] font-black uppercase tracking-[0.16em] text-cyan-300">{category.itemCount} artikala</p>
-                    <h3 className={index === 0 ? "text-2xl font-black text-white" : "text-base font-black text-white"}>{category.name}</h3>
+                    <h3 className="text-base font-black text-white sm:text-lg">{category.name}</h3>
                     <p className="mt-1 line-clamp-1 text-[11px] text-slate-200/80">{category.description || "Pogledajte ponudu"}</p>
                   </div>
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-slate-900 shadow-sm transition group-hover:bg-orange-600 group-hover:text-white">
@@ -250,7 +248,7 @@ export default async function HomePage() {
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-700">Izdvojeno</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Najprodavaniji proizvodi</h2>
+            <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Najtraženiji proizvodi</h2>
             <p className="mt-1 text-xs text-slate-500">Provereni proizvodi koje kupci najčešće biraju.</p>
           </div>
           <Link href="/katalog" className="text-xs font-black text-cyan-700">Pogledaj sve <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
