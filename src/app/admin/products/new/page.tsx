@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, Plus, Trash2, Upload, Check, X, Loader2, FolderPlus } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Upload, X, Loader2, FolderPlus } from "lucide-react";
 import { createAdminProduct } from "@/actions/product-admin-actions";
 import { createAdminCategory, getAdminCategories } from "@/actions/admin-cms-actions";
 import { uploadMediaAction } from "@/actions/media-actions";
@@ -126,8 +126,7 @@ export default function NewProductPage() {
     setNewCategorySlug(slugify(name));
   };
 
-  const handleCreateCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateCategory = async () => {
 
     const name = newCategoryName.trim();
     const slug = newCategorySlug.trim();
@@ -413,7 +412,7 @@ export default function NewProductPage() {
                     />
                     <button
                       type="button"
-                      onClick={(e) => void handleCreateCategory(e as unknown as React.FormEvent)}
+                      onClick={() => void handleCreateCategory()}
                       disabled={creatingCategory || !newCategoryName.trim() || !newCategorySlug.trim()}
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-700 px-3 py-2.5 text-xs font-bold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:bg-slate-300"
                     >
