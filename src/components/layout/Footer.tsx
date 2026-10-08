@@ -1,3 +1,6 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Phone, MapPin } from "lucide-react";
@@ -5,6 +8,28 @@ import ShareButton from "./ShareButton";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [logoUrl, setLogoUrl] = useState("/images/aqua-still-logo.png");
+  const [logoAlt, setLogoAlt] = useState("Aqua Still Zlatibor");
+
+  useEffect(() => {
+    let active = true;
+
+    fetch("/api/site/logo", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error("Logo nije dostupan.");
+        return response.json() as Promise<{ url: string; altText?: string | null }>;
+      })
+      .then((data) => {
+        if (!active) return;
+        if (data.url) setLogoUrl(data.url);
+        if (data.altText) setLogoAlt(data.altText);
+      })
+      .catch((error) => console.error("Footer logo fetch failed:", error));
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <footer className="bg-slate-900 text-slate-300">
@@ -14,8 +39,8 @@ export default function Footer() {
           <div className="col-span-2 space-y-4 pb-3 md:col-span-1 md:space-y-6 md:pb-0">
             <Link href="/" aria-label="Aqua Still Zlatibor — početna strana" className="relative flex h-12 w-[190px] items-center">
               <Image
-                src="/images/aqua-still-logo.png"
-                alt="Aqua Still Zlatibor"
+                src={logoUrl}
+                alt={logoAlt}
                 fill
                 sizes="190px"
                 className="object-contain object-left"
