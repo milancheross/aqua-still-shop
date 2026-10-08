@@ -267,7 +267,7 @@ export default function AdminMediaPage() {
       ) : (
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {filteredMedia.map((item) => (
-            <div key={item.id} className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div key={item.id} className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               <div className="absolute z-10 m-2 rounded-lg bg-white/95 p-1 shadow-sm">
                 <input
                   type="checkbox"
