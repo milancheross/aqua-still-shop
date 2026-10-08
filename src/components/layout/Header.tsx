@@ -3,37 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, Menu, X, User, Heart, Globe, Share2, ChevronDown, Wrench, Paintbrush, HardHat, Flame, Bath, Sprout, Lightbulb, Droplets } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, User, Heart, Globe, Share2, ChevronDown } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { getCategoryIcon } from "@/lib/category-icons";
 import { formatPrice } from "@/lib/utils";
 import type { ProductCategory } from "@/types";
 
-se client";
-
-import React, { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Search, ShoppingCart, Menu, X, User, Heart, Globe, Share2, ChevronDown, Wrench, Paintbrush, HardHat, Flame, Bath, Sprout, Lightbulb, Droplets } from "lucide-react";
-import { useCart } from "@/lib/cart-context";
-import { getCategoryIcon } from "@/lib/category-icons";
-import { formatPrice } from "@/lib/utils";
-import type { ProductCategory } from "@/types";
-
-function getCategoryIcon(slug: string) {
-  const value = slug.toLocaleLowerCase("sr-Latn-RS");
-
-  if (value.includes("alat")) return Wrench;
-  if (value.includes("boje") || value.includes("lakov") || value.includes("hemij")) return Paintbrush;
-  if (value.includes("gradjevinsk") || value.includes("zastit")) return HardHat;
-  if (value.includes("grejan")) return Flame;
-  if (value.includes("kupatil") || value.includes("sanitar")) return Bath;
-  if (value.includes("kuc") || value.includes("dvorist") || value.includes("cisc") || value.includes("bast")) return Sprout;
-  if (value.includes("rasvet") || value.includes("elektro")) return Lightbulb;
-  if (value.includes("navodnj")) return Droplets;
-
-  return Wrench;
-}
 
 export default function Header() {
   const { cart, setIsCartOpen } = useCart();
