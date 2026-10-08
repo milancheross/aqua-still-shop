@@ -52,6 +52,8 @@ export default function NewProductPage() {
     brand: "Makita",
     categorySlug: "alati",
     categoryName: "Alati i oprema",
+    subcategorySlug: "",
+    subcategoryName: "",
     price: 0,
     salePrice: "" as string | number,
     stockQuantity: 10,
@@ -118,6 +120,20 @@ export default function NewProductPage() {
       ...prev,
       categorySlug: slug,
       categoryName: category?.name || slug,
+      subcategorySlug: "",
+      subcategoryName: "",
+    }));
+  };
+
+  const handleSubcategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const slug = e.target.value;
+    const category = categories.find((item) => item.slug === form.categorySlug);
+    const subcategory = category?.subcategories.find((item) => item.slug === slug);
+
+    setForm((prev) => ({
+      ...prev,
+      subcategorySlug: slug,
+      subcategoryName: subcategory?.name || slug,
     }));
   };
 
@@ -422,6 +438,27 @@ export default function NewProductPage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 uppercase">Podkategorija</label>
+              <select
+                value={form.subcategorySlug}
+                onChange={handleSubcategoryChange}
+                disabled={categoriesLoading || !categories.find((item) => item.slug === form.categorySlug)?.subcategories.length}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-cyan-500 outline-none disabled:opacity-60"
+              >
+                <option value="">
+                  {!categories.find((item) => item.slug === form.categorySlug)?.subcategories.length
+                    ? "Nema podkategorija"
+                    : "Izaberite podkategoriju"}
+                </option>
+                {categories.find((item) => item.slug === form.categorySlug)?.subcategories.map((subcategory) => (
+                  <option key={subcategory.id} value={subcategory.slug}>{subcategory.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 
