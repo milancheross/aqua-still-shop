@@ -50,7 +50,7 @@ async function getHomepageMedia() {
   if (!process.env.DATABASE_URL) return { hero: undefined, heroMobile: undefined, tips: [] };
 
   try {
-    const [hero, tips] = await Promise.all([
+    const [hero, heroMobile, tips] = await Promise.all([
       db.mediaAsset.findFirst({
         where: { folder: "hero" },
         orderBy: { createdAt: "desc" },
