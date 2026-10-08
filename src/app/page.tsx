@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight, ChevronRight, MapPin, Truck, Store, ShieldCheck } from "lucide-react";
+import { getCategoryIcon } from "@/lib/category-icons";
 import { db } from "@/lib/db";
 import { getHomepageData } from "@/services/home-service";
 import { getHomeContent } from "@/actions/page-cms-actions";
@@ -216,7 +217,7 @@ export default async function HomePage() {
           <Link href="/katalog" className="text-xs font-bold text-cyan-700">Ceo katalog <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
         </div>
         <div className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-2 lg:grid-cols-3">
-          {quickLinks.map(([label, href], index) => (
+          {quickLinks.map(([label, href], index) => {\n            const Icon = getCategoryIcon(label);\n            return (
             <Link key={label} href={href} className={"group flex items-center justify-between px-4 py-4 transition hover:bg-slate-50 " + (index > 0 ? "border-l border-slate-200" : "") + (index >= 3 ? "border-t border-slate-200" : "")}>
               <span>
                 <span className="mb-1 block text-[9px] font-black uppercase tracking-[0.16em] text-cyan-700">0{index + 1}</span>
