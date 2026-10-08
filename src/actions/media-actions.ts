@@ -20,7 +20,7 @@ export interface MediaItem {
 export interface UploadMediaResult {
   success: true;
   uploaded: MediaItem[];
-  skipped: Array<{ filename: string; reason: "duplicate" }>;
+  skipped: Array<{ filename: string; reason: "duplicate"; id: string; url: string }>;
 }
 
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -107,7 +107,7 @@ export async function uploadMediaAction(formData: FormData): Promise<UploadMedia
     });
 
     if (existing) {
-      skipped.push({ filename: file.name, reason: "duplicate" });
+      skipped.push({ filename: file.name, reason: "duplicate", id: existing.id, url: existing.url });
       continue;
     }
 
@@ -150,7 +150,7 @@ export async function uploadMediaAction(formData: FormData): Promise<UploadMedia
 
       const duplicate = await db.mediaAsset.findUnique({ where: { checksum } });
       if (duplicate) {
-        skipped.push({ filename: file.name, reason: "duplicate" });
+        skipped.push({ filename: file.name, reason: "duplicate", id: duplicate.id, url: duplicate.url });
         continue;
       }
 
