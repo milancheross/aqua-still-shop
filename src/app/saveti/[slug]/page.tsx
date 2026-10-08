@@ -36,17 +36,23 @@ const articles = {
     checklist: ["Površina i zone", "Izvor vode", "Protok i pritisak", "Prskalice ili kap po kap", "Filter i automatika"],
   },
   "farbanje-zida-korak-po-korak": {
-    type: "URADI SAM",
-    title: "Farbanje zida korak po korak",
-    intro: "Najbolji rezultat ne zavisi samo od boje. Priprema zida, pravi alat i pravilno nanošenje često su važniji od same brzine rada.",
+    type: "TEHNIČKI VODIČ",
+    title: "Farbanje zidova – priprema podloge, potrošnja materijala i pravilan redosled radova",
+    intro: "Profesionalan rezultat ne zavisi samo od završne boje. Čvrsta i čista podloga, odgovarajuća impregnacija, pravilna potrošnja i redosled rada odlučuju da li će zid ostati ujednačen ili će se pojaviti fleke, ljuštenje i tragovi valjka.",
     sections: [
-      ["1. Pripremite površinu", "Uklonite prašinu, masnoću i delove stare boje koji se ljušte. Neravnine i pukotine popravite odgovarajućim materijalom i ostavite da se osuši."],
-      ["2. Zaštitite prostor", "Prekrijte pod i nameštaj, zaštitite utičnice i ivice koje ne želite da obojite. Dobra priprema štedi mnogo vremena na čišćenju."],
-      ["3. Izaberite odgovarajući alat", "Za veće ravne površine koristite kvalitetan valjak odgovarajuće dlake, a četku za uglove i detalje. Za visoke zidove praktična je teleskopska drška."],
-      ["4. Grundiranje po potrebi", "Novi, jako upijajući ili problematični zidovi mogu zahtevati odgovarajuću podlogu. Ona ujednačava upijanje i pomaže završnom sloju."],
-      ["5. Nanosite ujednačene slojeve", "Ne nanosite previše boje odjednom. Radite ravnomerno, bez dugog vraćanja na delove koji su već počeli da se suše."],
+      ["1. Priprema podloge i sanacija oštećenja", "Pre otvaranja kante sa bojom podloga mora biti čvrsta, suva i otprašena. Labave slojeve stare boje sastružite do čvrstog sloja. Manje pukotine otvorite u V profil i popunite odgovarajućom glet masom, a dublja oštećenja reparaturnim materijalom. Veće spojeve ojačajte bandaž trakom. Posle potpunog sušenja obrusite približno P120–P150 i temeljno uklonite finu prašinu."],
+      ["2. Akrilna impregnacija / prajmer", "Podloga nije opcija kada zid različito upija. Sveže gletovane i stare površine mogu različito povlačiti vlagu iz završne boje, što stvara mat-sjajne prelaze i fleke. Dubinski akrilni prajmer razređuje se isključivo prema deklaraciji konkretnog proizvoda; koncentrati često imaju odnos 1:5 ili 1:8, ali to nije univerzalno pravilo. Vreme sušenja takođe pratite prema tehničkom listu; 4–6 sati je čest red veličine, ne garantovani minimum za svaki proizvod."],
+      ["3. Tehnika nanošenja i potrošnja", "Boju razređujte samo prema uputstvu proizvođača. Prvi sloj se kod nekih disperzija razređuje, dok se drugi nanosi sa manjim razređenjem ili nerazređen; ne postoji bezbedan univerzalan procenat za sve boje. Radite metodom mokro na mokro: prvo uglove i spojeve, zatim glavnu površinu velikim valjkom u preklapajućim vertikalnim potezima. Ne vraćajte se polusuvim valjkom na deo koji je počeo da vezuje. Vreme između slojeva određuje tehnički list konkretnog premaza."],
+      ["4. Zaštita prostora i alat", "Pre početka zaštitite pod i nameštaj folijom, ivice krep trakom, a za visoke zidove koristite teleskopsku dršku. Za ravne zidove birajte valjak prema vrsti boje i željenoj teksturi; mikrovlakna ili poliamid odgovaraju mnogim disperzionim premazima, ali dužinu dlake treba prilagoditi podlozi i preporuci proizvođača."],
     ],
-    checklist: ["Čist i pripremljen zid", "Zaštita prostora", "Valjak i četka", "Odgovarajuća podloga", "Dva ili više tankih slojeva po potrebi"],
+    checklist: [
+      "Podloga je čvrsta, suva, čista i bez labavih slojeva",
+      "Pukotine i rupe su sanirane odgovarajućom masom",
+      "Površina je obrušena i otprašena",
+      "Prajmer je izabran i razređen prema deklaraciji",
+      "Valjak, četka, teleskopska drška i zaštita su pripremljeni",
+      "Potrošnja boje računa se prema stvarnoj kvadraturi i deklaraciji proizvoda",
+    ],
   },
 };
 
@@ -70,6 +76,30 @@ function pickProducts(products: Awaited<ReturnType<typeof getDbProducts>>, match
 function pickBundleProducts(products: Awaited<ReturnType<typeof getDbProducts>>, matcher: RegExp, count: number, used = new Set<string>()) {
   const exact = products.filter((product) => matcher.test(product.name) && !used.has(product.id));
   return exact.slice(0, count);
+}
+
+function rankGuideProducts(
+  products: Awaited<ReturnType<typeof getDbProducts>>,
+  terms: string[],
+  count: number,
+  used = new Set<string>(),
+) {
+  const normalize = (value: string) => value.toLocaleLowerCase("sr-Latn-RS").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const normalizedTerms = terms.map(normalize);
+
+  return products
+    .filter((product) => !used.has(product.id) && (product.stockQuantity > 0 || product.inStock))
+    .map((product) => {
+      const haystack = normalize(
+        [product.name, product.brand, product.shortDescription, product.description, product.subcategoryName, product.categoryName].join(" "),
+      );
+      const score = normalizedTerms.reduce((total, term, index) => total + (haystack.includes(term) ? normalizedTerms.length - index : 0), 0);
+      return { product, score };
+    })
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score || a.product.name.localeCompare(b.product.name, "sr"))
+    .slice(0, count)
+    .map(({ product }) => product);
 }
 
 export function generateStaticParams() {
@@ -192,7 +222,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                     <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
                       <li>• Ne mešajte kap po kap i pop-up rasprskivače na istoj zoni: imaju različite zahteve za pritisak i protok.</li>
                       <li>• Regulator pritiska postavite prema zahtevima trake/kapaljki; <strong>1,2–1,4 bar</strong> je česta radna vrednost, ali proverite deklaraciju konkretnog proizvoda.</li>
-                      <li>• Potrošnja zavisi od razmaka kapaljki i protoka po kapaljci. Nemojте računati „po metru“ bez specifikacije proizvođača.</li>
+                      <li>• Potrošnja zavisi od razmaka kapaljki i protoka po kapaljci. Nemojte računati „po metru“ bez specifikacije proizvođača.</li>
                     </ul>
                     {dripBundle.length > 0 && (
                       <div className="mt-5">
@@ -390,6 +420,91 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 </section>
               )}
               <section className="rounded-2xl bg-slate-900 p-6 text-white sm:p-7"><h2 className="text-xl font-black">Pre kupovine pripremite ovih 6 podataka</h2><ul className="mt-4 grid gap-2 sm:grid-cols-2">{pumpChecklist.map((item) => <li key={item} className="flex items-start gap-2 text-sm text-slate-300"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400" />{item}</li>)}</ul><Link href="/katalog?category=navodnjavanje&subcategory=pumpe-za-vodu" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-3 text-sm font-black text-white hover:bg-cyan-500">Otvori sve pumpe za vodu <ArrowRight className="h-4 w-4" /></Link></section>
+            </div>
+          </article>
+        </div>
+      </main>
+    );
+  }
+
+  if (slug === "farbanje-zida-korak-po-korak") {
+    const [wallPaints, primers, fillers, tapes, paintingTools] = await Promise.all([
+      getDbProducts({ categorySlug: "boje-lakovi-hemija", subcategorySlug: "boje-za-zidove", sort: "name" }),
+      getDbProducts({ categorySlug: "boje-lakovi-hemija", subcategorySlug: "lakovi-impregnacije", search: "impregn", sort: "name" }),
+      getDbProducts({ categorySlug: "boje-lakovi-hemija", search: "glet", sort: "name" }),
+      getDbProducts({ categorySlug: "boje-lakovi-hemija", subcategorySlug: "lepkovi-krep-trake", search: "krep", sort: "name" }),
+      getDbProducts({ categorySlug: "alati", search: "valjak", sort: "name" }),
+    ]);
+
+    const paintProducts = rankGuideProducts(wallPaints, ["disperz", "poludisperz", "unutrasnja", "zidna", "bela"], 4);
+    const usedPaints = new Set(paintProducts.map((product) => product.id));
+    const primerProducts = rankGuideProducts(primers, ["impregn", "prajmer", "podloga", "akril"], 3, usedPaints);
+    const usedPrimer = new Set([...usedPaints, ...primerProducts.map((product) => product.id)]);
+    const fillerProducts = rankGuideProducts(fillers, ["glet", "masa", "reparat"], 3, usedPrimer);
+    const usedFillers = new Set([...usedPrimer, ...fillerProducts.map((product) => product.id)]);
+    const tapeProducts = rankGuideProducts(tapes, ["krep", "bandaz", "traka"], 2, usedFillers);
+    const usedTapes = new Set([...usedFillers, ...tapeProducts.map((product) => product.id)]);
+    const toolProducts = rankGuideProducts(paintingTools, ["valjak", "molers", "cetka", "teleskop"], 4, usedTapes);
+
+    return (
+      <main className="bg-slate-50">
+        <div className="container mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+          <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-cyan-700 hover:text-cyan-900"><ArrowLeft className="h-4 w-4" /> Nazad na početnu</Link>
+          <article className="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <header className="border-b border-slate-200 px-6 py-8 sm:px-10 sm:py-10">
+              <span className="inline-flex rounded-md bg-cyan-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-800">TEHNIČKI VODIČ</span>
+              <h1 className="mt-4 max-w-4xl text-3xl font-black leading-tight tracking-tight text-slate-900 sm:text-5xl">{articles["farbanje-zida-korak-po-korak"].title}</h1>
+              <p className="mt-5 max-w-4xl text-base leading-7 text-slate-600 sm:text-lg">{articles["farbanje-zida-korak-po-korak"].intro}</p>
+            </header>
+            <div className="space-y-10 px-6 py-8 sm:px-10 sm:py-10">
+              <section>
+                <div className="mb-5 flex items-center gap-3"><Ruler className="h-5 w-5 text-cyan-700" /><h2 className="text-2xl font-black text-slate-900">1. Priprema podloge i sanacija oštećenja</h2></div>
+                <div className="grid gap-3 md:grid-cols-3">
+                  {[
+                    ["Uklonite labave slojeve", "Špahtlom uklonite sve što se ljušti, bubri ili kredasto ostaje na prstima."],
+                    ["Sanirajte pukotine", "Do oko 3 mm može odgovarajuća unutrašnja glet masa; dublja oštećenja traže reparaturni materijal."],
+                    ["Obrusite i otprašite", "Posle sušenja gleta obrusite približno P120–P150 i uklonite finu prašinu pre impregnacije."],
+                  ].map(([title, detail]) => <div key={title} className="rounded-2xl border border-slate-200 bg-white p-5"><h3 className="font-black text-slate-900">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{detail}</p></div>)}
+                </div>
+                {fillerProducts.length > 0 && <div className="mt-6"><p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Glet i reparaturni materijal iz kataloga</p><div className="grid grid-cols-2 gap-3 lg:grid-cols-3">{fillerProducts.map((product) => <ProductCard key={product.id} product={product} />)}</div></div>}
+              </section>
+              <section className="rounded-2xl border border-cyan-200 bg-cyan-50/60 p-5 sm:p-7">
+                <div className="flex items-center gap-3"><ShieldCheck className="h-5 w-5 text-cyan-700" /><div><p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-700">Podloga</p><h2 className="text-xl font-black text-slate-900">Akrilna impregnacija nije preskočiv korak</h2></div></div>
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-700">Različita upojnost stare i sveže obrađene površine pravi fleke i razlike u sjaju. Odnos razređivanja i vreme sušenja moraju se uzeti sa deklaracije konkretnog prajmera.</p>
+                {primerProducts.length > 0 && <div className="mt-6"><p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Prajmeri i impregnacije iz kataloga</p><div className="grid grid-cols-2 gap-3 lg:grid-cols-3">{primerProducts.map((product) => <ProductCard key={product.id} product={product} />)}</div></div>}
+              </section>
+              <section>
+                <div className="mb-5 flex items-center gap-3"><Calculator className="h-5 w-5 text-cyan-700" /><h2 className="text-2xl font-black text-slate-900">2. Potrošnja i pravilno nanošenje</h2></div>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+                    <h3 className="font-black text-slate-900">Ne računajte potrošnju napamet</h3>
+                    <p className="mt-2 text-sm leading-7 text-slate-600">Prvo izmerite površinu zidova: <strong>A = obim prostorije × visina − površine otvora</strong>. Zatim proverite deklarisanu potrošnju konkretnog proizvoda, npr. u m²/l ili kg/m², i računajte sa rezervom zbog upojnosti podloge i načina nanošenja.</p>
+                    <div className="mt-4 rounded-xl bg-slate-900 px-4 py-3 text-center text-sm font-black text-white">Potrebna količina ≈ površina ÷ deklarisana pokrivnost × broj slojeva</div>
+                    <p className="mt-3 text-xs leading-5 text-slate-500">Primer: 60 m² ÷ 8 m²/l po sloju × 2 sloja ≈ 15 l, pre dodatne rezerve i uz pretpostavku da je deklaracija 8 m²/l.</p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+                    <h3 className="font-black text-slate-900">Mokro na mokro</h3>
+                    <p className="mt-2 text-sm leading-7 text-slate-600">Prvo usecite uglove i spojeve, zatim glavnu površinu velikim valjkom. Preklapajte poteze i ne vraćajte se polusuvim valjkom na zonu koja je počela da vezuje. Razređivanje i vreme između slojeva pratite prema tehničkom listu proizvoda.</p>
+                  </div>
+                </div>
+                {paintProducts.length > 0 && <div className="mt-6"><p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Boje za zidove iz kataloga</p><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{paintProducts.map((product) => <ProductCard key={product.id} product={product} />)}</div></div>}
+              </section>
+              <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-7">
+                <div className="flex items-center gap-3"><Wrench className="h-5 w-5 text-cyan-700" /><div><p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-700">Alat i zaštita</p><h2 className="text-xl font-black text-slate-900">Pripremite komplet pre početka rada</h2></div></div>
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  {["Valjak od mikrovlakana/poliamida · 250 mm · dlaka prema vrsti podloge i boje","Mali valjak ili kosa četka za usecanje ivica","Teleskopska drška za rad na višim zidovima","Mrežica za ceđenje boje i molerska kadica","Krep traka za zaštitu ivica i prekidača","Zaštitna folija za podove i nameštaj"].map((item) => <div key={item} className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-800">{item}</div>)}
+                </div>
+                {tapeProducts.length > 0 && <div className="mt-6"><p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Krep trake iz kataloga</p><div className="grid grid-cols-2 gap-3 lg:grid-cols-2">{tapeProducts.map((product) => <ProductCard key={product.id} product={product} />)}</div></div>}
+                {toolProducts.length > 0 && <div className="mt-6"><p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500">Molerski alat iz kataloga</p><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{toolProducts.map((product) => <ProductCard key={product.id} product={product} />)}</div></div>}
+              </section>
+              <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:p-6">
+                <div className="flex items-start gap-3"><AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" /><div><h2 className="text-xl font-black text-slate-900">Pre poručivanja proverite 6 stvari</h2><ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">{articles["farbanje-zida-korak-po-korak"].checklist.map((item) => <li key={item}>• {item}</li>)}</ul></div></div>
+              </section>
+              <section className="rounded-2xl bg-slate-900 p-6 text-white sm:p-7">
+                <h2 className="text-xl font-black">Proračun materijala za vaš zid</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">Pošaljite širinu, dužinu i visinu prostorije, kao i broj i dimenzije otvora. Na osnovu kvadrature i deklarisane potrošnje konkretnog proizvoda može se izračunati potrebna količina pre poručivanja.</p>
+                <Link href="/katalog?category=boje-lakovi-hemija&subcategory=boje-za-zidove" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-3 text-sm font-black text-white hover:bg-cyan-500">Pogledaj boje za zidove <ArrowRight className="h-4 w-4" /></Link>
+              </section>
             </div>
           </article>
         </div>
