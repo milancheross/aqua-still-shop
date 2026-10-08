@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, ChevronRight, MapPin, Truck, Store, ShieldCheck, SlidersHorizontal, PackageSearch } from "lucide-react";
+import { ArrowRight, ChevronRight, MapPin, Truck, Store, ShieldCheck } from "lucide-react";
 import { db } from "@/lib/db";
 import { getHomepageData } from "@/services/home-service";
 import { getHomeContent } from "@/actions/page-cms-actions";
@@ -101,7 +101,7 @@ export default async function HomePage() {
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/65 to-slate-950/20" />
         <div className="relative container mx-auto px-4 py-7 sm:px-6 lg:px-8 lg:py-8">
-          <div className="grid items-center gap-6 lg:grid-cols-[1.1fr_.9fr]">
+          <div className="flex items-center justify-between gap-8">
             <div className="max-w-2xl">
               <div className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-cyan-300">
                 <span className="h-px w-6 bg-cyan-400" /> Aqua Still · Zlatibor
@@ -114,19 +114,13 @@ export default async function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                [SlidersHorizontal, "Brzi filteri", "Izaberi kategoriju", "/katalog"],
-                [PackageSearch, "Pretraga po šifri", "SKU / barkod", "/katalog"],
-                [Truck, "Dostupnost", "Proveri stanje", "/katalog"],
-                [Store, "Preuzimanje", "Zlatibor", "/kontakt"],
-              ].map(([Icon, title, text, href]) => (
-                <Link key={title as string} href={href as string} className="group rounded-xl border border-white/15 bg-white/10 px-3 py-3 backdrop-blur-sm transition hover:border-cyan-300/50 hover:bg-white/15">
-                  <Icon className="mb-2 h-4 w-4 text-cyan-300" />
-                  <span className="block text-[10px] font-black uppercase tracking-wide text-white">{title as string}</span>
-                  <span className="mt-0.5 block text-[10px] text-slate-300">{text as string}</span>
-                </Link>
-              ))}
+            <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
+              <Link href="/katalog" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-black text-white transition hover:bg-orange-500">
+                Pogledaj katalog <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+              <Link href="/katalog/akcija" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-black text-white backdrop-blur-sm transition hover:bg-white/15">
+                Akcije
+              </Link>
             </div>
           </div>
         </div>
