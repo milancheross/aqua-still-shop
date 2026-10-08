@@ -181,7 +181,9 @@ export async function createAdminProduct(input: ProductAdminInput) {
     throw new Error(`Proizvod sa slug-om "${input.slug}" već postoji.`);
   }
 
-  await ensureBrand(input.brand);\n\n  await ensureBrand(input.brand);\n\n  // Ensure category exists to prevent foreign key violation
+  await ensureBrand(input.brand);
+
+  // Ensure category exists to prevent foreign key violation
   try {
     const existingCat = await db.category.findUnique({ where: { slug: input.categorySlug } });
     if (!existingCat) {
