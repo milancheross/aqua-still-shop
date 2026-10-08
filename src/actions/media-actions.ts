@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { del, put } from "@vercel/blob";
 import { requireAdmin } from "@/lib/admin-auth";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 
 export interface MediaItem {
@@ -167,16 +168,45 @@ export async function updateMediaAssetAction(
   data: { altText?: string; filename?: string; folder?: string },
 ) {
   await requireAdmin();
-  await db.mediaAsset.update({
-    where: { id },
-    data: {
-      ...(data.altText !== undefined ? { altText: data.altText } : {}),
-      ...(data.filename !== undefined ? { filename: getSafeFilename(data.filename) } : {}),
-      ...(data.folder !== undefined
-        ? { folder: /^[a-z0-9_-]{1,40}$/.test(data.folder) ? data.folder : "general" }
-        : {}),
-    },
+
+  const requestedFolder =
+    data.folder !== undefined && /^[a-z0-9_-]{1,40}$/.test(data.folder)
+      ? data.folder
+      : data.folder !== undefined
+        ? "general"
+        : undefined;
+
+  const activeSlotFolders = new Set(["logo", "hero", "hero-mobile"]);
+
+  await db.$transaction(async (tx) => {
+    // "Postavi kao ..." is a single active slot, not a normal library folder.
+    // Demote the previous asset first so an older asset cannot remain active.
+    if (requestedFolder && activeSlotFolders.has(requestedFolder)) {
+      await tx.mediaAsset.updateMany({
+        where: {
+          folder: requestedFolder,
+          id: { not: id },
+        },
+        data: { folder: "general" },
+      });
+    }
+
+    await tx.mediaAsset.update({
+      where: { id },
+      data: {
+        ...(data.altText !== undefined ? { altText: data.altText } : {}),
+        ...(data.filename !== undefined ? { filename: getSafeFilename(data.filename) } : {}),
+        ...(requestedFolder !== undefined ? { folder: requestedFolder } : {}),
+      },
+    });
   });
+
+  // Media is rendered outside the admin route. Invalidate the public page
+  // immediately after an active logo/hero slot changes.
+  if (requestedFolder && activeSlotFolders.has(requestedFolder)) {
+    revalidatePath("/");
+  }
+
   return { success: true };
 }
 
