@@ -29,9 +29,23 @@ export default function Header() {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [categories, setCategories] = useState<ProductCategory[]>([]);
+  const [logoUrl, setLogoUrl] = useState("/images/aqua-still-logo.png");
+  const [logoAlt, setLogoAlt] = useState("Aqua Still Zlatibor Logo");
 
   React.useEffect(() => {
     let active = true;
+    fetch("/api/site/logo", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error("Logo nije dostupan.");
+        return response.json() as Promise<{ url: string; altText?: string | null }>;
+      })
+      .then((data) => {
+        if (!active) return;
+        if (data.url) setLogoUrl(data.url);
+        if (data.altText) setLogoAlt(data.altText);
+      })
+      .catch((error) => console.error("Storefront logo fetch failed:", error));
+
     fetch("/api/catalog/categories", { cache: "no-store" })
       .then((response) => {
         if (!response.ok) throw new Error("Kategorije nisu dostupne.");
@@ -77,8 +91,8 @@ export default function Header() {
           <Link href="/" className="flex items-center shrink-0">
             <div className="relative h-9 w-[132px] sm:h-12 sm:w-[200px]">
               <Image 
-                src="/images/aqua-still-logo.png" 
-                alt="Aqua Still Zlatibor Logo" 
+                src={logoUrl}
+                alt={logoAlt} 
                 fill
                 className="object-contain object-left"
                 priority
