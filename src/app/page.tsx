@@ -86,30 +86,6 @@ export default async function HomePage() {
     ? data.categories.filter((category) => category.featured).slice(0, 9)
     : data.categories.slice(0, 9);
 
-  const categoryLayout = [
-    "lg:col-span-2 lg:row-span-2",
-    "",
-    "",
-    "lg:col-span-2",
-    "",
-    "",
-    "lg:col-span-2",
-    "",
-    "",
-  ];
-
-  const categoryHeights = [
-    "min-h-[340px]",
-    "min-h-[165px]",
-    "min-h-[165px]",
-    "min-h-[165px]",
-    "min-h-[165px]",
-    "min-h-[165px]",
-    "min-h-[165px]",
-    "min-h-[165px]",
-    "min-h-[165px]",
-  ];
-
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f5f6f4] text-slate-950">
       <section className="relative overflow-hidden bg-slate-950 text-white">
@@ -162,7 +138,7 @@ export default async function HomePage() {
             <span>Brza pretraga</span><span className="h-px w-6 bg-slate-300" />
           </div>
           <div className="mb-3 flex flex-wrap gap-2">
-            {["Makita", "Wilo pumpe", "Slavine", "Fiting 1/2"", "Brusne i rezne ploče"].map((tag) => (
+            {["Makita", "Wilo pumpe", "Slavine", "Fiting 1/2\"","Brusne i rezne ploče"].map((tag) => (
               <Link key={tag} href={"/katalog?q=" + encodeURIComponent(tag)} className="rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-[11px] font-bold text-slate-700 transition hover:border-cyan-400 hover:bg-cyan-50 hover:text-cyan-800">
                 {tag}
               </Link>
@@ -183,6 +159,7 @@ export default async function HomePage() {
               </div>
             </div>
           ))}
+          </div>
         </div>
       </section>
 
