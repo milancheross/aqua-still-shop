@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
-import { AlertCircle, Check, ImagePlus, Loader2, Plus, Save, Trash2, Upload, X } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, ChevronRight, ImagePlus, Loader2, Plus, Save, Trash2, Upload, X } from "lucide-react";
 import { createAdminCategory, createAdminSubcategory, deleteAdminCategory, getAdminCategories, updateAdminCategory, updateAdminSubcategory, updateAdminSubcategoryImage } from "@/actions/admin-cms-actions";
 import { uploadMediaAction } from "@/actions/media-actions";
 
@@ -16,6 +16,7 @@ export default function AdminCategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
   const [creatingSubcategoryFor, setCreatingSubcategoryFor] = useState<string | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [newSubcategoryForm, setNewSubcategoryForm] = useState({ name: "", slug: "", description: "" });
   const [subcategoryForm, setSubcategoryForm] = useState({ name: "", slug: "", description: "", seoTitle: "", seoDescription: "", imageUrl: "" });
   const [loading, setLoading] = useState(true);
@@ -303,9 +304,41 @@ export default function AdminCategoriesPage() {
         <section className="min-w-0 space-y-3 lg:col-span-3">
           <div className="flex items-end justify-between gap-3"><h2 className="text-base font-black text-slate-900">Postojeće kategorije</h2><span className="text-xs text-slate-500">{categories.length} ukupno</span></div>
           {loading ? <div className="rounded-2xl border border-slate-200 bg-white py-16 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-cyan-600" /></div> : categories.length === 0 ? <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Još nema kreiranih kategorija.</div> : <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {categories.map((category) => <article key={category.id} className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${editingId === category.id ? "border-cyan-500 ring-2 ring-cyan-100" : "border-slate-200"}`}>
+            {categories.map((category) =>              <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5">
+                <button
+                  type="button"
+                  onClick={() => setExpandedCategories((current) => {
+                    const next = new Set(current);
+                    if (next.has(category.id)) next.delete(category.id);
+                    else next.add(category.id);
+                    return next;
+                  })}
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                  aria-expanded={expandedCategories.has(category.id)}
+                >
+                  {expandedCategories.has(category.id) ? <ChevronDown className="h-4 w-4 shrink-0 text-cyan-700" /> : <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />}
+                  <span className="min-w-0">
+                    <span className="block truncate text-xs font-black text-slate-900">{category.name}</span>
+                    <span className="block text-[10px] text-slate-500">{category.subcategories.length} {category.subcategories.length === 1 ? "podkategorija" : "podkategorija"}</span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCreatingSubcategoryFor(category.id);
+                    setExpandedCategories((current) => new Set(current).add(category.id));
+                    setNewSubcategoryForm({ name: "", slug: "", description: "" });
+                    setError("");
+                  }}
+                  className="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg bg-cyan-700 px-2.5 text-[10px] font-black text-white hover:bg-cyan-800"
+                  title="Dodaj podkategoriju"
+                >
+                  <Plus className="h-3 w-3" /> Podkategorija
+                </button>
+              </div>
+              {expandedCategories.has(category.id) && (
               <div className="relative aspect-[16/8] bg-gradient-to-br from-slate-100 to-cyan-50">{category.imageUrl ? <Image src={category.imageUrl} alt={category.name} fill sizes="(max-width: 640px) 100vw, 30vw" className="object-cover" /> : <div className="absolute inset-0 flex items-center justify-center text-4xl font-black text-cyan-800/20">{category.name.slice(0,1)}</div>}<span className="absolute bottom-2 left-2 rounded-lg bg-white/90 px-2 py-1 text-[10px] font-bold text-slate-600">{category.imageUrl ? "Ima fotografiju" : "Bez fotografije"}</span></div>
-              <div className="space-y-2 p-3 sm:p-4"><div><div className="flex flex-wrap items-center gap-1.5"><h3 className="line-clamp-2 text-sm font-bold text-slate-900">{category.name}</h3>{category.featured && <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-cyan-800">Početna</span>}</div><p className="mt-1 truncate font-mono text-xs text-slate-500">/{category.slug} · redosled {category.sortOrder}</p></div><div className="flex gap-2"><button type="button" onClick={() => startEdit(category)} className="min-h-10 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800">Uredi kategoriju</button><button type="button" onClick={() => handleDelete(category.id)} aria-label={`Obriši kategoriju ${category.name}`} className="min-h-10 rounded-lg border border-red-100 px-3 py-2 text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button></div>
+              <div className="space-y-2 p-3 sm:p-4"><div className="flex items-center justify-between gap-2"><p className="truncate font-mono text-xs text-slate-500">/{category.slug} · redosled {category.sortOrder}</p>{category.featured && <span className="shrink-0 rounded-full bg-cyan-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-cyan-800">Početna</span>}</div><div className="flex gap-2"><button type="button" onClick={() => startEdit(category)} className="min-h-10 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-800">Uredi kategoriju</button><button type="button" onClick={() => handleDelete(category.id)} aria-label={`Obriši kategoriju ${category.name}`} className="min-h-10 rounded-lg border border-red-100 px-3 py-2 text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button></div>
                 <div className="mt-3 border-t border-slate-100 pt-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-[11px] font-black uppercase tracking-wide text-slate-500">Podkategorije</p>
@@ -386,6 +419,7 @@ export default function AdminCategoriesPage() {
                   )}
                   </div>}
               </div>
+              )}
             </article>)}
           </div>}
         </section>
