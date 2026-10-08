@@ -180,7 +180,9 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {featuredCategories.slice(0, 8).map((category, index) => (
+          {featuredCategories.slice(0, 8).map((category, index) => {
+            const CategoryIcon = getCategoryIcon(category.slug || category.name);
+            return (
             <Link
               key={category.id}
               href={"/katalog/" + category.slug}
@@ -194,6 +196,9 @@ export default async function HomePage() {
               <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
                 <div className="flex items-end justify-between gap-3">
                   <div>
+                    <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-cyan-200 backdrop-blur-sm">
+                      <CategoryIcon className="h-4 w-4" strokeWidth={2} />
+                    </div>
                     <p className="mb-1 text-[9px] font-black uppercase tracking-[0.16em] text-cyan-300">{category.itemCount} artikala</p>
                     <h3 className="text-base font-black text-white sm:text-lg">{category.name}</h3>
                     <p className="mt-1 line-clamp-1 text-[11px] text-slate-200/80">{category.description || "Pogledajte ponudu"}</p>
@@ -204,7 +209,8 @@ export default async function HomePage() {
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
 
