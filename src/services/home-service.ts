@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { getDbBrands, getDbCategories } from "@/services/product-service";
+import { getDbBrandRecords, getDbCategories } from "@/services/product-service";
 import type { Product, ProductCategory } from "@/types";
 
 export async function getHomepageProducts(): Promise<Product[]> {
@@ -38,12 +38,12 @@ export async function getHomepageProducts(): Promise<Product[]> {
 export async function getHomepageData(): Promise<{
   categories: ProductCategory[];
   popularProducts: Product[];
-  brands: string[];
+  brands: Awaited<ReturnType<typeof getDbBrandRecords>>;
 }> {
   const [categories, popularProducts, brands] = await Promise.all([
     getDbCategories(),
     getHomepageProducts(),
-    getDbBrands(),
+    getDbBrandRecords(),
   ]);
 
   return { categories, popularProducts, brands };
