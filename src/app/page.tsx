@@ -118,9 +118,6 @@ export default async function HomePage() {
               <Link href="/katalog" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-black text-white transition hover:bg-orange-500">
                 Pogledaj katalog <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-              <Link href="/katalog/akcija" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-black text-white backdrop-blur-sm transition hover:bg-white/15">
-                Akcije
-              </Link>
             </div>
           </div>
         </div>
@@ -235,7 +232,7 @@ export default async function HomePage() {
             <span className="text-[10px] font-black uppercase tracking-[0.16em] text-red-100">Posebna ponuda</span>
             <h3 className="mt-2 text-2xl font-black leading-tight">Akcijska ponuda</h3>
             <p className="mt-2 text-sm text-red-50">Odabrani proizvodi po posebnim cenama.</p>
-            <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-black text-red-700">Pogledaj akcije <ArrowRight className="h-3.5 w-3.5" /></span>
+            <span className="mt-5 inline-flex items-center gap-2 text-xs font-black text-white/90">Otvori akcijsku ponudu <ArrowRight className="h-3.5 w-3.5" /></span>
           </div>
           {data.popularProducts[0]?.images?.[0] ? <Image src={data.popularProducts[0].images[0]} alt="Akcijska ponuda" fill sizes="50vw" className="object-cover object-right opacity-55 transition group-hover:scale-105" /> : null}
           <div className="absolute inset-0 bg-gradient-to-r from-red-800/95 via-orange-600/65 to-transparent" />
