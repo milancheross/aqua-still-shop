@@ -67,12 +67,6 @@ function pickProducts(products: Awaited<ReturnType<typeof getDbProducts>>, match
   return [...matched, ...fallback].filter((product, index, all) => all.findIndex((item) => item.id === product.id) === index).slice(0, count);
 }
 
-function stockLabel(product: Awaited<ReturnType<typeof getDbProducts>>[number]) {
-  if (!product.inStock || product.stockQuantity <= 0) return "Trenutno nema";
-  if (product.stockQuantity <= 3) return `Malo na stanju · ${product.stockQuantity} kom.`;
-  return "Na stanju";
-}
-
 function pickBundleProducts(products: Awaited<ReturnType<typeof getDbProducts>>, matcher: RegExp, count: number, used = new Set<string>()) {
   const exact = products.filter((product) => matcher.test(product.name) && !used.has(product.id));
   return exact.slice(0, count);
