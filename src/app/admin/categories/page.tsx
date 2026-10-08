@@ -466,10 +466,6 @@ export default function AdminCategoriesPage() {
               </article>
             ))}
           </div>}
-              </div>
-              )}
-            </article>)}
-          </div>}
         </section>
       </div>
     </div>
