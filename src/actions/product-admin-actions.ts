@@ -149,7 +149,10 @@ async function ensureBrand(name: string) {
     });
   } catch (error) {
     // Another admin may have created the same brand concurrently.
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+    const code = typeof error === "object" && error !== null && "code" in error
+      ? String((error as { code?: unknown }).code)
+      : "";
+    if (code === "P2002") {
       const existing = await db.brand.findUnique({ where: { name: cleanName } });
       if (existing) return;
     }
