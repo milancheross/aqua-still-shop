@@ -115,7 +115,7 @@ export default async function HomePage() {
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
-              <Link href="/katalog" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-black text-white transition hover:bg-orange-500">
+              <Link href="/katalog" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-xs font-black text-white transition hover:bg-cyan-500">
                 Pogledaj katalog <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -171,9 +171,10 @@ export default async function HomePage() {
               className="group relative aspect-[1.35] overflow-hidden rounded-2xl bg-slate-900"
             >
               {category.imageUrl ? (
-                <Image src={category.imageUrl} alt={category.name} fill sizes={index === 0 ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 1024px) 50vw, 25vw"} className="object-cover transition duration-500 group-hover:scale-105" />
+                <Image src={category.imageUrl} alt={category.name} fill sizes={index === 0 ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 1024px) 50vw, 25vw"} className="object-cover brightness-[0.78] saturate-[0.82] transition duration-500 group-hover:scale-105 group-hover:brightness-[0.86]" />
               ) : null}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent" />
+              <div className="absolute inset-0 bg-slate-950/32" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/88 via-slate-950/35 to-slate-950/10" />
               <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
                 <div className="flex items-end justify-between gap-3">
                   <div>
@@ -181,7 +182,7 @@ export default async function HomePage() {
                     <h3 className="text-base font-black text-white sm:text-lg">{category.name}</h3>
                     <p className="mt-1 line-clamp-1 text-[11px] text-slate-200/80">{category.description || "Pogledajte ponudu"}</p>
                   </div>
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-slate-900 shadow-sm transition group-hover:bg-orange-600 group-hover:text-white">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-slate-900 shadow-sm transition group-hover:bg-cyan-600 group-hover:text-white">
                     <ChevronRight className="h-4 w-4" />
                   </span>
                 </div>
@@ -203,10 +204,10 @@ export default async function HomePage() {
           {quickLinks.map(([label, href], index) => (
             <Link key={label} href={href} className={"group flex items-center justify-between px-4 py-4 transition hover:bg-slate-50 " + (index > 0 ? "border-l border-slate-200" : "") + (index >= 3 ? "border-t border-slate-200" : "")}>
               <span>
-                <span className="mb-1 block text-[9px] font-black uppercase tracking-[0.16em] text-orange-600">0{index + 1}</span>
+                <span className="mb-1 block text-[9px] font-black uppercase tracking-[0.16em] text-cyan-700">0{index + 1}</span>
                 <span className="text-sm font-bold text-slate-800">{label}</span>
               </span>
-              <ChevronRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-1 group-hover:text-orange-600" />
+              <ChevronRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-1 group-hover:text-cyan-700" />
             </Link>
           ))}
         </div>
@@ -227,26 +228,26 @@ export default async function HomePage() {
       </section>
 
       <section className="container mx-auto grid gap-4 px-4 pt-9 sm:px-6 md:grid-cols-2 lg:px-8">
-        <Link href="/katalog/akcija" className="group relative min-h-48 overflow-hidden rounded-2xl bg-gradient-to-r from-red-700 to-orange-500 p-6 text-white shadow-sm">
+        <Link href="/katalog/akcija" className="group relative min-h-48 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-6 text-white shadow-sm">
           <div className="relative z-10 max-w-[55%]">
-            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-red-100">Posebna ponuda</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300">Posebna ponuda</span>
             <h3 className="mt-2 text-2xl font-black leading-tight">Akcijska ponuda</h3>
-            <p className="mt-2 text-sm text-red-50">Odabrani proizvodi po posebnim cenama.</p>
+            <p className="mt-2 text-sm text-slate-300">Odabrani proizvodi po posebnim cenama.</p>
             <span className="mt-5 inline-flex items-center gap-2 text-xs font-black text-white/90">Otvori akcijsku ponudu <ArrowRight className="h-3.5 w-3.5" /></span>
           </div>
-          {data.popularProducts[0]?.images?.[0] ? <Image src={data.popularProducts[0].images[0]} alt="Akcijska ponuda" fill sizes="50vw" className="object-cover object-right opacity-55 transition group-hover:scale-105" /> : null}
-          <div className="absolute inset-0 bg-gradient-to-r from-red-800/95 via-orange-600/65 to-transparent" />
+          {data.popularProducts[0]?.images?.[0] ? <Image src={data.popularProducts[0].images[0]} alt="Akcijska ponuda" fill sizes="50vw" className="object-cover object-right opacity-35 transition group-hover:scale-105" /> : null}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/35" />
         </Link>
 
-        <Link href="/katalog" className="group relative min-h-48 overflow-hidden rounded-2xl bg-cyan-800 p-6 text-white shadow-sm">
+        <Link href="/katalog" className="group relative min-h-48 overflow-hidden rounded-2xl border border-cyan-900 bg-slate-900 p-6 text-white shadow-sm">
           <div className="relative z-10 max-w-[60%]">
-            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-100">Za majstore</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300">Za majstore</span>
             <h3 className="mt-2 text-2xl font-black leading-tight">Profesionalni program</h3>
-            <ul className="mt-3 space-y-1 text-xs text-cyan-50"><li>✓ Profesionalni alati</li><li>✓ Vodovodni materijal</li><li>✓ Pumpe i navodnjavanje</li><li>✓ Potrošni materijal</li></ul>
-            <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-black text-cyan-800">Pogledaj ponudu <ArrowRight className="h-3.5 w-3.5" /></span>
+            <ul className="mt-3 space-y-1 text-xs text-slate-300"><li>✓ Profesionalni alati</li><li>✓ Vodovodni materijal</li><li>✓ Pumpe i navodnjavanje</li><li>✓ Potrošni materijal</li></ul>
+            <span className="mt-5 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-black text-white backdrop-blur-sm">Pogledaj ponudu <ArrowRight className="h-3.5 w-3.5" /></span>
           </div>
-          {featuredCategories[0]?.imageUrl ? <Image src={featuredCategories[0].imageUrl} alt="Profesionalni program" fill sizes="50vw" className="object-cover object-right opacity-45 transition group-hover:scale-105" /> : null}
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-900/95 via-cyan-800/65 to-transparent" />
+          {featuredCategories[0]?.imageUrl ? <Image src={featuredCategories[0].imageUrl} alt="Profesionalni program" fill sizes="50vw" className="object-cover object-right opacity-30 transition group-hover:scale-105" /> : null}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/35" />
         </Link>
       </section>
 
