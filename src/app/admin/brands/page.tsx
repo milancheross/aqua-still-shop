@@ -22,16 +22,42 @@ export default function AdminBrandsPage() {
 
   const loadData = async () => {
     setLoading(true);
+    setError("");
     try {
-      setBrands(await getAdminBrands());
+      const result = await getAdminBrands();
+      setBrands(Array.isArray(result) ? result : []);
     } catch (e) {
+      setBrands([]);
       setError(e instanceof Error ? e.message : "Učitavanje brendova nije uspelo.");
     } finally {
       setLoading(false);
     }
   };
 
-  // This effect intentionally hydrates client state from the server action on mount.\n  // eslint-disable-next-line react-hooks/set-state-in-effect\n  useEffect(() => { void loadData(); }, []);
+  useEffect(() => {
+    let active = true;
+
+    const load = async () => {
+      try {
+        const result = await getAdminBrands();
+        if (!active) return;
+        setBrands(Array.isArray(result) ? result : []);
+        setError("");
+      } catch (e) {
+        if (!active) return;
+        setBrands([]);
+        setError(e instanceof Error ? e.message : "Učitavanje brendova nije uspelo.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void load();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const resetForm = () => { setForm(emptyForm); setEditingId(null); };
 
