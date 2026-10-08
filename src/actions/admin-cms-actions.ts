@@ -77,6 +77,52 @@ export async function updateAdminCategory(id: string, data: { name: string; slug
   return { success: true };
 }
 
+export async function createAdminSubcategory(
+  data: {
+    categoryId: string;
+    name: string;
+    slug: string;
+    description?: string;
+    seoTitle?: string;
+    seoDescription?: string;
+    imageUrl?: string | null;
+  }
+) {
+  await requireAdmin();
+  if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
+
+  const name = data.name.trim();
+  const slug = data.slug.trim();
+  if (!data.categoryId || !name || !slug) {
+    throw new Error("Kategorija, naziv i slug podkategorije su obavezni.");
+  }
+
+  const category = await db.category.findUnique({ where: { id: data.categoryId } });
+  if (!category) throw new Error("Izabrana kategorija ne postoji.");
+
+  const existing = await db.subcategory.findUnique({ where: { slug } });
+  if (existing) throw new Error("Podkategorija sa ovim slug-om već postoji.");
+
+  const created = await db.subcategory.create({
+    data: {
+      categoryId: category.id,
+      name,
+      slug,
+      description: data.description?.trim() || null,
+      seoTitle: data.seoTitle?.trim() || null,
+      seoDescription: data.seoDescription?.trim() || null,
+      imageUrl: data.imageUrl || null,
+    },
+  });
+
+  revalidatePath("/admin/categories");
+  revalidatePath("/admin/products/new");
+  revalidatePath("/katalog");
+  revalidatePath("/");
+
+  return { success: true, subcategory: created };
+}
+
 export async function updateAdminSubcategory(
   id: string,
   data: { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; imageUrl?: string | null }
