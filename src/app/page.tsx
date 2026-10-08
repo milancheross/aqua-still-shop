@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight, ChevronRight, MapPin, Truck, Store, ShieldCheck } from "lucide-react";
+import { getCategoryIcon } from "@/lib/category-icons";
 import { db } from "@/lib/db";
 import { getHomepageData } from "@/services/home-service";
 import { getHomeContent } from "@/actions/page-cms-actions";
@@ -179,7 +180,9 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {featuredCategories.slice(0, 8).map((category, index) => (
+          {featuredCategories.slice(0, 8).map((category, index) => {
+            const CategoryIcon = getCategoryIcon(category.slug || category.name);
+            return (
             <Link
               key={category.id}
               href={"/katalog/" + category.slug}
@@ -193,6 +196,9 @@ export default async function HomePage() {
               <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
                 <div className="flex items-end justify-between gap-3">
                   <div>
+                    <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-cyan-200 backdrop-blur-sm">
+                      <CategoryIcon className="h-4 w-4" strokeWidth={2} />
+                    </div>
                     <p className="mb-1 text-[9px] font-black uppercase tracking-[0.16em] text-cyan-300">{category.itemCount} artikala</p>
                     <h3 className="text-base font-black text-white sm:text-lg">{category.name}</h3>
                     <p className="mt-1 line-clamp-1 text-[11px] text-slate-200/80">{category.description || "Pogledajte ponudu"}</p>
@@ -203,7 +209,8 @@ export default async function HomePage() {
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -216,15 +223,27 @@ export default async function HomePage() {
           <Link href="/katalog" className="text-xs font-bold text-cyan-700">Ceo katalog <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
         </div>
         <div className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-2 lg:grid-cols-3">
-          {quickLinks.map(([label, href], index) => (
-            <Link key={label} href={href} className={"group flex items-center justify-between px-4 py-4 transition hover:bg-slate-50 " + (index > 0 ? "border-l border-slate-200" : "") + (index >= 3 ? "border-t border-slate-200" : "")}>
-              <span>
-                <span className="mb-1 block text-[9px] font-black uppercase tracking-[0.16em] text-cyan-700">0{index + 1}</span>
-                <span className="text-sm font-bold text-slate-800">{label}</span>
-              </span>
-              <ChevronRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-1 group-hover:text-cyan-700" />
-            </Link>
-          ))}
+          {quickLinks.map(([label, href], index) => {
+            const Icon = getCategoryIcon(label);
+            return (
+              <Link
+                key={label}
+                href={href}
+                className={"group flex items-center justify-between px-4 py-4 transition hover:bg-slate-50 " + (index > 0 ? "border-l border-slate-200" : "") + (index >= 3 ? "border-t border-slate-200" : "")}
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition-colors group-hover:bg-cyan-50 group-hover:text-cyan-700">
+                    <Icon className="h-4 w-4" strokeWidth={2} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="mb-1 block text-[9px] font-black uppercase tracking-[0.16em] text-cyan-700">0{index + 1}</span>
+                    <span className="block truncate text-sm font-bold text-slate-800">{label}</span>
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-1 group-hover:text-cyan-700" />
+              </Link>
+            );
+          })}
         </div>
       </section>
 

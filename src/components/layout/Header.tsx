@@ -3,25 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, Menu, X, User, Heart, Globe, Share2, ChevronDown, Wrench, Paintbrush, HardHat, Flame, Bath, Sprout, Lightbulb, Droplets } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, User, Heart, Globe, Share2, ChevronDown } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { getCategoryIcon } from "@/lib/category-icons";
 import { formatPrice } from "@/lib/utils";
 import type { ProductCategory } from "@/types";
 
-function getCategoryIcon(slug: string) {
-  const value = slug.toLocaleLowerCase("sr-Latn-RS");
-
-  if (value.includes("alat")) return Wrench;
-  if (value.includes("boje") || value.includes("lakov") || value.includes("hemij")) return Paintbrush;
-  if (value.includes("gradjevinsk") || value.includes("zastit")) return HardHat;
-  if (value.includes("grejan")) return Flame;
-  if (value.includes("kupatil") || value.includes("sanitar")) return Bath;
-  if (value.includes("kuc") || value.includes("dvorist") || value.includes("cisc") || value.includes("bast")) return Sprout;
-  if (value.includes("rasvet") || value.includes("elektro")) return Lightbulb;
-  if (value.includes("navodnj")) return Droplets;
-
-  return Wrench;
-}
 
 export default function Header() {
   const { cart, setIsCartOpen } = useCart();
@@ -260,9 +247,17 @@ export default function Header() {
                 key={category.slug}
                 href={`/katalog/${category.slug}`}
                 onClick={() => setIsMenuOpen(false)}
-                className="border-b border-slate-100 px-3 py-3 text-sm font-medium text-slate-800 hover:bg-cyan-50 hover:text-cyan-800"
+                className="flex min-h-12 items-center gap-3 border-b border-slate-100 px-3 py-3 text-sm font-medium text-slate-800 hover:bg-cyan-50 hover:text-cyan-800"
               >
-                {category.name}
+                {(() => {
+                  const Icon = getCategoryIcon(category.slug);
+                  return (
+                    <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-cyan-700">
+                      <Icon className="h-4 w-4" strokeWidth={1.8} />
+                    </span>
+                  );
+                })()}
+                <span className="min-w-0 truncate">{category.name}</span>
               </Link>
             ))}
             <Link href="/brendovi" onClick={() => setIsMenuOpen(false)} className="px-3 py-3 text-sm font-medium text-slate-800">Brendovi</Link>
