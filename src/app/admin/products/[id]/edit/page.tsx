@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Save, Plus, Trash2, Loader2, Upload } from "lucide-react";
 import { getAdminProductById, updateAdminProduct } from "@/actions/product-admin-actions";
 import { uploadMediaAction } from "@/actions/media-actions";
+import { getAdminCategories } from "@/actions/admin-cms-actions";
 
 interface EditProductPageProps {
   params: Promise<{ id: string }>;
@@ -19,6 +20,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
+  const [categories, setCategories] = useState<Awaited<ReturnType<typeof getAdminCategories>>>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   const [form, setForm] = useState({
     name: "",
@@ -38,9 +41,25 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     images: ["/placeholder-tool.svg"],
     isFeatured: false,
     isPromo: false,
+    subcategorySlug: "",
+    subcategoryName: "",
   });
 
   const [attributes, setAttributes] = useState<{ key: string; value: string }[]>([]);
+
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const result = await getAdminCategories();
+        setCategories(result);
+      } catch (err) {
+        console.error("Error loading categories:", err);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    }
+    void loadCategories();
+  }, []);
 
   useEffect(() => {
     async function loadProduct() {
@@ -55,6 +74,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             brand: p.brand,
             categorySlug: p.categorySlug,
             categoryName: p.categoryName,
+            subcategorySlug: p.subcategorySlug || "",
+            subcategoryName: p.subcategoryName || "",
             price: Number(p.price),
             salePrice: p.salePrice ? Number(p.salePrice) : "",
             stockQuantity: p.stockQuantity,
@@ -267,22 +288,48 @@ export default function EditProductPage({ params }: EditProductPageProps) {
               <select
                 name="categorySlug"
                 value={form.categorySlug}
+                disabled={categoriesLoading}
                 onChange={(e) => {
                   const val = e.target.value;
-                  const nameMap: Record<string, string> = {
-                    alati: "Alati i oprema",
-                    vodovod: "Vodovod i kanalizacija",
-                    kupatila: "Kupatilska oprema i sanitarije",
-                    navodnjavanje: "Sistemi za navodnjavanje",
-                  };
-                  setForm({ ...form, categorySlug: val, categoryName: nameMap[val] || val });
+                  const selected = categories.find((category) => category.slug === val);
+                  setForm((current) => ({
+                    ...current,
+                    categorySlug: val,
+                    categoryName: selected?.name || val,
+                    subcategorySlug: "",
+                    subcategoryName: "",
+                  }));
                 }}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-cyan-500 outline-none"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-cyan-500 outline-none disabled:opacity-60"
               >
-                <option value="alati">Alati i oprema</option>
-                <option value="vodovod">Vodovod i kanalizacija</option>
-                <option value="kupatila">Kupatilska oprema i sanitarije</option>
-                <option value="navodnjavanje">Sistemi za navodnjavanje</option>
+                {categoriesLoading ? <option>Učitavanje kategorija...</option> : categories.map((category) => (
+                  <option key={category.id} value={category.slug}>{category.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 uppercase">Podkategorija</label>
+              <select
+                value={form.subcategorySlug}
+                disabled={categoriesLoading || !categories.find((category) => category.slug === form.categorySlug)?.subcategories.length}
+                onChange={(e) => {
+                  const slug = e.target.value;
+                  const category = categories.find((item) => item.slug === form.categorySlug);
+                  const subcategory = category?.subcategories.find((item) => item.slug === slug);
+                  setForm((current) => ({
+                    ...current,
+                    subcategorySlug: slug,
+                    subcategoryName: subcategory?.name || slug,
+                  }));
+                }}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-cyan-500 outline-none disabled:opacity-60"
+              >
+                <option value="">
+                  {!categories.find((item) => item.slug === form.categorySlug)?.subcategories.length ? "Nema podkategorija" : "Izaberite podkategoriju"}
+                </option>
+                {categories.find((item) => item.slug === form.categorySlug)?.subcategories.map((subcategory) => (
+                  <option key={subcategory.id} value={subcategory.slug}>{subcategory.name}</option>
+                ))}
               </select>
             </div>
           </div>
