@@ -429,11 +429,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
   if (slug === "farbanje-zida-korak-po-korak") {
     const [wallPaints, primers, fillers, tapes, paintingTools] = await Promise.all([
-      getDbProducts({ categorySlug: "boje-lakovi-hemija", subcategorySlug: "boje-za-zidove", sort: "name" }),
-      getDbProducts({ categorySlug: "boje-lakovi-hemija", subcategorySlug: "lakovi-impregnacije", search: "impregn", sort: "name" }),
-      getDbProducts({ categorySlug: "boje-lakovi-hemija", search: "glet", sort: "name" }),
-      getDbProducts({ categorySlug: "boje-lakovi-hemija", subcategorySlug: "lepkovi-krep-trake", search: "krep", sort: "name" }),
-      getDbProducts({ categorySlug: "alati", search: "valjak", sort: "name" }),
+      getDbProducts({ categorySlug: "boje-lakovi-hemija", subcategorySlug: "boje-za-zidove", sort: "name", limit: 40 }),
+      getDbProducts({ categorySlug: "boje-lakovi-hemija", subcategorySlug: "lakovi-impregnacije", sort: "name", limit: 40 }),
+      getDbProducts({ categorySlug: "boje-lakovi-hemija", search: "glet", sort: "name", limit: 40 }),
+      getDbProducts({ categorySlug: "boje-lakovi-hemija", subcategorySlug: "lepkovi-krep-trake", sort: "name", limit: 40 }),
+      getDbProducts({ categorySlug: "alati", search: "valjak", sort: "name", limit: 40 }),
     ]);
 
     const paintProducts = rankGuideProducts(wallPaints, ["disperz", "poludisperz", "unutrasnja", "zidna", "bela"], 4);
