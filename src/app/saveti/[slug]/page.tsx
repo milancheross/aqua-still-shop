@@ -178,10 +178,14 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   }
 
   if (slug === "renoviranje-kupatila-od-cega-poceti") {
-    const bathroomProducts = await getDbProducts({ sort: "newest" });
-    const waterproofing = pickBundleProducts(bathroomProducts, /hidroizol|hidroizolacion/i, 4);
+    const [waterproofingCandidates, drainCandidates, finishingCandidates] = await Promise.all([
+      getDbProducts({ search: "hidroizol", sort: "newest" }),
+      getDbProducts({ search: "slivnik", sort: "newest" }),
+      getDbProducts({ search: "ventil", sort: "newest" }),
+    ]);
+    const waterproofing = pickBundleProducts([...waterproofingCandidates, ...drainCandidates], /hidroizol|hidroizolacion|slivnik/i, 4);
     const used = new Set(waterproofing.map((product) => product.id));
-    const finishing = pickBundleProducts(bathroomProducts, /ventil|sifon|silikon|teflon|diht|zaptiv/i, 4, used);
+    const finishing = pickBundleProducts(finishingCandidates, /ventil|sifon|silikon|teflon|diht|zaptiv/i, 4, used);
 
     return (
       <main className="bg-slate-50">
