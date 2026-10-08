@@ -122,11 +122,17 @@ export default function AdminMediaPage() {
     });
   };
 
-  const handleSetFolder = async (item: MediaItem, folder: "hero" | "hero-mobile") => {
+  const handleSetFolder = async (item: MediaItem, folder: "logo" | "hero" | "hero-mobile") => {
     startTransition(async () => {
       try {
         await updateMediaAssetAction(item.id, { folder });
-        setSuccessMessage(folder === "hero" ? "Postavljeno kao desktop hero." : "Postavljeno kao mobilni hero.");
+        setSuccessMessage(
+          folder === "logo"
+            ? "Postavljeno kao logo sajta."
+            : folder === "hero"
+              ? "Postavljeno kao desktop hero."
+              : "Postavljeno kao mobilni hero.",
+        );
         await loadMedia();
       } catch (err: unknown) {
         setUploadError((err instanceof Error ? err.message : null) || "Nije moguće postaviti hero fotografiju.");
@@ -200,6 +206,7 @@ export default function AdminMediaPage() {
               </div>
               <div className="flex flex-grow flex-col justify-between space-y-3 p-4">
                 <div className="grid gap-2">
+                  {item.folder !== "logo" && <button type="button" onClick={() => handleSetFolder(item, "logo")} disabled={isPending} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-50">Postavi kao logo</button>}
                   {item.folder !== "hero" && <button type="button" onClick={() => handleSetFolder(item, "hero")} disabled={isPending} className="w-full rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-[11px] font-bold text-cyan-800 hover:bg-cyan-100 disabled:opacity-50">Postavi kao desktop hero</button>}
                   {item.folder !== "hero-mobile" && <button type="button" onClick={() => handleSetFolder(item, "hero-mobile")} disabled={isPending} className="w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] font-bold text-blue-800 hover:bg-blue-100 disabled:opacity-50">Postavi kao mobilni hero</button>}
                 </div>
