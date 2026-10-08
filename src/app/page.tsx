@@ -128,7 +128,7 @@ export default async function HomePage() {
         <section className="container mx-auto px-4 pt-8 sm:px-6 lg:px-8">
           <div className="mb-3 flex items-center justify-between"><h2 className="text-lg font-black text-slate-950">Brendovi</h2><Link href="/brendovi" className="text-xs font-bold text-cyan-700">Svi brendovi <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link></div>
           <div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {data.brands.slice(0, 18).map((brand) => <Link key={brand.id} href={`/katalog?brand=${encodeURIComponent(brand.name)}`} className="flex h-11 shrink-0 items-center rounded-lg border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 hover:border-cyan-300 hover:text-cyan-800">{brand.name}</Link>)}
+            {data.brands.slice(0, 18).map((brand) => <Link key={brand} href={`/katalog?brand=${encodeURIComponent(brand)}`} className="flex h-11 shrink-0 items-center rounded-lg border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 hover:border-cyan-300 hover:text-cyan-800">{brand}</Link>)}
           </div>
         </section>
       )}
