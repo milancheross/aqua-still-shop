@@ -192,7 +192,7 @@ export default function AdminCategoriesPage() {
       data.append("files", file);
       data.append("folder", "categories");
       const result = await uploadMediaAction(data);
-      const imageUrl = result.uploaded[0]?.url;
+      const imageUrl = result.uploaded[0]?.url ?? result.skipped[0]?.url;
       if (!imageUrl) throw new Error("Otpremanje slike nije vratilo adresu.");
       await updateAdminSubcategoryImage(subcategoryId, imageUrl);
       setCategories((current) => current.map((category) => ({
