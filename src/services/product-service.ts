@@ -68,6 +68,7 @@ export async function getDbProducts(options?: {
   search?: string;
   attributes?: Record<string, string | number | boolean>;
   sort?: "price-asc" | "price-desc" | "name" | "popular" | "newest";
+  limit?: number;
 }): Promise<Product[]> {
   if (!process.env.DATABASE_URL) {
     return devMockProducts(options);
@@ -167,6 +168,7 @@ export async function getDbProducts(options?: {
     const products = await db.product.findMany({
       where,
       orderBy,
+      ...(options?.limit ? { take: Math.min(Math.max(options.limit, 1), 100) } : {}),
       include: {
         category: true,
         subcategory: true,
