@@ -118,6 +118,45 @@ export async function getAdminProductById(id: string) {
   }
 }
 
+function brandSlugify(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[\\u0300-\\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+async function ensureBrand(name: string) {
+  const cleanName = name.trim();
+  if (!cleanName) return;
+
+  const existingByName = await db.brand.findUnique({ where: { name: cleanName } });
+  if (existingByName) return;
+
+  let slug = brandSlugify(cleanName);
+  if (!slug) return;
+
+  const existingBySlug = await db.brand.findUnique({ where: { slug } });
+  if (existingBySlug) {
+    if (existingBySlug.name === cleanName) return;
+    slug = `${slug}-${Date.now().toString(36).slice(-6)}`;
+  }
+
+  try {
+    await db.brand.create({
+      data: { name: cleanName, slug },
+    });
+  } catch (error) {
+    // Another admin may have created the same brand concurrently.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const existing = await db.brand.findUnique({ where: { name: cleanName } });
+      if (existing) return;
+    }
+    throw error;
+  }
+}
+
 export async function createAdminProduct(input: ProductAdminInput) {
   await requireAdmin();
   if (!input.name || !input.sku || !input.slug || !input.brand || !input.categorySlug) {
@@ -139,7 +178,7 @@ export async function createAdminProduct(input: ProductAdminInput) {
     throw new Error(`Proizvod sa slug-om "${input.slug}" već postoji.`);
   }
 
-  // Ensure category exists to prevent foreign key violation
+  await ensureBrand(input.brand);\n\n  await ensureBrand(input.brand);\n\n  // Ensure category exists to prevent foreign key violation
   try {
     const existingCat = await db.category.findUnique({ where: { slug: input.categorySlug } });
     if (!existingCat) {
