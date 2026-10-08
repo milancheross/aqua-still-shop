@@ -24,6 +24,13 @@ const quickLinks = [
   ["Brusne i rezne ploče", "/katalog?category=alati&subcategory=brusne-rezne-ploce"],
 ] as const;
 
+const featureRows = [
+  { icon: Package, title: "Širok katalog", text: "Alat i materijal" },
+  { icon: Tag, title: "Akcijske cene", text: "Odabrani artikli" },
+  { icon: Truck, title: "Za radionice", text: "Profesionalna oprema" },
+  { icon: Wrench, title: "Brz izbor", text: "Po kategoriji i brendu" },
+];
+
 export default async function HomePage() {
   const data = await getHomepageData();
   const home = (await getHomeContent()) ?? DEFAULT_HOME;
@@ -81,15 +88,10 @@ export default async function HomePage() {
 
       <section className="border-b border-slate-300/80 bg-white/85 backdrop-blur">
         <div className="container mx-auto grid grid-cols-2 divide-x divide-slate-200 sm:grid-cols-4 lg:grid-cols-4">
-          {[
-            [Package, "Širok katalog", "Alat i materijal"],
-            [Tag, "Akcijske cene", "Odabrani artikli"],
-            [Truck, "Za radionice", "Profesionalna oprema"],
-            [Wrench, "Brz izbor", "Po kategoriji i brendu"],
-          ].map(([Icon, title, text]) => (
-            <div key={title as string} className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
+          {featureRows.map(({ icon: Icon, title, text }) => (
+            <div key={title} className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700"><Icon className="h-4 w-4" /></div>
-              <div><p className="text-xs font-black text-slate-900">{title as string}</p><p className="text-[10px] text-slate-500">{text as string}</p></div>
+              <div><p className="text-xs font-black text-slate-900">{title}</p><p className="text-[10px] text-slate-500">{text}</p></div>
             </div>
           ))}
         </div>
