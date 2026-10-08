@@ -47,12 +47,17 @@ const tipTitles = [
 ];
 
 async function getHomepageMedia() {
-  if (!process.env.DATABASE_URL) return { hero: undefined, tips: [] };
+  if (!process.env.DATABASE_URL) return { hero: undefined, heroMobile: undefined, tips: [] };
 
   try {
     const [hero, tips] = await Promise.all([
       db.mediaAsset.findFirst({
         where: { folder: "hero" },
+        orderBy: { createdAt: "desc" },
+        select: { url: true, altText: true },
+      }),
+      db.mediaAsset.findFirst({
+        where: { folder: "hero-mobile" },
         orderBy: { createdAt: "desc" },
         select: { url: true, altText: true },
       }),
@@ -64,13 +69,14 @@ async function getHomepageMedia() {
 
     return {
       hero,
+      heroMobile,
       tips: tipFilenames
         .map((filename) => tips.find((item) => item.filename === filename))
         .filter((item): item is (typeof tips)[number] => Boolean(item)),
     };
   } catch (error) {
     console.warn("Homepage media fetch failed:", error);
-    return { hero: undefined, tips: [] };
+    return { hero: undefined, heroMobile: undefined, tips: [] };
   }
 }
 
@@ -96,7 +102,16 @@ export default async function HomePage() {
             fill
             priority
             sizes="100vw"
-            className="object-cover object-center opacity-55"
+            className={"hidden object-cover object-center opacity-55 sm:block"}
+          />
+        ) : null}
+        {media.heroMobile ? (
+          <Image
+            src={media.heroMobile.url}
+            alt={media.heroMobile.altText || "Aqua Still — alati, materijal i oprema"}
+            fill
+            sizes="100vw"
+            className="object-cover object-center opacity-55 sm:hidden"
           />
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/65 to-slate-950/20" />
