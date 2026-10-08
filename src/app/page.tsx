@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, Search, ChevronRight, Tag, Package, Truck, Wrench, Plus } from "lucide-react";
+import { ArrowRight, Search, ChevronRight, Tag, Package, Truck, Wrench } from "lucide-react";
 import { getHomepageData } from "@/services/home-service";
 import { getHomeContent } from "@/actions/page-cms-actions";
 import { DEFAULT_HOME } from "@/lib/home-content";
