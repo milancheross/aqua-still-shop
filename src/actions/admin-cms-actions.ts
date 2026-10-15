@@ -3,7 +3,7 @@
 
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
-import { releaseExpiredStockReservations } from "@/lib/order-stock";
+import { claimProcessingTransition, claimStatusTransition, releaseExpiredStockReservations, releaseOrderStock } from "@/lib/order-stock";
 import { notifyOrderStatus } from "@/lib/order-notify";
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
@@ -358,28 +358,34 @@ export async function updateOrderStatusAction(orderId: string, status: string) {
       if (status === "cancelled" && ["shipped", "delivered", "picked_up"].includes(order.status)) {
         throw new Error("Porudžbina koja je već poslata ili preuzeta ne može se otkazati iz administracije.");
       }
-      if (status === "cancelled" && order.status !== "cancelled") {
-        for (const item of order.orderItems) {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: { stockQuantity: { increment: item.quantity }, inStock: true },
-          });
-        }
-      }
       if (order.status === status) return null;
-      await tx.order.update({
-        where: { id: orderId },
-        data: {
-          status,
-          stockReservedUntil: status === "pending" ? order.stockReservedUntil : null,
-        },
-      });
-      return {
+
+      const notice = {
         email: info?.email ?? "",
         firstName: info?.firstName ?? "",
         orderNumber: order.orderNumber,
         status,
       };
+
+      if (status === "cancelled") {
+        const released = await releaseOrderStock(tx, orderId, "cancel");
+        if (!released.released) {
+          const current = await tx.order.findUnique({ where: { id: orderId }, select: { status: true } });
+          if (current?.status === "cancelled") return null;
+          throw new Error("Status porudžbine je u međuvremenu promenjen.");
+        }
+        return notice;
+      }
+
+      if (order.status === "pending" && status === "processing") {
+        const claimed = await claimProcessingTransition(tx, orderId);
+        if (!claimed) throw new Error("Status porudžbine je u međuvremenu promenjen.");
+        return notice;
+      }
+
+      const claimed = await claimStatusTransition(tx, orderId, order.status, status);
+      if (!claimed) throw new Error("Status porudžbine je u međuvremenu promenjen.");
+      return notice;
     });
     if (notice) await notifyOrderStatus(notice);
     revalidatePath("/admin/orders");
