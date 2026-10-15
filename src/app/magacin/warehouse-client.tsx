@@ -188,7 +188,7 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
                 return <div key={m.id} className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
                   <Icon className="h-4 w-4 shrink-0 text-blue-600" />
                   <div className="min-w-0 flex-1"><div className="truncate text-xs font-bold">{labels[m.type] ?? m.type}</div><div className="truncate text-[11px] text-slate-500">{m.sku} · {m.productName}</div></div>
-                  <strong className="text-xs">{m.type==="issue" ? "-" : "+"}{m.quantity}</strong>
+                  <strong className="text-xs">{m.type==="issue" ? `-${m.quantity}` : m.type==="stocktake" ? (m.quantity > 0 ? `+${m.quantity}` : String(m.quantity)) : `+${m.quantity}`}</strong>
                 </div>;
               })}
               {!data.movements.length && <p className="text-sm text-slate-500">Još nema zabeleženih promena.</p>}
@@ -249,8 +249,9 @@ export function WarehouseClient({ initialData }: { initialData: Data }) {
                     <form onSubmit={(event) => { event.preventDefault(); void doMovement(new FormData(event.currentTarget)); }} className="space-y-3">
                       <input type="hidden" name="productId" value={selected.id} />
                       <input type="hidden" name="type" value={tab==="prijem"?"receipt":tab==="izdavanje"?"issue":tab==="premeštanje"?"transfer":"stocktake"} />
+                      {tab==="provera" && <input type="hidden" name="expectedQuantity" value={selected.stockQuantity} />}
                       <label className="block text-xs font-bold">{tab==="provera" ? "Stvarno stanje" : "Količina"}
-                        <input name="quantity" type="number" min="1" defaultValue={1} className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm" required />
+                        <input name="quantity" type="number" min={tab==="provera" ? 0 : 1} defaultValue={tab==="provera" ? selected.stockQuantity : 1} className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-sm" required />
                       </label>
                       {(tab==="prijem" || tab==="premeštanje" || tab==="provera") && (
                         <label className="block text-xs font-bold">Lokacija
