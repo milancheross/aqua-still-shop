@@ -329,7 +329,7 @@ async function main() {
       brand: "Pedrollo",
       categorySlug: "vodovod",
       categoryName: "Vodovod i kanalizacija",
-      subcategorySlug: "pumpe-voda",
+      subcategorySlug: "pumpe-za-vodu",
       subcategoryName: "Pumpe za vodu i hidrofori",
       price: 18990,
       salePrice: null,
@@ -354,7 +354,7 @@ async function main() {
       brand: "Grohe",
       categorySlug: "kupatila",
       categoryName: "Kupatilska oprema i sanitarije",
-      subcategorySlug: "baterije",
+      subcategorySlug: "slavine-i-baterije",
       subcategoryName: "Slavine i baterije",
       price: 7990,
       salePrice: 6690,
@@ -379,7 +379,7 @@ async function main() {
       brand: "Hansgrohe",
       categorySlug: "kupatila",
       categoryName: "Kupatilska oprema i sanitarije",
-      subcategorySlug: "baterije",
+      subcategorySlug: "slavine-i-baterije",
       subcategoryName: "Slavine i baterije",
       price: 11990,
       salePrice: null,
@@ -496,6 +496,17 @@ async function main() {
       isPromo: false,
     },
   ];
+
+  const subcategorySlugs = new Set(subcategoriesData.map((subcategory) => subcategory.slug));
+  const categorySlugs = new Set(categoriesData.map((category) => category.slug));
+  for (const prod of productsData) {
+    if (!categorySlugs.has(prod.categorySlug)) {
+      throw new Error("Product " + prod.sku + " references missing category " + prod.categorySlug);
+    }
+    if (prod.subcategorySlug && !subcategorySlugs.has(prod.subcategorySlug)) {
+      throw new Error("Product " + prod.sku + " references missing subcategory " + prod.subcategorySlug);
+    }
+  }
 
   for (const prod of productsData) {
     const { categorySlug, subcategorySlug, categoryName, subcategoryName, ...productData } = prod;
