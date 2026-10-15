@@ -1,8 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { Product, CartItem, Cart } from "@/types";
+import React, { createContext, useContext, useMemo, useState, useSyncExternalStore, ReactNode } from "react";
+import { Product, Cart } from "@/types";
 import { validateAndGetProduct } from "@/actions/cart-actions";
+import { cartSnapshot, parseStoredCart, subscribeCart, updateStoredCart } from "@/lib/cart-storage";
 
 interface CartContextType {
   cart: Cart;
@@ -20,25 +21,9 @@ const FREE_SHIPPING_THRESHOLD = 5000;
 const DEFAULT_SHIPPING_COST = 500;
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-
-  // Load cart from localStorage on mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem("aquastill_cart");
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart) as CartItem[]);
-      } catch (e) {
-        console.error("Greška pri učitavanju korpe:", e);
-      }
-    }
-  }, []);
-
-  // Save cart to localStorage whenever items change
-  useEffect(() => {
-    localStorage.setItem("aquastill_cart", JSON.stringify(items));
-  }, [items]);
+  const snapshot = useSyncExternalStore(subscribeCart, cartSnapshot, () => "[]");
+  const items = useMemo(() => parseStoredCart(snapshot), [snapshot]);
 
   const subtotal = items.reduce(
     (sum, item) => sum + (item.product.salePrice ?? item.product.price) * item.quantity,
@@ -69,7 +54,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const validated = await validateAndGetProduct(product.id, quantity);
       const verifiedProduct = validated.product;
 
-      setItems((prev) => {
+      updateStoredCart((prev) => {
         const existingItem = prev.find((item) => item.product.id === verifiedProduct.id);
         const currentQty = existingItem ? existingItem.quantity : 0;
         const targetQty = currentQty + quantity;
@@ -89,14 +74,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return [...prev, { product: verifiedProduct, quantity }];
       });
       setIsCartOpen(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Greška pri dodavanju u korpu (server validation):", error);
-      alert(error.message || "Došlo je do greške pri proveri artikla na serveru.");
+      alert(error instanceof Error ? error.message : "Došlo je do greške pri proveri artikla na serveru.");
     }
   };
 
   const removeFromCart = (productId: string) => {
-    setItems((prev) => prev.filter((item) => item.product.id !== productId));
+    updateStoredCart((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
   const updateQuantity = async (productId: string, quantity: number) => {
@@ -114,18 +99,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      setItems((prev) =>
+      updateStoredCart((prev) =>
         prev.map((item) =>
           item.product.id === productId ? { ...item, product: verifiedProduct, quantity } : item
         )
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Greška pri ažuriranju količine (server validation):", error);
-      alert(error.message || "Došlo je do greške pri proveri zaliha.");
+      alert(error instanceof Error ? error.message : "Došlo je do greške pri proveri zaliha.");
     }
   };
 
-  const clearCart = () => setItems([]);
+  const clearCart = () => updateStoredCart(() => []);
 
   return (
     <CartContext.Provider

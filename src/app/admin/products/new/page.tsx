@@ -71,29 +71,30 @@ export default function NewProductPage() {
     { key: "Garancija", value: "3 godine" },
   ]);
 
-  const loadCategories = async () => {
-    setCategoriesLoading(true);
-    try {
-      const result = await getAdminCategories();
-      setCategories(result);
-
-      if (result.length > 0 && !result.some((category) => category.slug === form.categorySlug)) {
-        const first = result[0];
-        setForm((current) => ({
-          ...current,
-          categorySlug: first.slug,
-          categoryName: first.name,
-        }));
-      }
-    } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : null) || "Kategorije nisu mogle da se učitaju.");
-    } finally {
-      setCategoriesLoading(false);
-    }
-  };
-
   useEffect(() => {
-    void loadCategories();
+    let active = true;
+    void getAdminCategories()
+      .then((result) => {
+        if (!active) return;
+        setCategories(result);
+        if (result.length > 0 && !result.some((category) => category.slug === form.categorySlug)) {
+          const first = result[0];
+          setForm((current) => ({
+            ...current,
+            categorySlug: first.slug,
+            categoryName: first.name,
+          }));
+        }
+      })
+      .catch((err: unknown) => {
+        if (active) setError((err instanceof Error ? err.message : null) || "Kategorije nisu mogle da se učitaju.");
+      })
+      .finally(() => {
+        if (active) setCategoriesLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

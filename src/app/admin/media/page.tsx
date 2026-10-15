@@ -30,7 +30,22 @@ export default function AdminMediaPage() {
     }
   };
 
-  useEffect(() => { loadMedia(); }, []);
+  useEffect(() => {
+    let active = true;
+    void getMediaAssets()
+      .then((assets) => {
+        if (active) setMediaList(assets);
+      })
+      .catch((e: unknown) => {
+        console.error("Error loading media:", e);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const MAX_ORIGINAL_UPLOAD_SIZE = 12 * 1024 * 1024;
   const MAX_IMAGE_DIMENSION = 2400;
