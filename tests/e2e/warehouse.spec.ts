@@ -13,10 +13,12 @@ test("warehouse module is protected and usable", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "Magacin" })).toBeVisible();
   await expect(page.getByText(/5 redova × 10 polja × 3 sprata/i)).toBeVisible();
-  await expect(page.getByRole("button", { name: "Prijem" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Izdavanje" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Provera stanja" })).toBeVisible();
+  const nav = page.getByRole("navigation");
+  await expect(nav.getByRole("button", { name: "Prijem", exact: true })).toBeVisible();
+  await expect(nav.getByRole("button", { name: "Izdavanje", exact: true })).toBeVisible();
+  await expect(nav.getByRole("button", { name: "Provera stanja", exact: true })).toBeVisible();
 
+  await nav.getByRole("button", { name: "Proizvodi", exact: true }).click();
   await page.getByPlaceholder("Unesite šifru proizvoda...").fill("MAK-DHP485Z");
   await page.getByRole("button", { name: /Pronađi \/ skeniraj/i }).click();
   await expect(page.getByText("Makita DHP485Z")).toBeVisible();

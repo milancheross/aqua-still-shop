@@ -4,9 +4,10 @@ test("admin can open orders and change a pickup order to ready for pickup", asyn
   // Create an order through the real storefront first.
   await page.goto("/proizvod/makita-dhp485z-aku-udarna-busilica-18v");
   await page.getByRole("button", { name: /dodaj u korpu/i }).first().click();
+  await expect(page.getByRole("button", { name: /dodato u korpu/i })).toBeVisible();
   await page.goto("/placanje");
   await page.getByLabel(/Preuzimanje u radnji/i).check();
-  await page.getByLabel("Ime *").fill("E2E");
+  await page.getByLabel("Ime *", { exact: true }).fill("E2E");
   await page.getByLabel("Prezime *").fill("AdminOrders");
   await page.getByLabel(/Email adresa/i).fill("e2e-admin-orders@aquastill.test");
   await page.getByLabel("Telefon *").fill("0601234570");
@@ -22,7 +23,6 @@ test("admin can open orders and change a pickup order to ready for pickup", asyn
 
   await page.goto("/admin/orders");
   await expect(page.getByRole("heading", { name: /upravljanje porudžbinama/i })).toBeVisible();
-  await expect(page.getByText(/E2E AdminOrders/i)).toBeVisible();
 
   const row = page.locator("tr").filter({ hasText: "E2E AdminOrders" }).first();
   await expect(row).toBeVisible();

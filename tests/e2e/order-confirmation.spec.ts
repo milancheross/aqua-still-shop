@@ -3,9 +3,10 @@ import { test, expect } from "@playwright/test";
 test("order confirmation is protected by the confirmation token and displays order details", async ({ page }) => {
   await page.goto("/proizvod/makita-dhp485z-aku-udarna-busilica-18v");
   await page.getByRole("button", { name: /dodaj u korpu/i }).first().click();
+  await expect(page.getByRole("button", { name: /dodato u korpu/i })).toBeVisible();
   await page.goto("/placanje");
   await page.getByLabel(/Preuzimanje u radnji/i).check();
-  await page.getByLabel("Ime *").fill("E2E");
+  await page.getByLabel("Ime *", { exact: true }).fill("E2E");
   await page.getByLabel("Prezime *").fill("Confirmation");
   await page.getByLabel(/Email adresa/i).fill("e2e-confirmation@aquastill.test");
   await page.getByLabel("Telefon *").fill("0601234569");

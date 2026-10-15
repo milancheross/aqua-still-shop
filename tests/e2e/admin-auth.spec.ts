@@ -9,5 +9,5 @@ test("admin login protects admin routes and accepts valid credentials", async ({
   await page.getByRole("button", { name: /prijavi se/i }).click();
 
   await expect(page).toHaveURL(/\/admin$/);
-  await expect(page.getByText(/Aqua Still CMS/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Aqua Still CMS/i })).toBeVisible();
 });

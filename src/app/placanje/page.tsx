@@ -151,8 +151,9 @@ export default function CheckoutPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase">Ime *</label>
+                  <label htmlFor="firstName" className="text-xs font-bold text-slate-700 uppercase">Ime *</label>
                   <input 
+                    id="firstName"
                     type="text" 
                     name="firstName" 
                     required 
@@ -163,8 +164,9 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase">Prezime *</label>
+                  <label htmlFor="lastName" className="text-xs font-bold text-slate-700 uppercase">Prezime *</label>
                   <input 
+                    id="lastName"
                     type="text" 
                     name="lastName" 
                     required 
@@ -178,8 +180,9 @@ export default function CheckoutPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase">Email adresa *</label>
+                  <label htmlFor="email" className="text-xs font-bold text-slate-700 uppercase">Email adresa *</label>
                   <input 
+                    id="email"
                     type="email" 
                     name="email" 
                     required 
@@ -190,8 +193,9 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase">Telefon *</label>
+                  <label htmlFor="phone" className="text-xs font-bold text-slate-700 uppercase">Telefon *</label>
                   <input 
+                    id="phone"
                     type="tel" 
                     name="phone" 
                     required 
@@ -206,8 +210,9 @@ export default function CheckoutPage() {
               {!isStorePickup && (
                 <>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 uppercase">Ulica i broj *</label>
+                    <label htmlFor="street" className="text-xs font-bold text-slate-700 uppercase">Ulica i broj *</label>
                     <input 
+                      id="street"
                       type="text" 
                       name="street" 
                       required={!isStorePickup}
@@ -220,8 +225,9 @@ export default function CheckoutPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700 uppercase">Grad / Mesto *</label>
+                      <label htmlFor="city" className="text-xs font-bold text-slate-700 uppercase">Grad / Mesto *</label>
                       <input 
+                        id="city"
                         type="text" 
                         name="city" 
                         required={!isStorePickup}
@@ -232,8 +238,9 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700 uppercase">Poštanski broj *</label>
+                      <label htmlFor="postalCode" className="text-xs font-bold text-slate-700 uppercase">Poštanski broj *</label>
                       <input 
+                        id="postalCode"
                         type="text" 
                         name="postalCode" 
                         required={!isStorePickup}

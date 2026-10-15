@@ -3,12 +3,13 @@ import { test, expect, type Page } from "@playwright/test";
 async function prepareCart(page: Page) {
   await page.goto("/proizvod/makita-dhp485z-aku-udarna-busilica-18v");
   await page.getByRole("button", { name: /dodaj u korpu/i }).first().click();
+  await expect(page.getByRole("button", { name: /dodato u korpu/i })).toBeVisible();
   await page.goto("/placanje");
 }
 
 test("checkout validates and creates a courier order", async ({ page }) => {
   await prepareCart(page);
-  await page.getByLabel("Ime *").fill("E2E");
+  await page.getByLabel("Ime *", { exact: true }).fill("E2E");
   await page.getByLabel("Prezime *").fill("Test");
   await page.getByLabel(/Email adresa/i).fill("e2e-courier@aquastill.test");
   await page.getByLabel("Telefon *").fill("0601234567");
