@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { Product, ProductCategory } from "@/types";
 import { getCategoryFilterDefinitions } from "@/lib/catalog-filters";
+import { catalogOrderBy, type CatalogSort } from "@/lib/catalog-pagination";
 import { 
   getProducts as getMockProducts, 
   getProductBySlug as getMockProductBySlug, 
@@ -26,6 +27,78 @@ type CatalogProductOptions = {
   attributes?: Record<string, string | number | boolean>;
   sort?: "price-asc" | "price-desc" | "name" | "popular" | "newest";
 };
+
+function catalogWhere(options?: CatalogProductOptions): Prisma.ProductWhereInput {
+  const where: Prisma.ProductWhereInput = {};
+  const andFilters: Prisma.ProductWhereInput[] = [];
+  if (options?.categorySlug) {
+    if (options.categorySlug === "akcija") {
+      andFilters.push({ OR: [{ salePrice: { not: null } }, { isPromo: true }] });
+    } else {
+      where.categorySlug = options.categorySlug;
+    }
+  }
+  if (options?.subcategorySlug) where.subcategorySlug = options.subcategorySlug;
+  if (options?.brand) where.brand = { equals: options.brand, mode: "insensitive" };
+  if (options?.inStockOnly) {
+    where.inStock = true;
+    where.stockQuantity = { gt: 0 };
+  }
+  if (options?.minPrice !== undefined || options?.maxPrice !== undefined) {
+    where.price = {
+      ...(options.minPrice !== undefined ? { gte: options.minPrice } : {}),
+      ...(options.maxPrice !== undefined ? { lte: options.maxPrice } : {}),
+    };
+  }
+  if (options?.attributes) {
+    for (const [key, value] of Object.entries(options.attributes)) {
+      andFilters.push({ attributes: { path: [key], equals: value } });
+    }
+  }
+  if (options?.search?.trim()) {
+    const q = options.search.trim();
+    andFilters.push({
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { brand: { contains: q, mode: "insensitive" } },
+        { sku: { contains: q, mode: "insensitive" } },
+        { barcode: { contains: q, mode: "insensitive" } },
+        { categoryName: { contains: q, mode: "insensitive" } },
+      ],
+    });
+  }
+  if (andFilters.length > 0) where.AND = andFilters;
+  return where;
+}
+
+function mapProduct(p: Prisma.ProductGetPayload<{ include: { category: true; subcategory: true } }>): Product {
+  return {
+    id: p.id,
+    sku: p.sku,
+    barcode: p.barcode ?? "",
+    name: p.name,
+    slug: p.slug,
+    brand: p.brand,
+    categorySlug: p.categorySlug,
+    categoryName: p.categoryName,
+    subcategorySlug: p.subcategorySlug ?? undefined,
+    subcategoryName: p.subcategoryName ?? undefined,
+    price: Number(p.price),
+    salePrice: p.salePrice ? Number(p.salePrice) : undefined,
+    vatRate: Number(p.vatRate),
+    unit: p.unit,
+    inStock: p.inStock,
+    stockQuantity: p.stockQuantity,
+    wmsLocation: p.wmsLocation ?? "",
+    shortDescription: p.shortDescription ?? "",
+    description: p.description ?? "",
+    images: p.images,
+    pdfManualUrl: p.pdfManualUrl ?? undefined,
+    attributes: (p.attributes as Record<string, string | number | boolean>) || {},
+    isFeatured: p.isFeatured,
+    isPromo: p.isPromo,
+  };
+}
 
 function devMockProducts(options?: CatalogProductOptions): Product[] {
   if (!mockCatalogEnabled()) return [];
@@ -67,150 +140,52 @@ export async function getDbProducts(options?: {
   inStockOnly?: boolean;
   search?: string;
   attributes?: Record<string, string | number | boolean>;
-  sort?: "price-asc" | "price-desc" | "name" | "popular" | "newest";
+  sort?: CatalogSort;
   limit?: number;
 }): Promise<Product[]> {
+  const page = await getDbCatalogPage({ ...options, page: 1, take: options?.limit });
+  return page.products;
+}
+
+export async function getDbCatalogAttributes(options?: CatalogProductOptions): Promise<Array<Record<string, unknown>>> {
+  if (!process.env.DATABASE_URL) return devMockProducts(options).map((product) => product.attributes);
+  const rows = await db.product.findMany({
+    where: catalogWhere(options),
+    select: { attributes: true },
+  });
+  return rows.map((row) => (row.attributes && typeof row.attributes === "object" && !Array.isArray(row.attributes) ? row.attributes as Record<string, unknown> : {}));
+}
+
+export async function getDbCatalogPage(options?: CatalogProductOptions & { page?: number; take?: number }): Promise<{ products: Product[]; total: number }> {
+  const page = Math.max(options?.page ?? 1, 1);
+  const take = options?.take;
   if (!process.env.DATABASE_URL) {
-    return devMockProducts(options);
+    const products = devMockProducts(options);
+    const start = (page - 1) * (take ?? products.length);
+    return { products: take ? products.slice(start, start + take) : products, total: products.length };
   }
-
   try {
-    const count = await db.product.count();
-    if (count === 0) {
-      return devMockProducts(options);
+    const where = catalogWhere(options);
+    const [total, products] = await Promise.all([
+      db.product.count({ where }),
+      db.product.findMany({
+        where,
+        orderBy: catalogOrderBy(options?.sort),
+        skip: take ? (page - 1) * take : undefined,
+        take,
+        include: { category: true, subcategory: true },
+      }),
+    ]);
+    if (total === 0 && mockCatalogEnabled()) {
+      const mocked = devMockProducts(options);
+      const start = (page - 1) * (take ?? mocked.length);
+      return { products: take ? mocked.slice(start, start + take) : mocked, total: mocked.length };
     }
-
-    const where: Prisma.ProductWhereInput = {};
-    const andFilters: Prisma.ProductWhereInput[] = [];
-
-    if (options?.categorySlug) {
-      if (options.categorySlug === "akcija") {
-        andFilters.push({
-          OR: [{ salePrice: { not: null } }, { isPromo: true }],
-        });
-      } else {
-        where.categorySlug = options.categorySlug;
-      }
-    }
-
-    if (options?.subcategorySlug) {
-      where.subcategorySlug = options.subcategorySlug;
-    }
-
-    if (options?.brand) {
-      where.brand = {
-        equals: options.brand,
-        mode: "insensitive",
-      };
-    }
-
-    if (options?.inStockOnly) {
-      where.inStock = true;
-      where.stockQuantity = { gt: 0 };
-    }
-
-    if (options?.minPrice !== undefined || options?.maxPrice !== undefined) {
-      where.price = {
-        ...(options.minPrice !== undefined ? { gte: options.minPrice } : {}),
-        ...(options.maxPrice !== undefined ? { lte: options.maxPrice } : {}),
-      };
-    }
-
-    if (options?.attributes) {
-      for (const [key, value] of Object.entries(options.attributes)) {
-        andFilters.push({
-          attributes: { path: [key], equals: value },
-        });
-      }
-    }
-
-    if (options?.search) {
-      const q = options.search.trim();
-      if (q) {
-        andFilters.push({
-          OR: [
-            { name: { contains: q, mode: "insensitive" } },
-            { brand: { contains: q, mode: "insensitive" } },
-            { sku: { contains: q, mode: "insensitive" } },
-            { barcode: { contains: q, mode: "insensitive" } },
-            { categoryName: { contains: q, mode: "insensitive" } },
-          ],
-        });
-      }
-    }
-
-    if (andFilters.length > 0) {
-      where.AND = andFilters;
-    }
-
-    let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: "desc" };
-    if (options?.sort) {
-      switch (options.sort) {
-        case "price-asc":
-          orderBy = { price: "asc" };
-          break;
-        case "price-desc":
-          orderBy = { price: "desc" };
-          break;
-        case "name":
-          orderBy = { name: "asc" };
-          break;
-        case "popular":
-          orderBy = { isFeatured: "desc" };
-          break;
-        case "newest":
-        default:
-          orderBy = { createdAt: "desc" };
-          break;
-      }
-    }
-
-    const products = await db.product.findMany({
-      where,
-      orderBy,
-      ...(options?.limit ? { take: Math.min(Math.max(options.limit, 1), 100) } : {}),
-      include: {
-        category: true,
-        subcategory: true,
-      },
-    });
-
-    const mapped = products.map((p) => ({
-      id: p.id,
-      sku: p.sku,
-      barcode: p.barcode ?? "",
-      name: p.name,
-      slug: p.slug,
-      brand: p.brand,
-      categorySlug: p.categorySlug,
-      categoryName: p.categoryName,
-      subcategorySlug: p.subcategorySlug ?? undefined,
-      subcategoryName: p.subcategoryName ?? undefined,
-      price: Number(p.price),
-      salePrice: p.salePrice ? Number(p.salePrice) : undefined,
-      vatRate: Number(p.vatRate),
-      unit: p.unit,
-      inStock: p.inStock,
-      stockQuantity: p.stockQuantity,
-      wmsLocation: p.wmsLocation ?? "",
-      shortDescription: p.shortDescription ?? "",
-      description: p.description ?? "",
-      images: p.images,
-      pdfManualUrl: p.pdfManualUrl ?? undefined,
-      attributes: (p.attributes as Record<string, string | number | boolean>) || {},
-      isFeatured: p.isFeatured,
-      isPromo: p.isPromo,
-    }));
-
-    if (options?.sort === "price-asc" || options?.sort === "price-desc") {
-      const direction = options.sort === "price-asc" ? 1 : -1;
-      mapped.sort((a, b) => ((a.salePrice ?? a.price) - (b.salePrice ?? b.price)) * direction);
-    }
-
-    return mapped;
+    return { products: products.map(mapProduct), total };
   } catch (error) {
     console.error("DB product fetch failed:", error);
-    return devMockProducts(options);
+    const mocked = devMockProducts(options);
+    return { products: mocked, total: mocked.length };
   }
 }
 

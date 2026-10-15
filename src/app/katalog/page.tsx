@@ -4,8 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Filter, Search, ArrowUpDown, X, Check, ChevronDown } from "lucide-react";
 import { getCategoryIcon } from "@/lib/category-icons";
-import { getDbProducts, getDbCategories, getDbBrands } from "@/services/product-service";
+import { getDbCatalogAttributes, getDbCatalogPage, getDbCategories, getDbBrands } from "@/services/product-service";
 import { getCategoryFilterDefinitions, getFilterValues } from "@/lib/catalog-filters";
+import { buildCatalogQuery, catalogCanonicalPath, catalogTotalPages, clampCatalogPage, parseCatalogPage, parseCatalogTake } from "@/lib/catalog-pagination";
+import { redirect } from "next/navigation";
 import ProductCard from "@/components/catalog/ProductCard";
 import CatalogSortSelect from "@/components/catalog/CatalogSortSelect";
 import CatalogFilterPanel from "@/components/catalog/CatalogFilterPanel";
@@ -28,23 +30,20 @@ export async function generateMetadata({
   const category = categories.find((item) => item.slug === selectedCategory);
   const subcategory = category?.subcategories.find((item) => item.slug === selectedSubcategory);
 
-  if (subcategory) {
-    return {
-      title: subcategory.seoTitle || `${subcategory.name} | Aqua Still Zlatibor`,
-      description: subcategory.seoDescription || subcategory.description || category?.description || `Pogledajte ponudu proizvoda iz kategorije ${subcategory.name} u Aqua Still Zlatibor.`,
-    };
-  }
-
-  if (category) {
-    return {
-      title: category.seoTitle || `${category.name} | Aqua Still Zlatibor`,
-      description: category.seoDescription || category.description || `Pogledajte ponudu ${category.name} u Aqua Still Zlatibor.`,
-    };
-  }
-
+  const page = parseCatalogPage(firstParam(params.page));
+  const current: Record<string, string> = {
+    ...(selectedCategory ? { category: selectedCategory } : {}),
+    ...(selectedSubcategory ? { subcategory: selectedSubcategory } : {}),
+    ...(firstParam(params.q) ? { q: firstParam(params.q)! } : {}),
+    ...(firstParam(params.brand) ? { brand: firstParam(params.brand)! } : {}),
+  };
+  const canonical = catalogCanonicalPath({ current, page });
+  const titleBase = subcategory?.seoTitle || (subcategory ? `${subcategory.name} | Aqua Still Zlatibor` : category?.seoTitle || (category ? `${category.name} | Aqua Still Zlatibor` : "Katalog proizvoda | Aqua Still Zlatibor"));
+  const description = subcategory?.seoDescription || subcategory?.description || category?.seoDescription || category?.description || "Alati, vodovodni materijal, kupatilska oprema, elektro-oprema i ostali proizvodi Aqua Still Zlatibor.";
   return {
-    title: "Katalog proizvoda | Aqua Still Zlatibor",
-    description: "Alati, vodovodni materijal, kupatilska oprema, elektro-oprema i ostali proizvodi Aqua Still Zlatibor.",
+    title: page > 1 ? `${titleBase} — strana ${page}` : titleBase,
+    description,
+    alternates: { canonical },
   };
 }
 
@@ -68,18 +67,19 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     }
   }
 
-  const [categories, brands, filterBaseProducts, products] = await Promise.all([
+  const page = parseCatalogPage(firstParam(params.page));
+  const take = parseCatalogTake(firstParam(params.take));
+  const [categories, brands, filterAttributes, catalog] = await Promise.all([
     getDbCategories(),
     getDbBrands(),
-    getDbProducts({
+    getDbCatalogAttributes({
       search: searchQuery,
       brand: selectedBrand,
       categorySlug: selectedCategory,
       subcategorySlug: selectedSubcategory,
       inStockOnly,
-      sort: "newest",
     }),
-    getDbProducts({
+    getDbCatalogPage({
       search: searchQuery,
       brand: selectedBrand,
       categorySlug: selectedCategory,
@@ -89,36 +89,35 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       maxPrice,
       attributes: selectedAttributes,
       sort: sortOption,
+      page,
+      take,
     }),
   ]);
+  const totalPages = catalogTotalPages(catalog.total, take);
+  const safePage = clampCatalogPage(page, catalog.total, take);
+  const currentParams: Record<string, string> = {
+    ...(searchQuery ? { q: searchQuery } : {}),
+    ...(selectedBrand ? { brand: selectedBrand } : {}),
+    ...(selectedCategory ? { category: selectedCategory } : {}),
+    ...(selectedSubcategory ? { subcategory: selectedSubcategory } : {}),
+    ...(inStockOnly ? { inStock: "true" } : {}),
+    ...(minPrice !== undefined ? { minPrice: String(minPrice) } : {}),
+    ...(maxPrice !== undefined ? { maxPrice: String(maxPrice) } : {}),
+    ...(sortOption ? { sort: sortOption } : {}),
+    ...(take !== 24 ? { take: String(take) } : {}),
+    ...Object.fromEntries(Object.entries(selectedAttributes).map(([key, value]) => [`attr_${key}`, value])),
+  };
+  if (catalog.total > 0 && page !== safePage) {
+    redirect(buildCatalogQuery({ current: currentParams, changes: { page: String(safePage) } }));
+  }
+  const products = catalog.products;
 
   const activeCategory = categories.find((category) => category.slug === selectedCategory);
   const activeSubcategory = activeCategory?.subcategories.find((subcategory) => subcategory.slug === selectedSubcategory);
   const filterDefinitions = getCategoryFilterDefinitions(selectedCategory, selectedSubcategory);
 
-  const buildUrl = (changes: Record<string, string | null | undefined>) => {
-    const query = new URLSearchParams();
-    const current: Record<string, string> = {
-      ...(searchQuery ? { q: searchQuery } : {}),
-      ...(selectedBrand ? { brand: selectedBrand } : {}),
-      ...(selectedCategory ? { category: selectedCategory } : {}),
-      ...(selectedSubcategory ? { subcategory: selectedSubcategory } : {}),
-      ...(inStockOnly ? { inStock: "true" } : {}),
-      ...(minPrice !== undefined ? { minPrice: String(minPrice) } : {}),
-      ...(maxPrice !== undefined ? { maxPrice: String(maxPrice) } : {}),
-      ...(sortOption ? { sort: sortOption } : {}),
-      ...Object.fromEntries(Object.entries(selectedAttributes).map(([key, value]) => [`attr_${key}`, value])),
-    };
-
-    for (const [key, value] of Object.entries(changes)) {
-      if (value === null || value === undefined || value === "") delete current[key];
-      else current[key] = value;
-    }
-
-    Object.entries(current).forEach(([key, value]) => query.set(key, value));
-    const qs = query.toString();
-    return qs ? `/katalog?${qs}` : "/katalog";
-  };
+  const buildUrl = (changes: Record<string, string | null | undefined>, resetPage = true) =>
+    buildCatalogQuery({ current: currentParams, changes, resetPage });
 
   const resetUrl = "/katalog";
 
@@ -136,7 +135,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           {activeSubcategory?.name ?? activeCategory?.name ?? (searchQuery ? `Rezultati pretrage za: "${searchQuery}"` : "Svi proizvodi")}
         </h1>
         <p className="text-sm text-slate-500">
-          Prikazano <strong className="text-slate-900">{products.length}</strong> artikala.
+          Prikazano <strong className="text-slate-900">{products.length}</strong> od <strong className="text-slate-900">{catalog.total}</strong> artikala. Strana {safePage} od {totalPages}.
         </p>
         {activeSubcategory?.description && (
           <p className="max-w-3xl text-sm leading-relaxed text-slate-600">{activeSubcategory.description}</p>
@@ -259,7 +258,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
               </div>
 
               {filterDefinitions.map((definition) => {
-                const values = getFilterValues(filterBaseProducts, definition.key);
+                const values = getFilterValues(filterAttributes.map((attributes) => ({ attributes: attributes as Record<string, string | number | boolean> })), definition.key);
                 if (values.length === 0) return null;
                 const selected = selectedAttributes[definition.key];
                 return (
@@ -325,9 +324,20 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
               </Link>
             </div>
           ) : (
+            <>
             <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
               {products.map((product) => <ProductCard key={product.id} product={product} />)}
             </div>
+            {totalPages > 1 && (
+              <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Stranice kataloga">
+                <Link href={buildUrl({ page: String(safePage - 1) }, false)} aria-disabled={safePage === 1} className={`rounded-xl px-4 py-2 text-xs font-bold ${safePage === 1 ? "pointer-events-none bg-slate-100 text-slate-400" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"}`}>Nazad</Link>
+                {Array.from({ length: totalPages }, (_, index) => index + 1).filter((item) => item === 1 || item === totalPages || Math.abs(item - safePage) <= 1).map((item) => (
+                  <Link key={item} href={buildUrl({ page: String(item) }, false)} className={`rounded-xl px-3 py-2 text-xs font-bold ${item === safePage ? "bg-cyan-600 text-white" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"}`}>{item}</Link>
+                ))}
+                <Link href={buildUrl({ page: String(safePage + 1) }, false)} aria-disabled={safePage === totalPages} className={`rounded-xl px-4 py-2 text-xs font-bold ${safePage === totalPages ? "pointer-events-none bg-slate-100 text-slate-400" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"}`}>Napred</Link>
+              </nav>
+            )}
+            </>
           )}
         </main>
       </div>

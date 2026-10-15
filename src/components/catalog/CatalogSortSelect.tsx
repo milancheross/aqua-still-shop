@@ -14,6 +14,7 @@ export default function CatalogSortSelect({ defaultValue }: CatalogSortSelectPro
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("sort", e.target.value);
+    params.delete("page");
     router.push(`/katalog?${params.toString()}`);
   };
 
