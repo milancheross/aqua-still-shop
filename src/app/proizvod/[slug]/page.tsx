@@ -1,15 +1,36 @@
 import React from "react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ShoppingCart, Check, Truck, ShieldCheck, ArrowLeft, Star, Wrench, MapPin } from "lucide-react";
+import { ShoppingCart, Check, Truck, ShieldCheck, ArrowLeft, Wrench, MapPin } from "lucide-react";
 import { getDbProductBySlug, getDbProducts } from "@/services/product-service";
+import { productJsonLd, productVatLabel } from "@/lib/product-seo";
 import { formatPrice } from "@/lib/utils";
 import ProductCard from "@/components/catalog/ProductCard";
 import AddToCartBox from "@/components/catalog/AddToCartBox";
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: ProductDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getDbProductBySlug(slug);
+  if (!product) return { title: "Proizvod nije pronađen" };
+  const description = product.shortDescription || product.description || `${product.name} — ${product.brand}.`;
+  const url = `/proizvod/${product.slug}`;
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: product.name,
+      description,
+      url,
+      images: product.images[0] ? [{ url: product.images[0] }] : undefined,
+    },
+  };
 }
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
@@ -20,12 +41,14 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     notFound();
   }
 
-  const relatedProducts = (await getDbProducts({ categorySlug: product.categorySlug }))
+  const relatedProducts = (await getDbProducts({ categorySlug: product.categorySlug, limit: 5 }))
     .filter((p) => p.id !== product.id)
     .slice(0, 4);
+  const productUrl = `/proizvod/${product.slug}`;
 
   return (
     <div className="min-h-screen bg-slate-50 py-5 sm:py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(product, productUrl)) }} />
       <div className="container mx-auto space-y-6 px-3 sm:space-y-12 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <div className="flex items-center gap-2 overflow-hidden text-[10px] font-medium text-slate-500 sm:text-xs">
@@ -67,16 +90,6 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               </h1>
             </div>
 
-            {/* Rating */}
-            <div className="flex items-center gap-2">
-              <div className="flex text-amber-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400" />
-                ))}
-              </div>
-              <span className="text-xs text-slate-500">(14 recenzija)</span>
-            </div>
-
             {/* Price & Stock */}
             <div className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -88,7 +101,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 ) : (
                   <span className="text-2xl font-black text-slate-900 block">{formatPrice(product.price)}</span>
                 )}
-                <span className="text-[11px] text-slate-500 mt-0.5 block">Cena je sa uračunatim PDV-om (20%)</span>
+                <span className="text-[11px] text-slate-500 mt-0.5 block">{productVatLabel(product.vatRate)}</span>
               </div>
 
               <div className="text-left sm:text-right">
