@@ -1,7 +1,6 @@
 "use server";
 
-
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdminOrEditor } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
@@ -35,7 +34,7 @@ export async function getAdminProducts(filters?: {
   brand?: string;
   status?: string;
 }) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   try {
     if (!process.env.DATABASE_URL) return [];
 
@@ -99,7 +98,7 @@ export async function getAdminProducts(filters?: {
 }
 
 export async function getAdminProductById(id: string) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   try {
     if (!process.env.DATABASE_URL) return null;
     const p = await db.product.findUnique({ where: { id } });
@@ -121,7 +120,7 @@ export async function getAdminProductById(id: string) {
 function brandSlugify(value: string) {
   return value
     .normalize("NFKD")
-    .replace(/[\\u0300-\\u036f]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
@@ -161,7 +160,7 @@ async function ensureBrand(name: string) {
 }
 
 export async function createAdminProduct(input: ProductAdminInput) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!input.name || !input.sku || !input.slug || !input.brand || !input.categorySlug) {
     throw new Error("Molimo popunite sva obavezna polja (naziv, SKU, slug, brend, kategorija).");
   }
@@ -232,7 +231,7 @@ export async function createAdminProduct(input: ProductAdminInput) {
 }
 
 export async function updateAdminProduct(id: string, input: ProductAdminInput) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!input.name || !input.sku || !input.slug) {
     throw new Error("Naziv, SKU i slug su obavezni.");
   }
@@ -292,7 +291,7 @@ export async function updateAdminProduct(id: string, input: ProductAdminInput) {
 }
 
 export async function duplicateAdminProduct(id: string) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   const original = await db.product.findUnique({ where: { id } });
   if (!original) throw new Error("Proizvod nije pronađen.");
 
@@ -332,7 +331,7 @@ export async function duplicateAdminProduct(id: string) {
 }
 
 export async function deleteAdminProduct(id: string) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   try {
     await db.product.delete({ where: { id } });
     revalidatePath("/admin/products");

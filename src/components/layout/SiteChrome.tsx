@@ -8,9 +8,9 @@ import CartDrawer from "@/components/cart/CartDrawer";
 
 export default function SiteChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin");
+  const isStandaloneApp = pathname.startsWith("/admin") || pathname.startsWith("/magacin");
 
-  if (isAdmin) {
+  if (isStandaloneApp) {
     return <main className="min-h-screen">{children}</main>;
   }
 

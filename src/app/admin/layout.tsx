@@ -1,5 +1,5 @@
 import React from "react";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdminOrEditor } from "@/lib/admin-auth";
 import { logoutAdminAction } from "@/actions/admin-auth-actions";
 import Link from "next/link";
 import {
@@ -32,23 +32,30 @@ const primaryMobileItems = [
   { name: "Porudžbine", href: "/admin/orders", icon: ShoppingCart },
 ];
 
-const secondaryMobileItems = adminNavItems.filter(
-  (item) => !primaryMobileItems.some((primary) => primary.href === item.href)
-);
-
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireAdmin();
+  const user = await requireAdminOrEditor();
+
+  const filteredNavItems = adminNavItems.filter((item) => {
+    if (item.href === "/admin/users" && user.role !== "admin") return false;
+    return true;
+  });
+
+  const secondaryMobileItems = filteredNavItems.filter(
+    (item) => !primaryMobileItems.some((primary) => primary.href === item.href)
+  );
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
       <aside className="hidden w-64 shrink-0 bg-slate-900 text-slate-300 lg:fixed lg:inset-y-0 lg:flex lg:flex-col lg:border-r lg:border-slate-800">
         <div className="border-b border-slate-800 px-5 py-5">
           <h1 className="text-base font-black tracking-wider text-white">AQUA STILL CMS</h1>
-          <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-cyan-400">Admin Dashboard</p>
+          <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-cyan-400">
+            {user.role === "admin" ? "Admin Dashboard" : "Editor Dashboard"}
+          </p>
         </div>
 
         <nav aria-label="Administrativna navigacija" className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
-          {adminNavItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
@@ -71,7 +78,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <form action={logoutAdminAction}>
             <button type="submit" className="flex w-full items-center gap-2 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-400 transition-colors hover:bg-slate-800 hover:text-white">
               <LogOut className="h-4 w-4" />
-              Odjavi se
+              Odjavi se ({user.name || user.email})
             </button>
           </form>
         </div>
@@ -82,14 +89,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="flex min-h-14 items-center justify-between gap-3 px-3 py-2 sm:min-h-16 sm:px-6">
             <div className="min-w-0">
               <p className="truncate text-xs font-black text-slate-900 sm:text-sm">Aqua Still CMS</p>
-              <p className="hidden text-[10px] font-semibold text-slate-400 sm:block">Jednostavno upravljanje prodavnicom</p>
+              <p className="hidden text-[10px] font-semibold text-slate-400 sm:block">
+                Prijavljen kao: {user.name || user.email} ({user.role})
+              </p>
             </div>
 
             <div className="flex items-center gap-2">
               <Link href="/" target="_blank" aria-label="Otvori webshop" className="hidden rounded-xl p-2 text-slate-500 hover:bg-slate-100 sm:inline-flex">
                 <ExternalLink className="h-4 w-4" />
               </Link>
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-600 text-xs font-black text-white">A</div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-600 text-xs font-black text-white" title={user.name || user.email || "Korisnik"}>
+                {user.name ? user.name[0].toUpperCase() : "A"}
+              </div>
               <form action={logoutAdminAction}>
                 <button type="submit" aria-label="Odjavi se" className="rounded-xl p-2 text-slate-500 hover:bg-slate-100">
                   <LogOut className="h-4 w-4" />

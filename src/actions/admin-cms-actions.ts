@@ -1,7 +1,6 @@
 "use server";
 
-
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdminOrEditor } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { claimProcessingTransition, claimStatusTransition, releaseExpiredStockReservations, releaseOrderStock } from "@/lib/order-stock";
 import { notifyOrderStatus } from "@/lib/order-notify";
@@ -10,7 +9,7 @@ import type { Prisma } from "@prisma/client";
 
 // --- CATEGORIES ACTIONS ---
 export async function getAdminCategories() {
-  await requireAdmin();
+  await requireAdminOrEditor();
   try {
     if (!process.env.DATABASE_URL) return [];
     return await db.category.findMany({
@@ -24,7 +23,7 @@ export async function getAdminCategories() {
 }
 
 export async function createAdminCategory(data: { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; iconName?: string; imageUrl?: string | null; featured?: boolean; sortOrder?: number }) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!process.env.DATABASE_URL) {
     throw new Error("Baza podataka nije povezana (nedostaje DATABASE_URL).");
   }
@@ -54,7 +53,7 @@ export async function createAdminCategory(data: { name: string; slug: string; de
 }
 
 export async function updateAdminCategory(id: string, data: { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; imageUrl?: string | null; featured?: boolean; sortOrder?: number }) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
   if (!data.name.trim() || !data.slug.trim()) throw new Error("Naziv i slug kategorije su obavezni.");
   await db.category.update({
@@ -88,7 +87,7 @@ export async function createAdminSubcategory(
     imageUrl?: string | null;
   }
 ) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
 
   const name = data.name.trim();
@@ -127,7 +126,7 @@ export async function updateAdminSubcategory(
   id: string,
   data: { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; imageUrl?: string | null }
 ) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
 
   const name = data.name.trim();
@@ -162,7 +161,7 @@ export async function updateAdminSubcategory(
 }
 
 export async function updateAdminSubcategoryImage(id: string, imageUrl: string | null) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
   await db.subcategory.update({
     where: { id },
@@ -175,7 +174,7 @@ export async function updateAdminSubcategoryImage(id: string, imageUrl: string |
 }
 
 export async function deleteAdminCategory(id: string) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   try {
     if (!process.env.DATABASE_URL) throw new Error("Baza nije povezana.");
     await db.category.delete({ where: { id } });
@@ -190,7 +189,7 @@ export async function deleteAdminCategory(id: string) {
 
 // --- BRANDS ACTIONS ---
 export async function getAdminBrands() {
-  await requireAdmin();
+  await requireAdminOrEditor();
   try {
     if (!process.env.DATABASE_URL) return [];
     return await db.brand.findMany({
@@ -203,7 +202,7 @@ export async function getAdminBrands() {
 }
 
 export async function createAdminBrand(data: { name: string; slug: string; logoUrl?: string | null }) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!process.env.DATABASE_URL) {
     throw new Error("Baza podataka nije povezana (nedostaje DATABASE_URL).");
   }
@@ -228,7 +227,7 @@ export async function createAdminBrand(data: { name: string; slug: string; logoU
 }
 
 export async function updateAdminBrand(id: string, data: { name: string; slug: string; logoUrl?: string | null }) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!process.env.DATABASE_URL) throw new Error("Baza podataka nije povezana.");
   if (!data.name.trim() || !data.slug.trim()) throw new Error("Naziv i slug brenda su obavezni.");
   await db.brand.update({
@@ -246,7 +245,7 @@ export async function updateAdminBrand(id: string, data: { name: string; slug: s
 }
 
 export async function deleteAdminBrand(id: string) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   try {
     if (!process.env.DATABASE_URL) throw new Error("Baza nije povezana.");
     await db.brand.delete({ where: { id } });
@@ -306,7 +305,7 @@ async function loadOrders() {
 }
 
 export async function getAdminOrders() {
-  await requireAdmin();
+  await requireAdminOrEditor();
   try {
     if (!process.env.DATABASE_URL) return [];
     return await loadOrders();
@@ -317,7 +316,7 @@ export async function getAdminOrders() {
 }
 
 export async function getAdminOrderById(id: string) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!process.env.DATABASE_URL || !id) return null;
   try {
     await releaseExpiredStockReservations().catch((releaseError: unknown) => {
@@ -335,7 +334,7 @@ export async function getAdminOrderById(id: string) {
 }
 
 export async function updateOrderStatusAction(orderId: string, status: string) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   const allowedStatuses = ["pending", "processing", "shipped", "delivered", "ready_for_pickup", "picked_up", "cancelled"];
   if (typeof orderId !== "string" || !orderId || !allowedStatuses.includes(status)) {
     throw new Error("Neispravan status porudžbine.");
@@ -411,7 +410,7 @@ async function saveCustomerInfo(orderId: string, info: Record<string, unknown>) 
 }
 
 export async function setOrderPaidAction(orderId: string, paid: boolean) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!orderId || !process.env.DATABASE_URL) throw new Error("Porudžbina nije pronađena.");
   const order = await db.order.findUnique({ where: { id: orderId } });
   if (!order) throw new Error("Porudžbina nije pronađena.");
@@ -423,7 +422,7 @@ export async function setOrderPaidAction(orderId: string, paid: boolean) {
 }
 
 export async function addOrderNoteAction(orderId: string, message: string) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   const text = message.trim();
   if (!orderId || text.length < 2 || text.length > 1000) {
     throw new Error("Beleška mora imati između 2 i 1000 karaktera.");

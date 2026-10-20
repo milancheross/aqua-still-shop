@@ -1,18 +1,11 @@
 import React from "react";
 import Link from "next/link";
-import { Plus, FileText, Edit, Trash2, ExternalLink, CheckCircle2, XCircle } from "lucide-react";
-import { getPages, deletePage } from "@/actions/page-cms-actions";
+import { Plus, FileText, Edit, ExternalLink, CheckCircle2, XCircle } from "lucide-react";
+import { getPages } from "@/actions/page-cms-actions";
+import DeletePageButton from "@/components/admin/DeletePageButton";
 
 export default async function AdminPagesPage() {
   const pages = await getPages();
-
-  async function handleDelete(formData: FormData) {
-    "use server";
-    const id = formData.get("id") as string;
-    if (id) {
-      await deletePage(id);
-    }
-  }
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-5 sm:space-y-8">
@@ -88,16 +81,7 @@ export default async function AdminPagesPage() {
                         >
                           <Edit className="w-4 h-4" />
                         </Link>
-                        <form action={handleDelete} onSubmit={(e) => { if (!confirm("Da li ste sigurni da želite da obrišete ovu stranicu?")) e.preventDefault(); }}>
-                          <input type="hidden" name="id" value={p.id} />
-                          <button
-                            type="submit"
-                            className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                            title="Obriši"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </form>
+                        <DeletePageButton id={p.id} title={p.title} />
                       </div>
                     </td>
                   </tr>

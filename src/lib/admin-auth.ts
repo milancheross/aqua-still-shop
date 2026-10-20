@@ -74,6 +74,13 @@ export async function requireAdmin() {
   return user;
 }
 
+export async function requireAdminOrEditor() {
+  const user = await getCurrentStaffUser();
+  const token = (await cookies()).get(COOKIE_NAME)?.value;
+  if (!user || !["admin", "editor"].includes(user.role) || !isValidSession(token, user.email ?? "")) redirect("/admin-login");
+  return user;
+}
+
 export async function requireWarehouseAccess() {
   const user = await getCurrentStaffUser();
   const token = (await cookies()).get(COOKIE_NAME)?.value;

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdminOrEditor } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -17,7 +17,7 @@ export interface PageInput {
 }
 
 export async function getPageById(id: string) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!id || !process.env.DATABASE_URL) return null;
   try {
     const page = await db.page.findUnique({ where: { id } });
@@ -38,7 +38,7 @@ export async function getPageById(id: string) {
 }
 
 export async function getPages() {
-  await requireAdmin();
+  await requireAdminOrEditor();
   try {
     if (!process.env.DATABASE_URL) return [];
     const pages = await db.page.findMany({
@@ -105,7 +105,7 @@ export async function getHomeContent() {
 }
 
 export async function getHomePageForAdmin() {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!process.env.DATABASE_URL) return null;
   try {
     const page = await db.page.findUnique({ where: { slug: HOME_SLUG } });
@@ -121,7 +121,7 @@ export async function getHomePageForAdmin() {
 }
 
 export async function saveHomePage(input: HomeContent & { isPublished: boolean }) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!process.env.DATABASE_URL) throw new Error("Baza nije povezana.");
   const content = parseHomeContent({ kind: "home", ...input });
   if (!content.title.trim() || !content.description.trim()) {
@@ -163,7 +163,7 @@ export async function saveHomePage(input: HomeContent & { isPublished: boolean }
 }
 
 export async function savePage(input: PageInput) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   if (!input.title || !input.slug) {
     throw new Error("Naslov i slug stranice su obavezni.");
   }
@@ -210,7 +210,7 @@ export async function savePage(input: PageInput) {
 }
 
 export async function deletePage(id: string) {
-  await requireAdmin();
+  await requireAdminOrEditor();
   try {
     await db.page.delete({ where: { id } });
     revalidatePath("/admin/pages");
