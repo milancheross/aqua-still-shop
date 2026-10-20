@@ -1,9 +1,22 @@
 import React from "react";
-import CatalogPage from "../page";
+import type { Metadata } from "next";
+import CatalogPage, { generateMetadata as baseGenerateMetadata } from "../page";
 
 interface CategoryCatalogPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
   params: Promise<{ categorySlug: string }>;
+}
+
+export async function generateMetadata({ searchParams, params }: CategoryCatalogPageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+
+  return baseGenerateMetadata({
+    searchParams: Promise.resolve({
+      ...resolvedSearchParams,
+      category: resolvedParams.categorySlug,
+    }),
+  });
 }
 
 export default async function CategoryCatalogPage({ searchParams, params }: CategoryCatalogPageProps) {

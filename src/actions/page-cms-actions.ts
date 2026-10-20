@@ -135,7 +135,7 @@ export async function saveHomePage(input: HomeContent & { isPublished: boolean }
   const data = {
     title: "Početna",
     slug: HOME_SLUG,
-    contentJson: { kind: "home" as const, ...content },
+    contentJson: { kind: "home" as const, ...content } as unknown as Prisma.InputJsonValue,
     seoTitle: content.seoTitle || null,
     seoDescription: content.seoDescription || null,
     isPublished: input.isPublished,
