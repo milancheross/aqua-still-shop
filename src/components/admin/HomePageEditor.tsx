@@ -3,20 +3,44 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, ExternalLink, Save } from "lucide-react";
+import { ArrowLeft, Check, ExternalLink, Save, Sliders, Image as ImageIcon } from "lucide-react";
 import { saveHomePage } from "@/actions/page-cms-actions";
 import type { EditorPageOption } from "@/components/admin/PageEditor";
-import { DEFAULT_HOME, type HomeContent } from "@/lib/home-content";
+import { DEFAULT_HOME, DEFAULT_HERO_SLIDES, type HomeContent, type HeroSlideItem } from "@/lib/home-content";
 
-function Field({ label, value, onChange, rows = 0 }: { label: string; value: string; onChange: (value: string) => void; rows?: number }) {
-  const className = "w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500";
+function Field({
+  label,
+  value,
+  onChange,
+  rows = 0,
+  placeholder = "",
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  rows?: number;
+  placeholder?: string;
+}) {
+  const className =
+    "w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500 placeholder:text-slate-600";
   return (
     <label className="block space-y-1.5">
       <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{label}</span>
       {rows > 0 ? (
-        <textarea rows={rows} value={value} onChange={(event) => onChange(event.target.value)} className={className} />
+        <textarea
+          rows={rows}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          className={className}
+        />
       ) : (
-        <input value={value} onChange={(event) => onChange(event.target.value)} className={className} />
+        <input
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          className={className}
+        />
       )}
     </label>
   );
@@ -36,8 +60,20 @@ export default function HomePageEditor({
   const [published, setPublished] = useState(isPublished);
   const [isSaving, startTransition] = useTransition();
   const [success, setSuccess] = useState("");
+  const [activeSlideTab, setActiveSlideTab] = useState(0);
 
-  const set = (key: keyof HomeContent) => (value: string) => setForm((current) => ({ ...current, [key]: value }));
+  const heroSlides = (form.heroSlides && form.heroSlides.length > 0) ? form.heroSlides : DEFAULT_HERO_SLIDES;
+
+  const set = (key: keyof HomeContent) => (value: string) =>
+    setForm((current) => ({ ...current, [key]: value }));
+
+  const updateSlideField = (index: number, field: keyof HeroSlideItem, value: string) => {
+    setForm((current) => {
+      const updatedSlides = [...(current.heroSlides || DEFAULT_HERO_SLIDES)];
+      updatedSlides[index] = { ...updatedSlides[index], [field]: value };
+      return { ...current, heroSlides: updatedSlides };
+    });
+  };
 
   const openPage = (nextId: string) => {
     if (nextId === "home") return;
@@ -48,103 +84,251 @@ export default function HomePageEditor({
   const handleSave = () => {
     startTransition(async () => {
       try {
-        const result = await saveHomePage({ ...form, isPublished: published });
+        const result = await saveHomePage({ ...form, heroSlides, isPublished: published });
         if (!result.success) {
           throw new Error(result.error);
         }
-        setSuccess("Početna stranica je sačuvana.");
-        setTimeout(() => setSuccess(""), 3000);
+        setSuccess("Početna stranica i baneri su uspešno sačuvani!");
+        setTimeout(() => setSuccess(""), 3500);
       } catch (error: unknown) {
         alert(error instanceof Error ? error.message : "Čuvanje početne stranice nije uspelo.");
       }
     });
   };
 
+  const activeSlide = heroSlides[activeSlideTab] || heroSlides[0];
+
   return (
     <div className="-m-3 flex min-h-screen flex-col bg-slate-900 text-white sm:-m-5 lg:-m-8">
+      {/* Header editora */}
       <header className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950 px-4 py-3">
         <div className="flex items-center gap-3">
-          <Link href="/admin/pages" className="rounded-xl bg-slate-800 p-2 text-slate-400 hover:text-white" aria-label="Nazad na stranice">
+          <Link
+            href="/admin/pages"
+            className="rounded-xl bg-slate-800 p-2 text-slate-400 hover:text-white"
+            aria-label="Nazad na stranice"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Link>
-          <select value="home" onChange={(event) => openPage(event.target.value)} className="max-w-56 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold outline-none focus:border-cyan-500" aria-label="Stranica">
+          <select
+            value="home"
+            onChange={(event) => openPage(event.target.value)}
+            className="max-w-56 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold outline-none focus:border-cyan-500"
+            aria-label="Stranica"
+          >
             <option value="home">Početna stranica</option>
             <option value="">Nova stranica</option>
             {pages.map((item) => (
-              <option key={item.id} value={item.id}>{item.title} /{item.slug}</option>
+              <option key={item.id} value={item.id}>
+                {item.title} /{item.slug}
+              </option>
             ))}
           </select>
-          <span className="hidden text-xs text-slate-400 sm:inline">Ovo menja tekst na /</span>
+          <span className="hidden text-xs text-slate-400 sm:inline">Uređivanje početne i Hero banera</span>
         </div>
         <div className="flex items-center gap-3">
-          {success && <span className="flex items-center gap-1 text-xs font-bold text-emerald-400"><Check className="h-3.5 w-3.5" /> {success}</span>}
+          {success && (
+            <span className="flex items-center gap-1 text-xs font-bold text-emerald-400">
+              <Check className="h-3.5 w-3.5" /> {success}
+            </span>
+          )}
           {published && (
-            <Link href="/" target="_blank" className="inline-flex items-center gap-1 text-xs font-bold text-slate-300 hover:text-white">
-              <ExternalLink className="h-3.5 w-3.5" /> Pregled
+            <Link
+              href="/"
+              target="_blank"
+              className="inline-flex items-center gap-1 text-xs font-bold text-slate-300 hover:text-white"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Poseti sajt
             </Link>
           )}
           <label className="flex items-center gap-2 text-xs font-bold text-slate-300">
-            <input type="checkbox" checked={published} onChange={(event) => setPublished(event.target.checked)} className="h-4 w-4 rounded text-cyan-600" />
+            <input
+              type="checkbox"
+              checked={published}
+              onChange={(event) => setPublished(event.target.checked)}
+              className="h-4 w-4 rounded text-cyan-600"
+            />
             Objavljeno
           </label>
-          <button onClick={handleSave} disabled={isSaving} className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-2.5 text-xs font-bold hover:bg-cyan-700 disabled:bg-slate-700">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-2.5 text-xs font-bold hover:bg-cyan-700 disabled:bg-slate-700"
+          >
             <Save className="h-4 w-4" /> {isSaving ? "Čuvanje..." : "Sačuvaj početnu"}
           </button>
         </div>
       </header>
 
-      <div className="grid flex-1 gap-0 lg:grid-cols-[420px_1fr]">
-        <form className="space-y-5 overflow-y-auto border-r border-slate-800 bg-slate-950 p-6" onSubmit={(event) => { event.preventDefault(); handleSave(); }}>
-          <p className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs leading-relaxed text-slate-400">
-            Desktop hero dolazi iz foldera <span className="font-bold text-cyan-300">hero</span>, a mobilni iz <span className="font-bold text-blue-300">hero-mobile</span>. Oba se podešavaju u Medijskoj biblioteci. Ovde se menja tekst početne stranice.
-          </p>
-          <Field label="Natpis iznad naslova" value={form.eyebrow} onChange={set("eyebrow")} />
-          <Field label="Glavni naslov" value={form.title} onChange={set("title")} />
-          <Field label="Reč u naslovu koja je plava" value={form.titleAccent} onChange={set("titleAccent")} />
-          <Field label="Opis ispod naslova" value={form.description} onChange={set("description")} rows={4} />
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Primarno dugme" value={form.primaryLabel} onChange={set("primaryLabel")} />
-            <Field label="Link dugmeta" value={form.primaryHref} onChange={set("primaryHref")} />
-            <Field label="Drugo dugme" value={form.secondaryLabel} onChange={set("secondaryLabel")} />
-            <Field label="Link drugog dugmeta" value={form.secondaryHref} onChange={set("secondaryHref")} />
+      <div className="grid flex-1 gap-0 lg:grid-cols-[460px_1fr]">
+        {/* Leva kolona: Formular */}
+        <form
+          className="space-y-6 overflow-y-auto border-r border-slate-800 bg-slate-950 p-6"
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleSave();
+          }}
+        >
+          {/* SEKCIJA: HERO SLAJDER BANERI */}
+          <div className="space-y-4 rounded-2xl border border-cyan-900/60 bg-cyan-950/20 p-4">
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-cyan-400">
+              <Sliders className="h-4 w-4" />
+              <span>Hero Slajder (4 tematska banera)</span>
+            </div>
+            <p className="text-[11px] text-slate-400">
+              Izaberite baner i prilagodite njegov naslov, istaknuti tekst, link i sliku.
+            </p>
+
+            {/* Tabovi banera */}
+            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+              {heroSlides.map((slide, idx) => (
+                <button
+                  key={slide.id || idx}
+                  type="button"
+                  onClick={() => setActiveSlideTab(idx)}
+                  className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
+                    activeSlideTab === idx
+                      ? "bg-cyan-600 text-white shadow"
+                      : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-white"
+                  }`}
+                >
+                  {slide.category || `Baner ${idx + 1}`}
+                </button>
+              ))}
+            </div>
+
+            {/* Polja aktivnog banera */}
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-3.5">
+              <div className="text-[11px] font-bold text-cyan-300">
+                Podešavanje za: <span className="text-white">{activeSlide.category}</span>
+              </div>
+
+              <Field
+                label="Oznaka / Badge (gore)"
+                value={activeSlide.badge}
+                onChange={(val) => updateSlideField(activeSlideTab, "badge", val)}
+              />
+
+              <div className="grid grid-cols-2 gap-2">
+                <Field
+                  label="Glavni naslov"
+                  value={activeSlide.title}
+                  onChange={(val) => updateSlideField(activeSlideTab, "title", val)}
+                />
+                <Field
+                  label="Istaknuta reč (u boji)"
+                  value={activeSlide.highlight}
+                  onChange={(val) => updateSlideField(activeSlideTab, "highlight", val)}
+                />
+              </div>
+
+              <Field
+                label="Opis banera"
+                value={activeSlide.description}
+                onChange={(val) => updateSlideField(activeSlideTab, "description", val)}
+                rows={2}
+              />
+
+              <div className="grid grid-cols-2 gap-2">
+                <Field
+                  label="Tekst dugmeta"
+                  value={activeSlide.buttonLabel}
+                  onChange={(val) => updateSlideField(activeSlideTab, "buttonLabel", val)}
+                  placeholder="POGLEDAJ PONUDU"
+                />
+                <Field
+                  label="Link dugmeta"
+                  value={activeSlide.buttonHref}
+                  onChange={(val) => updateSlideField(activeSlideTab, "buttonHref", val)}
+                  placeholder="/katalog/alati"
+                />
+              </div>
+
+              <Field
+                label="Putanja do pozadinske slike (opciono)"
+                value={activeSlide.imageUrl || ""}
+                onChange={(val) => updateSlideField(activeSlideTab, "imageUrl", val)}
+                placeholder="/images/baner-alati.webp ili URL"
+              />
+              <p className="text-[10px] text-slate-500">
+                Možete uneti putanju do slike iz Medijske biblioteke ili <code className="text-cyan-400">public/images</code> foldera.
+              </p>
+            </div>
           </div>
-          <Field label="Naslov izdvojene ponude" value={form.featuredTitle} onChange={set("featuredTitle")} />
-          <Field label="Mali naslov iznad kategorija" value={form.exploreEyebrow} onChange={set("exploreEyebrow")} />
-          <Field label="Naslov kategorija" value={form.exploreTitle} onChange={set("exploreTitle")} />
-          <Field label="Opis kategorija" value={form.exploreText} onChange={set("exploreText")} rows={3} />
-          <Field label="Naslov brendova" value={form.brandsTitle} onChange={set("brandsTitle")} />
-          <Field label="Naslov popularnih kategorija" value={form.popularTitle} onChange={set("popularTitle")} />
-          <Field label="SEO naslov" value={form.seoTitle} onChange={set("seoTitle")} />
-          <Field label="SEO opis" value={form.seoDescription} onChange={set("seoDescription")} rows={3} />
-          <button type="button" onClick={() => setForm(DEFAULT_HOME)} className="text-xs font-bold text-slate-400 underline">Vrati podrazumevani tekst</button>
+
+          {/* SEKCIJA: OSTALI TEKSTOVI POČETNE */}
+          <div className="space-y-4 border-t border-slate-800 pt-5">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-300">
+              Opšti tekstovi i SEO
+            </h3>
+
+            <Field label="Naslov izdvojene ponude" value={form.featuredTitle} onChange={set("featuredTitle")} />
+            <Field label="Mali naslov iznad kategorija" value={form.exploreEyebrow} onChange={set("exploreEyebrow")} />
+            <Field label="Naslov kategorija" value={form.exploreTitle} onChange={set("exploreTitle")} />
+            <Field label="Opis kategorija" value={form.exploreText} onChange={set("exploreText")} rows={2} />
+            <Field label="Naslov brendova" value={form.brandsTitle} onChange={set("brandsTitle")} />
+            <Field label="Naslov popularnih kategorija" value={form.popularTitle} onChange={set("popularTitle")} />
+
+            <div className="border-t border-slate-800 pt-4">
+              <Field label="SEO naslov" value={form.seoTitle} onChange={set("seoTitle")} />
+              <Field label="SEO opis" value={form.seoDescription} onChange={set("seoDescription")} rows={3} />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setForm(DEFAULT_HOME)}
+            className="text-xs font-bold text-slate-400 underline hover:text-white"
+          >
+            Vrati podrazumevani tekst i banere
+          </button>
         </form>
 
+        {/* Desna kolona: Pregled uživo */}
         <div className="bg-slate-950 p-6">
-          <div className="overflow-hidden rounded-3xl bg-slate-900">
-            <div className="bg-gradient-to-r from-slate-950 via-slate-950 to-cyan-950 px-8 py-16">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200">{form.eyebrow}</p>
-              <h1 className="mt-4 max-w-xl text-4xl font-black leading-tight text-white">
-                {form.titleAccent && form.title.includes(form.titleAccent) ? (
-                  <>
-                    {form.title.slice(0, form.title.indexOf(form.titleAccent))}
-                    <span className="text-cyan-400">{form.titleAccent}</span>
-                    {form.title.slice(form.title.indexOf(form.titleAccent) + form.titleAccent.length)}
-                  </>
-                ) : form.title}
-              </h1>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300">{form.description}</p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <span className="rounded-xl bg-cyan-600 px-5 py-3 text-sm font-bold">{form.primaryLabel}</span>
-                <span className="rounded-xl border border-white/25 px-5 py-3 text-sm font-bold">{form.secondaryLabel}</span>
+          <div className="overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl">
+            {/* Pregled aktivnog banera */}
+            <div className={`relative overflow-hidden bg-gradient-to-r ${activeSlide.bgGradient || "from-slate-950 via-slate-900 to-cyan-950"} p-8`}>
+              <div className="relative z-10 max-w-xl space-y-4">
+                <span className="inline-block rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-300">
+                  {activeSlide.badge}
+                </span>
+
+                <h1 className="text-3xl font-black text-white">
+                  {activeSlide.title}{" "}
+                  <span className={`bg-gradient-to-r ${activeSlide.accentColor || "from-amber-400 to-cyan-400"} bg-clip-text text-transparent`}>
+                    {activeSlide.highlight}
+                  </span>
+                </h1>
+
+                <p className="text-xs leading-relaxed text-slate-300">{activeSlide.description}</p>
+
+                <div className="flex gap-3 pt-2">
+                  <span className="rounded-xl bg-cyan-600 px-5 py-2.5 text-xs font-black text-white uppercase tracking-wider">
+                    {activeSlide.buttonLabel || "POGLEDAJ PONUDU"}
+                  </span>
+                  <span className="rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-xs font-bold text-white">
+                    Ceo katalog
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="space-y-3 bg-slate-100 px-8 py-6 text-slate-900">
-              <h2 className="text-2xl font-black">{form.featuredTitle}</h2>
-              <p className="text-xs font-bold uppercase tracking-wider text-cyan-700">{form.exploreEyebrow}</p>
-              <h2 className="text-2xl font-black">{form.exploreTitle}</h2>
-              <p className="text-sm text-slate-600">{form.exploreText}</p>
-              <h2 className="text-xl font-black">{form.brandsTitle}</h2>
-              <h2 className="text-xl font-black">{form.popularTitle}</h2>
+
+            {/* Pregled ostatka stranice */}
+            <div className="space-y-4 bg-slate-100 p-8 text-slate-900">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-700">
+                  {form.exploreEyebrow}
+                </p>
+                <h2 className="text-xl font-black">{form.exploreTitle}</h2>
+                <p className="text-xs text-slate-600">{form.exploreText}</p>
+              </div>
+              <div className="pt-2">
+                <h3 className="text-lg font-black">{form.featuredTitle}</h3>
+              </div>
+              <div className="pt-2">
+                <h3 className="text-base font-black">{form.brandsTitle}</h3>
+              </div>
             </div>
           </div>
         </div>

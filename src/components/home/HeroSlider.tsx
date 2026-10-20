@@ -2,85 +2,38 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, Wrench, Droplets, Bath, Sprout } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, ChevronLeft, ChevronRight, Wrench, Droplets, Bath, Sprout, Sparkles } from "lucide-react";
+import { HeroSlideItem, DEFAULT_HERO_SLIDES } from "@/lib/home-content";
 
-interface SlideData {
-  id: string;
-  badge: string;
-  title: string;
-  highlight: string;
-  description: string;
-  href: string;
-  category: string;
-  icon: React.ComponentType<{ className?: string }>;
-  accentColor: string;
-  bgGradient: string;
+function getSlideIcon(idOrCategory: string) {
+  const text = (idOrCategory || "").toLowerCase();
+  if (text.includes("alat")) return Wrench;
+  if (text.includes("vodovod") || text.includes("cev")) return Droplets;
+  if (text.includes("kupat")) return Bath;
+  if (text.includes("navodnj") || text.includes("bast") || text.includes("pump")) return Sprout;
+  return Sparkles;
 }
 
-const slides: SlideData[] = [
-  {
-    id: "alati",
-    badge: "VRHUNSKI BRENDOVI · AKCIJSKE CENE",
-    title: "Profesionalni alati za",
-    highlight: "majstore i radionice",
-    description: "Akumulatorske bušilice, ugaone brusilice i kompletni setovi ručnog alata. Makita, Bosch i DeWalt sa zvaničnom garancijom.",
-    href: "/katalog?category=alati",
-    category: "Alati i oprema",
-    icon: Wrench,
-    accentColor: "from-amber-400 to-cyan-400",
-    bgGradient: "from-slate-950 via-slate-900 to-cyan-950",
-  },
-  {
-    id: "vodovod",
-    badge: "SIGURNOST I TRAJNOST · NA STANJU",
-    title: "Cevi, fiting i ventili za",
-    highlight: "sve vrste instalacija",
-    description: "Peštan 3P niskošumne cevi, PP-R sistemi za pijaću vodu i visokotlačni Valvex mesingani kugla ventili za objekte i kuće.",
-    href: "/katalog?category=vodovod",
-    category: "Vodovod i kanalizacija",
-    icon: Droplets,
-    accentColor: "from-cyan-400 to-blue-500",
-    bgGradient: "from-slate-950 via-slate-900 to-blue-950",
-  },
-  {
-    id: "kupatila",
-    badge: "PREMIUM DIZAJN · NEMAČKI KVALITET",
-    title: "Moderna kupatila po",
-    highlight: "vašoj meri i želji",
-    description: "Geberit ugradni vodokotlići, Grohe i Hansgrohe slavine i sanitarije koje spajaju estetiku i vrhunsku dugovečnost.",
-    href: "/katalog?category=kupatila",
-    category: "Kupatilska oprema",
-    icon: Bath,
-    accentColor: "from-emerald-300 to-cyan-400",
-    bgGradient: "from-slate-950 via-zinc-900 to-slate-900",
-  },
-  {
-    id: "navodnjavanje",
-    badge: "EFIKASNOST I UŠTEDA VODE",
-    title: "Automatsko navodnjavanje i",
-    highlight: "snažne Pedrollo pumpe",
-    description: "Italijanske potapajuće i hidrofor pumpe, Rain Bird pop-up rasprskivači, creva i kap po kap sistemi za dvorišta i voćnjake.",
-    href: "/katalog?category=navodnjavanje",
-    category: "Navodnjavanje i bašta",
-    icon: Sprout,
-    accentColor: "from-lime-400 to-emerald-400",
-    bgGradient: "from-slate-950 via-slate-900 to-emerald-950",
-  },
-];
+interface HeroSliderProps {
+  slides?: HeroSlideItem[];
+}
 
-export default function HeroSlider() {
+export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
+  const activeSlides = (propSlides && propSlides.length > 0) ? propSlides : DEFAULT_HERO_SLIDES;
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   const nextSlide = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % slides.length);
-  }, []);
+    setCurrent((prev) => (prev + 1) % activeSlides.length);
+  }, [activeSlides.length]);
 
   const prevSlide = useCallback(() => {
-    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
-  }, []);
+    setCurrent((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
+  }, [activeSlides.length]);
 
+  // Automatska rotacija na svakih 6 sekundi (pauzira se na hover)
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
@@ -104,8 +57,8 @@ export default function HeroSlider() {
     setTouchStartX(null);
   };
 
-  const activeSlide = slides[current];
-  const IconComponent = activeSlide.icon;
+  const activeSlide = activeSlides[current] || activeSlides[0];
+  const IconComponent = getSlideIcon(activeSlide.id || activeSlide.category);
 
   return (
     <div
@@ -115,13 +68,29 @@ export default function HeroSlider() {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Pozadinski prelivi i grafički slojevi */}
-      <div
-        className={`absolute inset-0 bg-gradient-to-r ${activeSlide.bgGradient} transition-all duration-700 ease-in-out opacity-95`}
-      />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
+      {/* 1. Pozadinska fotografija sa glatkom tranzicijom */}
+      {activeSlide.imageUrl && (
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <Image
+            src={activeSlide.imageUrl}
+            alt={activeSlide.category}
+            fill
+            priority={current === 0}
+            sizes="100vw"
+            className="object-cover object-center opacity-25 transition-all duration-700 scale-105"
+          />
+        </div>
+      )}
 
-      <div className="relative container mx-auto px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
+      {/* 2. Pozadinski prelivi i grafički slojevi */}
+      <div
+        className={`absolute inset-0 z-0 bg-gradient-to-r ${activeSlide.bgGradient || "from-slate-950 via-slate-900 to-cyan-950"} transition-all duration-700 ease-in-out ${
+          activeSlide.imageUrl ? "opacity-90" : "opacity-95"
+        }`}
+      />
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
+
+      <div className="relative z-10 container mx-auto px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
           {/* Tekstualni sadržaj slajda */}
           <div className="lg:col-span-8 space-y-4 sm:space-y-5">
@@ -135,7 +104,7 @@ export default function HeroSlider() {
             <h1 className="text-3xl font-black leading-[1.08] tracking-tight sm:text-4xl md:text-5xl lg:text-5xl">
               {activeSlide.title}{" "}
               <span
-                className={`bg-gradient-to-r ${activeSlide.accentColor} bg-clip-text text-transparent`}
+                className={`bg-gradient-to-r ${activeSlide.accentColor || "from-amber-400 to-cyan-400"} bg-clip-text text-transparent`}
               >
                 {activeSlide.highlight}
               </span>
@@ -149,10 +118,10 @@ export default function HeroSlider() {
             {/* Dugmad za akciju */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link
-                href={activeSlide.href}
+                href={activeSlide.buttonHref || "/katalog"}
                 className="group inline-flex min-h-12 items-center gap-2.5 rounded-xl bg-cyan-600 px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-cyan-950/50 transition-all hover:bg-cyan-500 hover:shadow-cyan-900/60 active:scale-95 sm:text-sm"
               >
-                <span>POGLEDAJ PONUDU</span>
+                <span>{activeSlide.buttonLabel || "POGLEDAJ PONUDU"}</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
 
@@ -165,7 +134,7 @@ export default function HeroSlider() {
             </div>
           </div>
 
-          {/* Desni panel sa mini preview karticom kategorije */}
+          {/* Desni panel sa preview karticom kategorije */}
           <div className="hidden lg:col-span-4 lg:flex lg:justify-end">
             <div className="w-full max-w-xs rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md shadow-2xl">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-cyan-300 mb-4">
@@ -185,13 +154,13 @@ export default function HeroSlider() {
 
         {/* Donja kontrolna traka: Tabovi i Strelice */}
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
-          {/* Tab indikatori za 4 teme */}
+          {/* Tab indikatori za teme */}
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-            {slides.map((slide, index) => {
+            {activeSlides.map((slide, index) => {
               const isCurrent = index === current;
               return (
                 <button
-                  key={slide.id}
+                  key={slide.id || index}
                   type="button"
                   onClick={() => setCurrent(index)}
                   className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
@@ -237,4 +206,3 @@ export default function HeroSlider() {
     </div>
   );
 }
-

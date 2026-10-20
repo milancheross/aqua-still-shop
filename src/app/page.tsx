@@ -82,8 +82,8 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f5f6f4] text-slate-950">
-      {/* 1. Interaktivni Hero slajder sa 4 tematska banera i CTA 'POGLEDAJ PONUDU' */}
-      <HeroSlider />
+      {/* 1. Interaktivni Hero slajder sa tematskim banerima (iz CMS-a ili predefinisani) */}
+      <HeroSlider slides={home.heroSlides} />
 
       {/* 2. Brza pretraga i benefiti kupovine */}
       <section className="border-b border-slate-200 bg-white">

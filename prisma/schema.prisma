@@ -83,13 +83,13 @@ model Product {
   attributes       Json         @default("{}")
   isFeatured       Boolean      @default(false) @map("is_featured")
   isPromo          Boolean      @default(false) @map("is_promo")
-  status           String       @default("active")
+
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
   cartItems        CartItem[]
   orderItems       OrderItem[]
 
-  @@index([status, categorySlug])
+
   @@map("products")
 }
 

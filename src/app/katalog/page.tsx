@@ -145,7 +145,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           {activeSubcategory && <><span>/</span><span className="font-bold text-slate-900">{activeSubcategory.name}</span></>}
         </div>
         <h1 className="text-3xl font-black tracking-tight text-slate-900">
-          {activeSubcategory?.name ?? activeCategory?.name ?? (searchQuery ? `Rezultati pretrage za: "${searchQuery}"` : "Svi proizvodi")}
+          {activeSubcategory?.name ?? activeCategory?.name ?? (selectedCategory === "akcija" ? "Akcijska ponuda" : (searchQuery ? `Rezultati pretrage za: "${searchQuery}"` : "Svi proizvodi"))}
         </h1>
         <p className="text-sm text-slate-500">
           Prikazano <strong className="text-slate-900">{products.length}</strong> od <strong className="text-slate-900">{catalog.total}</strong> artikala. Strana {safePage} od {totalPages}.

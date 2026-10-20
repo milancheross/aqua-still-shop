@@ -703,11 +703,9 @@ async function main() {
         salePrice: prod.salePrice,
         stockQuantity: prod.stockQuantity,
         inStock: prod.inStock,
-        status: "active",
       },
       create: {
         ...productData,
-        status: "active",
         category: { connect: { slug: categorySlug } },
         ...(subcategorySlug
           ? { subcategory: { connect: { slug: subcategorySlug } } }
