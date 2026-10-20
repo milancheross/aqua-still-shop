@@ -2,15 +2,17 @@ import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { Filter, Search, ArrowUpDown, X, Check, ChevronDown } from "lucide-react";
-import { getCategoryIcon } from "@/lib/category-icons";
+import { Search, ArrowUpDown } from "lucide-react";
 import { getDbCatalogAttributes, getDbCatalogPage, getDbCategories, getDbBrands } from "@/services/product-service";
-import { getCategoryFilterDefinitions, getFilterValues } from "@/lib/catalog-filters";
+import { getCategoryFilterDefinitions } from "@/lib/catalog-filters";
 import { buildCatalogQuery, catalogCanonicalPath, catalogTotalPages, clampCatalogPage, parseCatalogPage, parseCatalogTake } from "@/lib/catalog-pagination";
 import { redirect } from "next/navigation";
 import ProductCard from "@/components/catalog/ProductCard";
 import CatalogSortSelect from "@/components/catalog/CatalogSortSelect";
 import CatalogFilterPanel from "@/components/catalog/CatalogFilterPanel";
+import CatalogFiltersSidebar from "@/components/catalog/CatalogFiltersSidebar";
+import CatalogActiveFilters from "@/components/catalog/CatalogActiveFilters";
+import CatalogPagination from "@/components/catalog/CatalogPagination";
 
 interface CatalogPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -69,6 +71,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   const page = parseCatalogPage(firstParam(params.page));
   const take = parseCatalogTake(firstParam(params.take));
+
   const [categories, brands, filterAttributes, catalog] = await Promise.all([
     getDbCategories(),
     getDbBrands(),
@@ -93,8 +96,10 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       take,
     }),
   ]);
+
   const totalPages = catalogTotalPages(catalog.total, take);
   const safePage = clampCatalogPage(page, catalog.total, take);
+
   const currentParams: Record<string, string> = {
     ...(searchQuery ? { q: searchQuery } : {}),
     ...(selectedBrand ? { brand: selectedBrand } : {}),
@@ -107,22 +112,30 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     ...(take !== 24 ? { take: String(take) } : {}),
     ...Object.fromEntries(Object.entries(selectedAttributes).map(([key, value]) => [`attr_${key}`, value])),
   };
+
   if (catalog.total > 0 && page !== safePage) {
     redirect(buildCatalogQuery({ current: currentParams, changes: { page: String(safePage) } }));
   }
-  const products = catalog.products;
 
+  const products = catalog.products;
   const activeCategory = categories.find((category) => category.slug === selectedCategory);
   const activeSubcategory = activeCategory?.subcategories.find((subcategory) => subcategory.slug === selectedSubcategory);
   const filterDefinitions = getCategoryFilterDefinitions(selectedCategory, selectedSubcategory);
 
-  const buildUrl = (changes: Record<string, string | null | undefined>, resetPage = true) =>
-    buildCatalogQuery({ current: currentParams, changes, resetPage });
-
-  const resetUrl = "/katalog";
+  const activeFilterCount = [
+    searchQuery,
+    selectedBrand,
+    selectedCategory,
+    selectedSubcategory,
+    inStockOnly ? "inStock" : "",
+    minPrice !== undefined ? "minPrice" : "",
+    maxPrice !== undefined ? "maxPrice" : "",
+    ...Object.keys(selectedAttributes),
+  ].filter(Boolean).length;
 
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 md:py-12">
+      {/* Breadcrumb i naslov */}
       <div className="mb-8 space-y-2">
         <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
           <Link href="/" className="hover:text-cyan-600">Početna</Link>
@@ -142,6 +155,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         )}
       </div>
 
+      {/* Hero baner za selektovanu kategoriju */}
       {activeCategory?.imageUrl && (
         <div className="relative mb-8 min-h-36 overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 sm:min-h-48">
           <Image src={activeCategory.imageUrl} alt="" fill sizes="100vw" className="object-cover" priority />
@@ -154,152 +168,26 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       )}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-        <CatalogFilterPanel activeCount={[
-          searchQuery,
-          selectedBrand,
-          selectedCategory,
-          selectedSubcategory,
-          inStockOnly ? "inStock" : "",
-          minPrice !== undefined ? "minPrice" : "",
-          maxPrice !== undefined ? "maxPrice" : "",
-          ...Object.keys(selectedAttributes),
-        ].filter(Boolean).length}>
-        <aside>
-          <div className="sticky top-24 space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <h3 className="flex items-center gap-2 font-black text-slate-900">
-                <Filter className="h-4 w-4 text-cyan-600" /> Filteri
-              </h3>
-              {(searchQuery || selectedBrand || selectedCategory || selectedSubcategory || inStockOnly || minPrice !== undefined || maxPrice !== undefined || Object.keys(selectedAttributes).length > 0) && (
-                <Link href={resetUrl} className="flex items-center gap-1 text-xs font-bold text-red-600 hover:underline">
-                  <X className="h-3.5 w-3.5" /> Poništi
-                </Link>
-              )}
-            </div>
-
-            <form method="GET" action="/katalog" className="space-y-5">
-              {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
-              {selectedSubcategory && <input type="hidden" name="subcategory" value={selectedSubcategory} />}
-              {selectedBrand && <input type="hidden" name="brand" value={selectedBrand} />}
-              {sortOption && <input type="hidden" name="sort" value={sortOption} />}
-
-              <div className="space-y-2">
-                <label className="text-[11px] font-black uppercase tracking-wider text-slate-700">Pretraga</label>
-                <div className="relative">
-                  <input
-                    type="search"
-                    name="q"
-                    defaultValue={searchQuery}
-                    placeholder="Naziv, SKU ili EAN..."
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-xs outline-none transition focus:border-cyan-500 focus:bg-white"
-                  />
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                </div>
-                <p className="text-[10px] text-slate-400">Pretraga radi po nazivu, brendu, šifri i barkodu.</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[11px] font-black uppercase tracking-wider text-slate-700">Kategorija</label>
-                <div className="max-h-64 space-y-1 overflow-y-auto pr-1">
-                  <Link href={buildUrl({ category: null, subcategory: null })} className={`block rounded-lg px-3 py-2 text-xs font-bold ${!selectedCategory ? "bg-cyan-50 text-cyan-700" : "text-slate-600 hover:bg-slate-50"}`}>
-                    Sve kategorije
-                  </Link>
-                  {categories.map((cat) => {
-                    const CategoryIcon = getCategoryIcon(cat.slug || cat.name);
-                    return (
-                      <div key={cat.id}>
-                        <Link href={buildUrl({ category: cat.slug, subcategory: null })} className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs ${selectedCategory === cat.slug ? "bg-cyan-50 font-bold text-cyan-700" : "font-medium text-slate-700 hover:bg-slate-50"}`}>
-                          <span className="flex min-w-0 items-center gap-2">
-                            <CategoryIcon className="h-4 w-4 shrink-0 text-slate-500" strokeWidth={2} />
-                            <span className="truncate">{cat.name}</span>
-                          </span>
-                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">{cat.itemCount}</span>
-                        </Link>
-                        {selectedCategory === cat.slug && cat.subcategories.length > 0 && (
-                          <div className="ml-3 mt-1 space-y-0.5 border-l border-slate-200 pl-2">
-                            {cat.subcategories.map((sub) => {
-                              const SubcategoryIcon = getCategoryIcon(sub.slug || sub.name);
-                              return (
-                                <Link key={sub.id} href={buildUrl({ category: cat.slug, subcategory: sub.slug })} className={`flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-[11px] ${selectedSubcategory === sub.slug ? "bg-cyan-100 font-bold text-cyan-800" : "text-slate-600 hover:bg-slate-50"}`}>
-                                  <span className="flex min-w-0 items-center gap-2">
-                                    <SubcategoryIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" strokeWidth={2} />
-                                    <span className="truncate">{sub.name}</span>
-                                  </span>
-                                  <span className="text-[10px] text-slate-400">{sub.itemCount}</span>
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="space-y-2 border-t border-slate-100 pt-4">
-                <label className="text-[11px] font-black uppercase tracking-wider text-slate-700">Brendovi</label>
-                <div className="max-h-44 space-y-1 overflow-y-auto pr-1">
-                  {brands.map((brand) => (
-                    <Link key={brand} href={buildUrl({ brand: selectedBrand === brand ? null : brand })} className={`flex items-center justify-between rounded-lg px-3 py-1.5 text-xs ${selectedBrand === brand ? "bg-cyan-600 font-bold text-white" : "text-slate-700 hover:bg-slate-50"}`}>
-                      <span>{brand}</span>
-                      {selectedBrand === brand && <Check className="h-3.5 w-3.5" />}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2 border-t border-slate-100 pt-4">
-                <label className="text-[11px] font-black uppercase tracking-wider text-slate-700">Cena (RSD)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input type="number" name="minPrice" min="0" step="1" defaultValue={minPrice ?? ""} placeholder="Od" className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs outline-none focus:border-cyan-500" />
-                  <input type="number" name="maxPrice" min="0" step="1" defaultValue={maxPrice ?? ""} placeholder="Do" className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs outline-none focus:border-cyan-500" />
-                </div>
-              </div>
-
-              {filterDefinitions.map((definition) => {
-                const values = getFilterValues(filterAttributes.map((attributes) => ({ attributes: attributes as Record<string, string | number | boolean> })), definition.key);
-                if (values.length === 0) return null;
-                const selected = selectedAttributes[definition.key];
-                return (
-                  <div key={definition.key} className="space-y-2 border-t border-slate-100 pt-4">
-                    <label className="flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-slate-700">
-                      <span>{definition.label}</span>
-                      <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
-                    </label>
-                    <div className="max-h-40 space-y-1 overflow-y-auto pr-1">
-                      {values.map((value) => {
-                        const isSelected = selected === value;
-                        return (
-                          <Link
-                            key={value}
-                            href={buildUrl({ [`attr_${definition.key}`]: isSelected ? null : value })}
-                            className={`flex items-center justify-between rounded-lg px-3 py-1.5 text-xs ${isSelected ? "bg-cyan-50 font-bold text-cyan-700" : "text-slate-700 hover:bg-slate-50"}`}
-                          >
-                            <span>{value}{definition.unit ? ` ${definition.unit}` : ""}</span>
-                            {isSelected && <Check className="h-3.5 w-3.5" />}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-
-              <label className="flex cursor-pointer items-center gap-2 border-t border-slate-100 pt-4 text-xs font-bold text-slate-800">
-                <input type="checkbox" name="inStock" value="true" defaultChecked={inStockOnly} className="h-4 w-4 rounded text-cyan-600 focus:ring-cyan-500" />
-                Samo artikli na stanju
-              </label>
-
-              <button type="submit" className="w-full rounded-xl bg-cyan-600 px-4 py-2.5 text-xs font-black text-white transition hover:bg-cyan-700">
-                Primeni filtere
-              </button>
-            </form>
-          </div>
-        </aside>
+        {/* Leva kolona: Reaktivni filter sidebar sa mobilnim drawer-om */}
+        <CatalogFilterPanel activeCount={activeFilterCount}>
+          <CatalogFiltersSidebar
+            categories={categories}
+            brands={brands}
+            filterAttributes={filterAttributes}
+            filterDefinitions={filterDefinitions}
+          />
         </CatalogFilterPanel>
 
+        {/* Desna kolona: Aktivni filteri, Sortiranje, Lista proizvoda i Paginacija */}
         <main className="space-y-6 lg:col-span-3">
+          {/* Traka sa aktivnim filterima (chips) */}
+          <CatalogActiveFilters
+            categoryName={activeCategory?.name}
+            subcategoryName={activeSubcategory?.name}
+            filterDefinitions={filterDefinitions}
+          />
+
+          {/* Kontrolna traka: Broj rezultata i Sortiranje */}
           <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row">
             <div className="text-xs font-medium text-slate-500">
               Prikaz <strong className="text-slate-900">{products.length}</strong> proizvoda
@@ -312,31 +200,37 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             </div>
           </div>
 
+          {/* Mreža proizvoda ili Empty State */}
           {products.length === 0 ? (
             <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Search className="h-8 w-8" /></div>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                <Search className="h-8 w-8" />
+              </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900">Nema pronađenih proizvoda</h3>
                 <p className="mt-1 text-xs text-slate-500">Pokušajte sa drugim kriterijumima ili uklonite neki filter.</p>
               </div>
-              <Link href={resetUrl} className="inline-block rounded-xl bg-cyan-600 px-6 py-3 text-xs font-bold text-white shadow-md transition-colors hover:bg-cyan-700">
+              <Link
+                href="/katalog"
+                className="inline-block rounded-xl bg-cyan-600 px-6 py-3 text-xs font-bold text-white shadow-md transition-colors hover:bg-cyan-700"
+              >
                 Prikaži sve proizvode
               </Link>
             </div>
           ) : (
             <>
-            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
-              {products.map((product) => <ProductCard key={product.id} product={product} />)}
-            </div>
-            {totalPages > 1 && (
-              <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Stranice kataloga">
-                <Link href={buildUrl({ page: String(safePage - 1) }, false)} aria-disabled={safePage === 1} className={`rounded-xl px-4 py-2 text-xs font-bold ${safePage === 1 ? "pointer-events-none bg-slate-100 text-slate-400" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"}`}>Nazad</Link>
-                {Array.from({ length: totalPages }, (_, index) => index + 1).filter((item) => item === 1 || item === totalPages || Math.abs(item - safePage) <= 1).map((item) => (
-                  <Link key={item} href={buildUrl({ page: String(item) }, false)} className={`rounded-xl px-3 py-2 text-xs font-bold ${item === safePage ? "bg-cyan-600 text-white" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"}`}>{item}</Link>
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
                 ))}
-                <Link href={buildUrl({ page: String(safePage + 1) }, false)} aria-disabled={safePage === totalPages} className={`rounded-xl px-4 py-2 text-xs font-bold ${safePage === totalPages ? "pointer-events-none bg-slate-100 text-slate-400" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"}`}>Napred</Link>
-              </nav>
-            )}
+              </div>
+
+              {/* Komponenta paginacije */}
+              <CatalogPagination
+                currentPage={safePage}
+                totalPages={totalPages}
+                totalItems={catalog.total}
+              />
             </>
           )}
         </main>

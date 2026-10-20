@@ -29,7 +29,9 @@ type CatalogProductOptions = {
 };
 
 function catalogWhere(options?: CatalogProductOptions): Prisma.ProductWhereInput {
-  const where: Prisma.ProductWhereInput = {};
+  const where: Prisma.ProductWhereInput = {
+    status: "active",
+  };
   const andFilters: Prisma.ProductWhereInput[] = [];
   if (options?.categorySlug) {
     if (options.categorySlug === "akcija") {
@@ -97,6 +99,7 @@ function mapProduct(p: Prisma.ProductGetPayload<{ include: { category: true; sub
     attributes: (p.attributes as Record<string, string | number | boolean>) || {},
     isFeatured: p.isFeatured,
     isPromo: p.isPromo,
+    status: p.status,
   };
 }
 
@@ -203,7 +206,7 @@ export async function getDbProductBySlug(slug: string): Promise<Product | undefi
       },
     });
 
-    if (!p) {
+    if (!p || p.status !== "active") {
       return mockCatalogEnabled() ? getMockProductBySlug(slug) : undefined;
     }
 
@@ -232,6 +235,7 @@ export async function getDbProductBySlug(slug: string): Promise<Product | undefi
       attributes: (p.attributes as Record<string, string | number | boolean>) || {},
       isFeatured: p.isFeatured,
       isPromo: p.isPromo,
+    status: p.status,
     };
   } catch (error) {
     console.error("DB product by slug fetch failed:", error);
@@ -249,10 +253,12 @@ export async function getDbCategories(): Promise<ProductCategory[]> {
       db.category.findMany({ include: { subcategories: true }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),
       db.product.groupBy({
         by: ["categorySlug"],
+        where: { status: "active" },
         _count: { _all: true },
       }),
       db.product.groupBy({
         by: ["subcategorySlug"],
+        where: { status: "active" },
         _count: { _all: true },
       }),
     ]);
@@ -315,6 +321,7 @@ export async function getDbBrands(): Promise<string[]> {
   try {
     const products = await db.product.findMany({
       select: { brand: true },
+      where: { status: "active" },
       distinct: ["brand"],
     });
     if (!products || products.length === 0) {

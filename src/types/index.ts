@@ -54,6 +54,7 @@ export interface Product {
   attributes: Record<string, string | number | boolean>;
   isFeatured?: boolean;
   isPromo?: boolean;
+  status?: string;
 }
 
 export interface CartItem {

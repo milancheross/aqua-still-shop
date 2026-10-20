@@ -8,6 +8,7 @@ import { getHomepageData } from "@/services/home-service";
 import { getHomeContent } from "@/actions/page-cms-actions";
 import { DEFAULT_HOME } from "@/lib/home-content";
 import ProductCard from "@/components/catalog/ProductCard";
+import HeroSlider from "@/components/home/HeroSlider";
 
 export async function generateMetadata(): Promise<Metadata> {
   const home = await getHomeContent();
@@ -48,36 +49,22 @@ const tipTitles = [
 ];
 
 async function getHomepageMedia() {
-  if (!process.env.DATABASE_URL) return { hero: undefined, heroMobile: undefined, tips: [] };
+  if (!process.env.DATABASE_URL) return { tips: [] };
 
   try {
-    const [hero, heroMobile, tips] = await Promise.all([
-      db.mediaAsset.findFirst({
-        where: { folder: "hero" },
-        orderBy: { createdAt: "desc" },
-        select: { url: true, altText: true },
-      }),
-      db.mediaAsset.findFirst({
-        where: { folder: "hero-mobile" },
-        orderBy: { createdAt: "desc" },
-        select: { url: true, altText: true },
-      }),
-      db.mediaAsset.findMany({
-        where: { filename: { in: tipFilenames } },
-        select: { url: true, filename: true, altText: true },
-      }),
-    ]);
+    const tips = await db.mediaAsset.findMany({
+      where: { filename: { in: tipFilenames } },
+      select: { url: true, filename: true, altText: true },
+    });
 
     return {
-      hero,
-      heroMobile,
       tips: tipFilenames
         .map((filename) => tips.find((item) => item.filename === filename))
         .filter((item): item is (typeof tips)[number] => Boolean(item)),
     };
   } catch (error) {
     console.warn("Homepage media fetch failed:", error);
-    return { hero: undefined, heroMobile: undefined, tips: [] };
+    return { tips: [] };
   }
 }
 
@@ -95,132 +82,113 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f5f6f4] text-slate-950">
-      <section className="relative overflow-hidden bg-slate-950 text-white">
-        {media.hero ? (
-          <Image
-            src={media.hero.url}
-            alt={media.hero.altText || "Aqua Still — alati, materijal i oprema"}
-            fill
-            priority
-            sizes="100vw"
-            className={"hidden object-cover object-center opacity-55 sm:block"}
-          />
-        ) : null}
-        {media.heroMobile ? (
-          <Image
-            src={media.heroMobile.url}
-            alt={media.heroMobile.altText || "Aqua Still — alati, materijal i oprema"}
-            fill
-            sizes="100vw"
-            className="object-cover object-center opacity-55 sm:hidden"
-          />
-        ) : null}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/65 to-slate-950/20" />
-        <div className="relative container mx-auto px-4 py-7 sm:px-6 lg:px-8 lg:py-8">
-          <div className="flex items-center justify-between gap-8">
-            <div className="max-w-2xl">
-              <div className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-cyan-300">
-                <span className="h-px w-6 bg-cyan-400" /> Aqua Still · Zlatibor
-              </div>
-              <h1 className="text-2xl font-black leading-[1.04] tracking-tight sm:text-3xl lg:text-4xl">
-                {home.title || "Sve za vaš dom, projekat i profesionalni rad."}
-              </h1>
-              <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-200 sm:text-sm">
-                {home.description || "Alati, vodovod, kupatila, navodnjavanje, elektro-oprema i još mnogo toga."}
-              </p>
-            </div>
+      {/* 1. Interaktivni Hero slajder sa 4 tematska banera i CTA 'POGLEDAJ PONUDU' */}
+      <HeroSlider />
 
-            <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
-              <Link href="/katalog" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-xs font-black text-white transition hover:bg-cyan-500">
-                Pogledaj katalog <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      {/* 2. Brza pretraga i benefiti kupovine */}
       <section className="border-b border-slate-200 bg-white">
         <div className="container mx-auto px-4 py-3 sm:px-6 lg:px-8">
           <div className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
-            <span>Brza pretraga</span><span className="h-px w-6 bg-slate-300" />
+            <span>Brza pretraga</span>
+            <span className="h-px w-6 bg-slate-300" />
           </div>
           <div className="mb-3 flex flex-wrap gap-2">
-            {["Makita", "Wilo pumpe", "Slavine", "Fiting 1/2\"","Brusne i rezne ploče"].map((tag) => (
-              <Link key={tag} href={"/katalog?q=" + encodeURIComponent(tag)} className="rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-[11px] font-bold text-slate-700 transition hover:border-cyan-400 hover:bg-cyan-50 hover:text-cyan-800">
+            {["Makita", "Wilo pumpe", "Slavine", "Fiting 1/2\"", "Brusne i rezne ploče"].map((tag) => (
+              <Link
+                key={tag}
+                href={"/katalog?q=" + encodeURIComponent(tag)}
+                className="rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-[11px] font-bold text-slate-700 transition hover:border-cyan-400 hover:bg-cyan-50 hover:text-cyan-800"
+              >
                 {tag}
               </Link>
             ))}
           </div>
           <div className="grid grid-cols-2 divide-x divide-slate-200 sm:grid-cols-4">
-          {[
-            [Truck, "Brza isporuka", "na teritoriji Srbije"],
-            [Store, "Preuzimanje u radnji", "Zlatibor"],
-            [ShieldCheck, "Proverena dostupnost", "informacije o stanju"],
-            [MapPin, "Preuzimanje", "Milanđane Pecića 4"],
-          ].map(([Icon, title, text]) => (
-            <div key={title as string} className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
-              <Icon className="h-5 w-5 shrink-0 text-slate-800" />
-              <div>
-                <p className="text-xs font-black text-slate-900">{title as string}</p>
-                <p className="text-[10px] text-slate-500">{text as string}</p>
+            {[
+              [Truck, "Brza isporuka", "na teritoriji Srbije"],
+              [Store, "Preuzimanje u radnji", "Zlatibor"],
+              [ShieldCheck, "Proverena dostupnost", "informacije o stanju"],
+              [MapPin, "Preuzimanje", "Milanđane Pecića 4"],
+            ].map(([Icon, title, text]) => (
+              <div key={title as string} className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
+                <Icon className="h-5 w-5 shrink-0 text-slate-800" />
+                <div>
+                  <p className="text-xs font-black text-slate-900">{title as string}</p>
+                  <p className="text-[10px] text-slate-500">{text as string}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
           </div>
         </div>
       </section>
 
+      {/* 3. Izdvojene kategorije */}
       <section className="container mx-auto px-4 pt-9 sm:px-6 lg:px-8">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-700">Istražite ponudu</p>
             <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Kategorije</h2>
           </div>
-          <Link href="/katalog" className="text-xs font-black text-cyan-700 hover:text-cyan-900">Sve kategorije <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
+          <Link href="/katalog" className="text-xs font-black text-cyan-700 hover:text-cyan-900">
+            Sve kategorije <ArrowRight className="ml-1 inline h-3.5 w-3.5" />
+          </Link>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {featuredCategories.slice(0, 8).map((category, index) => {
             const CategoryIcon = getCategoryIcon(category.slug || category.name);
             return (
-            <Link
-              key={category.id}
-              href={"/katalog/" + category.slug}
-              className="group relative aspect-[1.35] overflow-hidden rounded-2xl bg-slate-900"
-            >
-              {category.imageUrl ? (
-                <Image src={category.imageUrl} alt={category.name} fill sizes={index === 0 ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 1024px) 50vw, 25vw"} className="object-cover brightness-[0.78] saturate-[0.82] transition duration-500 group-hover:scale-105 group-hover:brightness-[0.86]" />
-              ) : null}
-              <div className="absolute inset-0 bg-slate-950/32" />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/88 via-slate-950/35 to-slate-950/10" />
-              <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                <div className="flex items-end justify-between gap-3">
-                  <div>
-                    <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-cyan-200 backdrop-blur-sm">
-                      <CategoryIcon className="h-4 w-4" strokeWidth={2} />
+              <Link
+                key={category.id}
+                href={"/katalog?category=" + category.slug}
+                className="group relative aspect-[1.35] overflow-hidden rounded-2xl bg-slate-900"
+              >
+                {category.imageUrl ? (
+                  <Image
+                    src={category.imageUrl}
+                    alt={category.name}
+                    fill
+                    sizes={index === 0 ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 1024px) 50vw, 25vw"}
+                    className="object-cover brightness-[0.78] saturate-[0.82] transition duration-500 group-hover:scale-105 group-hover:brightness-[0.86]"
+                  />
+                ) : null}
+                <div className="absolute inset-0 bg-slate-950/32" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/88 via-slate-950/35 to-slate-950/10" />
+                <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-cyan-200 backdrop-blur-sm">
+                        <CategoryIcon className="h-4 w-4" strokeWidth={2} />
+                      </div>
+                      <p className="mb-1 text-[9px] font-black uppercase tracking-[0.16em] text-cyan-300">
+                        {category.itemCount} artikala
+                      </p>
+                      <h3 className="text-base font-black text-white sm:text-lg">{category.name}</h3>
+                      <p className="mt-1 line-clamp-1 text-[11px] text-slate-200/80">
+                        {category.description || "Pogledajte ponudu"}
+                      </p>
                     </div>
-                    <p className="mb-1 text-[9px] font-black uppercase tracking-[0.16em] text-cyan-300">{category.itemCount} artikala</p>
-                    <h3 className="text-base font-black text-white sm:text-lg">{category.name}</h3>
-                    <p className="mt-1 line-clamp-1 text-[11px] text-slate-200/80">{category.description || "Pogledajte ponudu"}</p>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-slate-900 shadow-sm transition group-hover:bg-cyan-600 group-hover:text-white">
+                      <ChevronRight className="h-4 w-4" />
+                    </span>
                   </div>
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-slate-900 shadow-sm transition group-hover:bg-cyan-600 group-hover:text-white">
-                    <ChevronRight className="h-4 w-4" />
-                  </span>
                 </div>
-              </div>
-            </Link>
+              </Link>
             );
           })}
         </div>
       </section>
 
+      {/* 4. Najtraženije grupe */}
       <section className="container mx-auto px-4 pt-10 sm:px-6 lg:px-8">
         <div className="mb-5 flex items-end justify-between">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-700">Brz pristup</p>
             <h2 className="mt-1 text-2xl font-black">Najtraženije grupe</h2>
           </div>
-          <Link href="/katalog" className="text-xs font-bold text-cyan-700">Ceo katalog <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
+          <Link href="/katalog" className="text-xs font-bold text-cyan-700">
+            Ceo katalog <ArrowRight className="ml-1 inline h-3.5 w-3.5" />
+          </Link>
         </div>
         <div className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-2 lg:grid-cols-3">
           {quickLinks.map(([label, href], index) => {
@@ -229,14 +197,20 @@ export default async function HomePage() {
               <Link
                 key={label}
                 href={href}
-                className={"group flex items-center justify-between px-4 py-4 transition hover:bg-slate-50 " + (index > 0 ? "border-l border-slate-200" : "") + (index >= 3 ? "border-t border-slate-200" : "")}
+                className={
+                  "group flex items-center justify-between px-4 py-4 transition hover:bg-slate-50 " +
+                  (index > 0 ? "border-l border-slate-200" : "") +
+                  (index >= 3 ? "border-t border-slate-200" : "")
+                }
               >
                 <span className="flex min-w-0 items-center gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition-colors group-hover:bg-cyan-50 group-hover:text-cyan-700">
                     <Icon className="h-4 w-4" strokeWidth={2} />
                   </span>
                   <span className="min-w-0">
-                    <span className="mb-1 block text-[9px] font-black uppercase tracking-[0.16em] text-cyan-700">0{index + 1}</span>
+                    <span className="mb-1 block text-[9px] font-black uppercase tracking-[0.16em] text-cyan-700">
+                      0{index + 1}
+                    </span>
                     <span className="block truncate text-sm font-bold text-slate-800">{label}</span>
                   </span>
                 </span>
@@ -247,6 +221,7 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* 5. Najtraženiji proizvodi */}
       <section className="container mx-auto px-4 pt-10 sm:px-6 lg:px-8">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
@@ -254,37 +229,74 @@ export default async function HomePage() {
             <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Najtraženiji proizvodi</h2>
             <p className="mt-1 text-xs text-slate-500">Provereni proizvodi koje kupci najčešće biraju.</p>
           </div>
-          <Link href="/katalog" className="text-xs font-black text-cyan-700">Pogledaj sve <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
+          <Link href="/katalog" className="text-xs font-black text-cyan-700">
+            Pogledaj sve <ArrowRight className="ml-1 inline h-3.5 w-3.5" />
+          </Link>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {data.popularProducts.map((product) => <ProductCard key={product.id} product={product} />)}
+          {data.popularProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </div>
       </section>
 
+      {/* 6. Dva velika promo banera: Akcija & B2B Profesionalni program */}
       <section className="container mx-auto grid gap-4 px-4 pt-9 sm:px-6 md:grid-cols-2 lg:px-8">
-        <Link href="/katalog/akcija" className="group relative min-h-48 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-6 text-white shadow-sm">
+        <Link
+          href="/katalog?category=akcija"
+          className="group relative min-h-48 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-6 text-white shadow-sm"
+        >
           <div className="relative z-10 max-w-[55%]">
             <span className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300">Posebna ponuda</span>
             <h3 className="mt-2 text-2xl font-black leading-tight">Akcijska ponuda</h3>
             <p className="mt-2 text-sm text-slate-300">Odabrani proizvodi po posebnim cenama.</p>
-            <span className="mt-5 inline-flex items-center gap-2 text-xs font-black text-white/90">Otvori akcijsku ponudu <ArrowRight className="h-3.5 w-3.5" /></span>
+            <span className="mt-5 inline-flex items-center gap-2 text-xs font-black text-white/90">
+              Otvori akcijsku ponudu <ArrowRight className="h-3.5 w-3.5" />
+            </span>
           </div>
-          {data.popularProducts[0]?.images?.[0] ? <Image src={data.popularProducts[0].images[0]} alt="Akcijska ponuda" fill sizes="50vw" className="object-cover object-right opacity-35 transition group-hover:scale-105" /> : null}
+          {data.popularProducts[0]?.images?.[0] ? (
+            <Image
+              src={data.popularProducts[0].images[0]}
+              alt="Akcijska ponuda"
+              fill
+              sizes="50vw"
+              className="object-cover object-right opacity-35 transition group-hover:scale-105"
+            />
+          ) : null}
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/35" />
         </Link>
 
-        <Link href="/katalog" className="group relative min-h-48 overflow-hidden rounded-2xl border border-cyan-900 bg-slate-900 p-6 text-white shadow-sm">
+        <Link
+          href="/katalog"
+          className="group relative min-h-48 overflow-hidden rounded-2xl border border-cyan-900 bg-slate-900 p-6 text-white shadow-sm"
+        >
           <div className="relative z-10 max-w-[60%]">
             <span className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300">Za majstore</span>
             <h3 className="mt-2 text-2xl font-black leading-tight">Profesionalni program</h3>
-            <ul className="mt-3 space-y-1 text-xs text-slate-300"><li>✓ Profesionalni alati</li><li>✓ Vodovodni materijal</li><li>✓ Pumpe i navodnjavanje</li><li>✓ Potrošni materijal</li></ul>
-            <span className="mt-5 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-black text-white backdrop-blur-sm">Pogledaj ponudu <ArrowRight className="h-3.5 w-3.5" /></span>
+            <ul className="mt-3 space-y-1 text-xs text-slate-300">
+              <li>✓ Profesionalni alati (Bosch, Makita, DeWalt)</li>
+              <li>✓ Vodovodni materijal (Peštan, Valvex)</li>
+              <li>✓ Pumpe i navodnjavanje (Pedrollo)</li>
+              <li>✓ B2B cene i rabati na predračun</li>
+            </ul>
+            <span className="mt-5 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-black text-white backdrop-blur-sm">
+              Pogledaj ponudu <ArrowRight className="h-3.5 w-3.5" />
+            </span>
           </div>
-          {featuredCategories[0]?.imageUrl ? <Image src={featuredCategories[0].imageUrl} alt="Profesionalni program" fill sizes="50vw" className="object-cover object-right opacity-30 transition group-hover:scale-105" /> : null}
+          {featuredCategories[0]?.imageUrl ? (
+            <Image
+              src={featuredCategories[0].imageUrl}
+              alt="Profesionalni program"
+              fill
+              sizes="50vw"
+              className="object-cover object-right opacity-30 transition group-hover:scale-105"
+            />
+          ) : null}
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/35" />
         </Link>
       </section>
 
+      {/* 7. Brendovi */}
       {data.brands.length > 0 && (
         <section className="container mx-auto px-4 pt-10 sm:px-6 lg:px-8">
           <div className="mb-5 flex items-end justify-between">
@@ -293,15 +305,29 @@ export default async function HomePage() {
               <h2 className="mt-1 text-2xl font-black">Brendovi</h2>
               <p className="mt-1 text-xs text-slate-500">Provereni proizvođači iz našeg asortimana.</p>
             </div>
-            <Link href="/brendovi" className="text-xs font-black text-cyan-700">Svi brendovi <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
+            <Link href="/brendovi" className="text-xs font-black text-cyan-700">
+              Svi brendovi <ArrowRight className="ml-1 inline h-3.5 w-3.5" />
+            </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {data.brands.slice(0, 18).map((brand) => (
-              <Link key={brand.id} href={"/katalog?brand=" + encodeURIComponent(brand.name)} className="flex h-16 min-w-32 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 shadow-sm transition hover:border-cyan-300 hover:shadow-md">
+              <Link
+                key={brand.id}
+                href={"/katalog?brand=" + encodeURIComponent(brand.name)}
+                className="flex h-16 min-w-32 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 shadow-sm transition hover:border-cyan-300 hover:shadow-md"
+              >
                 {brand.logoUrl ? (
-                  <Image src={brand.logoUrl} alt={brand.name} width={110} height={42} className="max-h-9 w-auto object-contain" />
+                  <Image
+                    src={brand.logoUrl}
+                    alt={brand.name}
+                    width={110}
+                    height={42}
+                    className="max-h-9 w-auto object-contain"
+                  />
                 ) : (
-                  <span className="text-xs font-black uppercase tracking-wide text-slate-700">{brand.name}</span>
+                  <span className="text-xs font-black uppercase tracking-wide text-slate-700">
+                    {brand.name}
+                  </span>
                 )}
               </Link>
             ))}
@@ -309,23 +335,42 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* 8. Saveti i vodiči */}
       {media.tips.length > 0 && (
         <section className="container mx-auto px-4 pt-10 sm:px-6 lg:px-8">
           <div className="mb-5 flex items-end justify-between gap-4">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-700">Saveti i ideje</p>
-              <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Korisni vodiči za vaš projekat</h2>
-              <p className="mt-1 text-xs text-slate-500">Kratki tekstovi, vodiči i preporuke za izbor proizvoda.</p>
+              <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+                Korisni vodiči za vaš projekat
+              </h2>
+              <p className="mt-1 text-xs text-slate-500">
+                Kratki tekstovi, vodiči i preporuke za izbor proizvoda.
+              </p>
             </div>
-            <Link href="/saveti" className="text-xs font-black text-cyan-700">Pogledaj sve savete <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
+            <Link href="/saveti" className="text-xs font-black text-cyan-700">
+              Pogledaj sve savete <ArrowRight className="ml-1 inline h-3.5 w-3.5" />
+            </Link>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {media.tips.map((tip, index) => (
-              <Link key={tip.url} href={"/saveti/" + tipLinks[index]} className="group relative aspect-[1.42] overflow-hidden rounded-xl bg-slate-900">
-                <Image src={tip.url} alt={tip.altText || tipTitles[index]} fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover transition duration-500 group-hover:scale-105" />
+              <Link
+                key={tip.url}
+                href={"/saveti/" + tipLinks[index]}
+                className="group relative aspect-[1.42] overflow-hidden rounded-xl bg-slate-900"
+              >
+                <Image
+                  src={tip.url}
+                  alt={tip.altText || tipTitles[index]}
+                  fill
+                  sizes="(max-width: 640px) 50vw, 25vw"
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/15 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-3 text-white sm:p-4">
-                  <span className="rounded bg-white/90 px-1.5 py-1 text-[8px] font-black uppercase text-slate-800">{["Vodič", "Savet", "Inspiracija", "Uradi sam"][index]}</span>
+                  <span className="rounded bg-white/90 px-1.5 py-1 text-[8px] font-black uppercase text-slate-800">
+                    {["Vodič", "Savet", "Inspiracija", "Uradi sam"][index]}
+                  </span>
                   <h3 className="mt-2 text-sm font-black leading-tight">{tipTitles[index]}</h3>
                 </div>
               </Link>
@@ -334,6 +379,7 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* 9. SEO Footer opis */}
       <section className="container mx-auto px-4 pb-10 pt-10 sm:px-6 lg:px-8">
         <div className="border-t border-slate-200 pt-5">
           <p className="max-w-4xl text-xs leading-relaxed text-slate-500">{home.description}</p>
