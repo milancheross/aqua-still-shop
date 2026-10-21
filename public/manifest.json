@@ -11,6 +11,12 @@
   "categories": ["shopping", "business"],
   "icons": [
     {
+      "src": "/icons/aqua-icon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
       "src": "/icons/icon-192x192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
@@ -54,4 +60,3 @@
     }
   ]
 }
-
