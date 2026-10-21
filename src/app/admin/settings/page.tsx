@@ -1,2 +1,20 @@
 import React from "react";
-export default function Page() { return <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-4"><h1 className="text-xl font-black text-slate-900">Podešavanja sistema</h1><p className="text-slate-500 text-xs">Modul u pripremi po CMS arhitekturi.</p></div>; }
+import { requireAdmin } from "@/lib/admin-auth";
+import { getSystemSettingsForAdmin } from "@/services/settings-service";
+import SettingsClient from "@/components/admin/settings/SettingsClient";
+
+export const metadata = {
+  title: "Podešavanja sistema | Aqua Still Shop Zlatibor",
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminSettingsPage() {
+  // 1. Autorizacija: pristup dozvoljen isključivo administratorima
+  await requireAdmin();
+
+  // 2. Preuzimanje kanonskih podešavanja za admin panel
+  const settings = await getSystemSettingsForAdmin();
+
+  return <SettingsClient initialSettings={settings} />;
+}

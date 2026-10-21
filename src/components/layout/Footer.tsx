@@ -5,8 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { Mail, Phone, MapPin } from "lucide-react";
 import ShareButton from "./ShareButton";
+import type { PublicSystemSettings } from "@/services/settings-service";
 
-export default function Footer() {
+interface FooterProps {
+  settings?: PublicSystemSettings;
+}
+
+export default function Footer({ settings }: FooterProps) {
   const currentYear = new Date().getFullYear();
   const [logoUrl, setLogoUrl] = useState("/images/aqua-still-logo.png");
   const [logoAlt, setLogoAlt] = useState("Aqua Still Zlatibor");
@@ -30,6 +35,15 @@ export default function Footer() {
       active = false;
     };
   }, []);
+
+  const displayAddress = settings?.address
+    ? `${settings.address}, ${settings.postalCode ? settings.postalCode + " " : ""}${settings.city || "Zlatibor"}`
+    : "Magistralni put bb, 31315 Zlatibor, Srbija";
+
+  const displayPhone = settings?.phone || "+381 31 123 456";
+  const displayEmail = settings?.email || "info@aquastill-zlatibor.rs";
+  const displayPib = settings?.pib || "123456789";
+  const displayMb = settings?.registrationNumber || "01234567";
 
   return (
     <footer className="bg-slate-900 text-slate-300">
@@ -83,15 +97,19 @@ export default function Footer() {
             <h3 className="text-white font-bold mb-6">Kontakt podaci</h3>
             <div className="flex items-start space-x-3 text-sm">
               <MapPin className="w-5 h-5 text-blue-500 shrink-0" />
-              <span>Magistralni put bb,<br />31315 Zlatibor, Srbija</span>
+              <span>{displayAddress}</span>
             </div>
             <div className="flex items-center space-x-3 text-sm">
               <Phone className="w-5 h-5 text-blue-500 shrink-0" />
-              <span>+381 31 123 456</span>
+              <a href={`tel:${displayPhone.replace(/\s+/g, "")}`} className="hover:text-white">
+                {displayPhone}
+              </a>
             </div>
             <div className="flex items-center space-x-3 text-sm">
               <Mail className="w-5 h-5 text-blue-500 shrink-0" />
-              <span>info@aquastill-zlatibor.rs</span>
+              <a href={`mailto:${displayEmail}`} className="hover:text-white">
+                {displayEmail}
+              </a>
             </div>
           </div>
         </div>
@@ -100,8 +118,8 @@ export default function Footer() {
         <div className="mt-6 flex flex-col items-center justify-between space-y-2 border-t border-slate-800 pt-5 text-center text-[10px] md:mt-12 md:flex-row md:space-y-0 md:pt-8 md:text-xs">
           <p>© {currentYear} Aqua Still Zlatibor. Sva prava zadržana.</p>
           <div className="flex space-x-6 uppercase tracking-tighter">
-            <span>PIB: 123456789</span>
-            <span>Matični broj: 01234567</span>
+            <span>PIB: {displayPib}</span>
+            <span>Matični broj: {displayMb}</span>
           </div>
         </div>
       </div>

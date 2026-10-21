@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { notifyOrderCreated } from "@/lib/order-notify";
 import { releaseExpiredStockReservations, stockReservedUntil } from "@/lib/order-stock";
 import { getTrustedClientIp, isRateLimited, recordRateLimitEvent } from "@/lib/rate-limit";
+import { getSystemSettings } from "@/services/settings-service";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { revalidatePath } from "next/cache";
 
 export interface CheckoutInput {
@@ -22,8 +24,6 @@ export interface CheckoutInput {
   items: { productId: string; quantity: number }[];
 }
 
-const FREE_SHIPPING_THRESHOLD = 5000;
-const DEFAULT_SHIPPING_COST = 500;
 const MAX_ITEMS = 50;
 const MAX_QUANTITY_PER_ITEM = 1000;
 const CHECKOUT_WINDOW_MS = 60 * 60 * 1000;
@@ -38,6 +38,17 @@ function requiredText(value: unknown, maxLength: number): value is string {
 
 export async function createOrderAction(input: CheckoutInput) {
   if (!input || typeof input !== "object") throw new CheckoutError("Neispravni podaci porudžbine.");
+
+  // Provera režima održavanja: anonimni posetioci ne mogu kreirati porudžbine
+  const settings = await getSystemSettings();
+  if (settings.maintenanceMode) {
+    const isAdmin = await isAdminAuthenticated();
+    if (!isAdmin) {
+      throw new CheckoutError(
+        "Prodavnica je trenutno u režimu redovnog tehničkog održavanja. Kreiranje novih porudžbina je privremeno onemogućeno."
+      );
+    }
+  }
 
   const firstName = typeof input.firstName === "string" ? input.firstName.trim() : "";
   const lastName = typeof input.lastName === "string" ? input.lastName.trim() : "";
@@ -129,7 +140,12 @@ export async function createOrderAction(input: CheckoutInput) {
 
       subtotal = Math.round(subtotal * 100) / 100;
       taxAmount = Math.round(taxAmount * 100) / 100;
-      const shippingCost = isStorePickup || subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : DEFAULT_SHIPPING_COST;
+
+      // Autoritetni obračun dostave iz baze
+      const settings = await getSystemSettings();
+      const freeThreshold = settings.enableFreeShipping ? (settings.freeShippingThreshold ?? 5000) : Infinity;
+      const baseShippingCost = settings.shippingPrice ?? 500;
+      const shippingCost = isStorePickup || subtotal >= freeThreshold ? 0 : baseShippingCost;
       const total = Math.round((subtotal + shippingCost) * 100) / 100;
 
       // Conditional updates make stock reservation atomic; any failed item rolls back the whole transaction.

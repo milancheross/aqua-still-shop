@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { getDbProductBySlug } from "@/services/product-service";
 import { getProducts as getMockProducts } from "@/lib/mock-data";
+import { getSystemSettings } from "@/services/settings-service";
 import { Product } from "@/types";
 
 export interface ServerCartItem {
@@ -127,9 +128,11 @@ export async function calculateCartServerSummary(items: { productId: string; qua
     });
   }
 
-  const FREE_SHIPPING_THRESHOLD = 5000;
-  const DEFAULT_SHIPPING_COST = 500;
-  const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0 ? 0 : DEFAULT_SHIPPING_COST;
+  // Autoritetna podešavanja dostave iz baze
+  const settings = await getSystemSettings();
+  const freeThreshold = settings.enableFreeShipping ? (settings.freeShippingThreshold ?? 5000) : Infinity;
+  const baseShippingCost = settings.shippingPrice ?? 500;
+  const shippingCost = subtotal >= freeThreshold || subtotal === 0 ? 0 : baseShippingCost;
   const total = subtotal + shippingCost;
 
   return {
@@ -137,7 +140,7 @@ export async function calculateCartServerSummary(items: { productId: string; qua
     subtotal,
     taxAmount,
     shippingCost,
-    freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
+    freeShippingThreshold: settings.enableFreeShipping ? settings.freeShippingThreshold : null,
     total,
   };
 }

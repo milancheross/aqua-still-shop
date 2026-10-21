@@ -315,3 +315,65 @@ model RateLimitEvent {
   @@index([bucket, createdAt])
   @@map("rate_limit_events")
 }
+
+
+model SystemSettings {
+  id                    String   @id @default("canonical")
+  storeName             String   @default("Aqua Still Shop Zlatibor") @map("store_name")
+  legalName             String?  @map("legal_name")
+  pib                   String?  @map("pib")
+  registrationNumber    String?  @map("registration_number")
+  address               String?  @map("address")
+  city                  String?  @map("city")
+  postalCode            String?  @map("postal_code")
+  country               String   @default("Srbija") @map("country")
+  phone                 String?  @map("phone")
+  email                 String?  @map("email")
+  supportEmail          String?  @map("support_email")
+  workingHours          String?  @map("working_hours")
+  bankAccount           String?  @map("bank_account")
+  currency              String   @default("RSD") @map("currency")
+  locale                String   @default("sr-RS") @map("locale")
+  timezone              String   @default("Europe/Belgrade") @map("timezone")
+
+  // Dostava
+  shippingPrice         Decimal  @default(500.00) @db.Decimal(12, 2) @map("shipping_price")
+  freeShippingThreshold Decimal? @db.Decimal(12, 2) @map("free_shipping_threshold")
+  enableFreeShipping    Boolean  @default(true) @map("enable_free_shipping")
+  allowStorePickup      Boolean  @default(true) @map("allow_store_pickup")
+
+  // Plaćanje
+  cashOnDeliveryEnabled Boolean  @default(true) @map("cash_on_delivery_enabled")
+  wireTransferEnabled   Boolean  @default(false) @map("wire_transfer_enabled")
+  cardPaymentEnabled   Boolean  @default(false) @map("card_payment_enabled")
+
+  // E-pošta i SMTP
+  smtpHost              String?  @map("smtp_host")
+  smtpPort              Int?     @default(587) @map("smtp_port")
+  smtpUser              String?  @map("smtp_user")
+  smtpPasswordEncrypted String?  @map("smtp_password_encrypted")
+  smtpSecure            String   @default("tls") @map("smtp_secure")
+  senderEmail           String?  @map("sender_email")
+  senderName            String?  @map("sender_name")
+  replyToEmail          String?  @map("reply_to_email")
+
+  // Integracije
+  googleAnalyticsId     String?  @map("google_analytics_id")
+  metaPixelId           String?  @map("meta_pixel_id")
+
+  // SEO i metapodaci
+  defaultSeoTitle       String?  @map("default_seo_title")
+  defaultSeoDescription String?  @map("default_seo_description")
+  defaultOgImage        String?  @map("default_og_image")
+  siteShareName         String?  @map("site_share_name")
+
+  // Održavanje i sistem
+  maintenanceMode       Boolean  @default(false) @map("maintenance_mode")
+  maintenanceNotice     String?  @map("maintenance_notice")
+
+  version               Int      @default(1) @map("version")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
