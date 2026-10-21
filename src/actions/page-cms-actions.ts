@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { HOME_SLUG, parseHomeContent, type HomeContent } from "@/lib/home-content";
+import { normalizeBlocks, type CanvasBlock } from "@/lib/page-blocks";
+import { STANDARD_CMS_PAGES } from "@/lib/cms-pages";
 
 export interface PageInput {
   id?: string;
@@ -14,6 +16,163 @@ export interface PageInput {
   seoTitle?: string;
   seoDescription?: string;
   isPublished?: boolean;
+}
+
+export interface EditorPageOption {
+  id: string;
+  title: string;
+  slug: string;
+  isStandard?: boolean;
+}
+
+export interface EditorPageData {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  image: string;
+  blocks: CanvasBlock[];
+  seoTitle: string | null;
+  seoDescription: string | null;
+  isPublished: boolean;
+}
+
+/**
+ * Vraća objedinjenu listu svih stranica dostupnih za izbor u padajućem meniju editora.
+ */
+export async function getEditorPageOptions(): Promise<EditorPageOption[]> {
+  await requireAdminOrEditor();
+  const dbPages = await getPages();
+
+  const options: EditorPageOption[] = [];
+  const handledSlugs = new Set<string>([HOME_SLUG]);
+
+  // Prvo dodajemo standardne stranice sajta
+  for (const std of STANDARD_CMS_PAGES) {
+    const existing = dbPages.find((p) => p.slug === std.slug);
+    options.push({
+      id: existing ? existing.id : `std-${std.slug}`,
+      title: existing ? existing.title : std.title,
+      slug: std.slug,
+      isStandard: true,
+    });
+    handledSlugs.add(std.slug);
+  }
+
+  // Zatim dodajemo ostale korisničke stranice iz baze
+  for (const p of dbPages) {
+    if (!handledSlugs.has(p.slug)) {
+      options.push({
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        isStandard: false,
+      });
+      handledSlugs.add(p.slug);
+    }
+  }
+
+  return options;
+}
+
+/**
+ * Dinamičko preuzimanje kompletnih podataka stranice iz baze za popunjavanje polja u editoru.
+ */
+export async function getPageForEditor(slugOrId: string): Promise<EditorPageData | null> {
+  await requireAdminOrEditor();
+  if (!slugOrId) return null;
+
+  try {
+    // 1. Pokušaj pretrage po ID-u ili slug-u u bazi
+    let page = null;
+    if (process.env.DATABASE_URL) {
+      page = await db.page.findFirst({
+        where: {
+          OR: [{ id: slugOrId }, { slug: slugOrId }],
+        },
+      });
+    }
+
+    if (page) {
+      const blocks = normalizeBlocks(page.contentJson);
+      // Pronalazimo prvu sliku iz blokova sadržaja ako postoji
+      const firstImageBlock = blocks.find((b) => b.type === "image" && b.props?.content);
+      const firstTextBlock = blocks.find((b) => b.type === "text" && b.props?.content);
+
+      return {
+        id: page.id,
+        title: page.title,
+        slug: page.slug,
+        description: page.seoDescription || firstTextBlock?.props?.content || "",
+        image: firstImageBlock?.props?.content || "",
+        blocks: blocks.length > 0 ? blocks : generateDefaultBlocks(page.title, page.seoDescription || "", ""),
+        seoTitle: page.seoTitle,
+        seoDescription: page.seoDescription,
+        isPublished: page.isPublished,
+      };
+    }
+
+    // 2. Ako stranica još uvek nije upisana u bazu, a pripada standardnim stranicama
+    const standard = STANDARD_CMS_PAGES.find(
+      (s) => s.slug === slugOrId || `std-${s.slug}` === slugOrId
+    );
+
+    if (standard) {
+      const defaultBlocks = generateDefaultBlocks(
+        standard.title,
+        standard.defaultDescription,
+        standard.defaultImage
+      );
+
+      return {
+        id: "",
+        title: standard.title,
+        slug: standard.slug,
+        description: standard.defaultDescription,
+        image: standard.defaultImage,
+        blocks: defaultBlocks,
+        seoTitle: standard.title,
+        seoDescription: standard.defaultDescription,
+        isPublished: true,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Greška pri dohvatanju stranice za editor:", error);
+    return null;
+  }
+}
+
+function generateDefaultBlocks(title: string, description: string, imageUrl: string): CanvasBlock[] {
+  const blocks: CanvasBlock[] = [
+    {
+      id: `block-${Date.now()}-1`,
+      type: "heading",
+      props: { content: title, level: "h1", align: "left" },
+      styles: { color: "#0f172a", padding: "py-4", margin: "my-2" },
+    },
+  ];
+
+  if (description) {
+    blocks.push({
+      id: `block-${Date.now()}-2`,
+      type: "text",
+      props: { content: description, align: "left" },
+      styles: { color: "#475569", padding: "py-2", margin: "my-0" },
+    });
+  }
+
+  if (imageUrl) {
+    blocks.push({
+      id: `block-${Date.now()}-3`,
+      type: "image",
+      props: { content: imageUrl, alt: title },
+      styles: { padding: "py-4", margin: "my-2" },
+    });
+  }
+
+  return blocks;
 }
 
 export async function getPageById(id: string) {
@@ -171,16 +330,17 @@ export async function savePage(input: PageInput) {
     throw new Error("Početna stranica se uređuje posebno, preko izbora Početna stranica.");
   }
 
-  // Check unique slug if new or changing
+  // Provera jedinstvenosti adrese (slug-a)
   const existing = await db.page.findUnique({ where: { slug: input.slug } });
-  if (existing && existing.id !== input.id) {
+  if (existing && input.id && existing.id !== input.id) {
     throw new Error(`Stranica sa slug-om "${input.slug}" već postoji.`);
   }
 
+  const targetId = input.id || existing?.id;
   let page;
-  if (input.id) {
+  if (targetId) {
     page = await db.page.update({
-      where: { id: input.id },
+      where: { id: targetId },
       data: {
         title: input.title,
         slug: input.slug,

@@ -1,36 +1,61 @@
 import Link from "next/link";
-import { getHomePageForAdmin, getPageById, getPages } from "@/actions/page-cms-actions";
+import {
+  getHomePageForAdmin,
+  getPageForEditor,
+  getEditorPageOptions,
+} from "@/actions/page-cms-actions";
 import HomePageEditor from "@/components/admin/HomePageEditor";
 import PageEditor from "@/components/admin/PageEditor";
 import { DEFAULT_HOME, HOME_SLUG, parseHomeContent } from "@/lib/home-content";
 
-export default async function AdminEditorPage({ searchParams }: { searchParams: Promise<{ id?: string; new?: string; home?: string }> }) {
+export default async function AdminEditorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ id?: string; new?: string; home?: string; slug?: string }>;
+}) {
   const params = await searchParams;
-  const pages = await getPages();
-  const options = pages
-    .filter((item) => item.slug !== HOME_SLUG)
-    .map((item) => ({ id: item.id, title: item.title, slug: item.slug }));
+  const options = await getEditorPageOptions();
 
   if (params.new === "1") {
-    return <PageEditor key="new" page={null} pages={options} />;
+    return <PageEditor key="new" initialPageData={null} pages={options} />;
   }
 
-  if (params.id && params.home !== "1") {
-    const page = await getPageById(params.id);
-    if (!page) {
+  // Ako je zatražena konkretna stranica (preko slug-a ili id-ja) i nije početna
+  const targetKey = params.id || params.slug;
+  if (
+    targetKey &&
+    targetKey !== HOME_SLUG &&
+    targetKey !== "pocetna" &&
+    targetKey !== "home" &&
+    params.home !== "1"
+  ) {
+    const pageData = await getPageForEditor(targetKey);
+    if (!pageData) {
       return (
         <div className="mx-auto max-w-lg space-y-4 rounded-3xl border border-slate-200 bg-white p-8">
           <h1 className="text-xl font-black text-slate-900">Stranica nije pronađena</h1>
-          <p className="text-sm text-slate-500">Tražena stranica više ne postoji. Izaberite drugu sa liste stranica.</p>
-          <Link href="/admin/pages" className="inline-flex text-sm font-bold text-cyan-700 hover:underline">Nazad na stranice</Link>
+          <p className="text-sm text-slate-500">
+            Tražena stranica ne postoji. Izaberite neku od ponuđenih stranica iz menija.
+          </p>
+          <Link
+            href="/admin/editor?home=1"
+            className="inline-flex text-sm font-bold text-cyan-700 hover:underline"
+          >
+            Nazad na početnu stranicu
+          </Link>
         </div>
       );
     }
-    if (page.slug !== HOME_SLUG) {
-      return <PageEditor key={page.id} page={page} pages={options} />;
-    }
+    return (
+      <PageEditor
+        key={pageData.slug || pageData.id}
+        initialPageData={pageData}
+        pages={options}
+      />
+    );
   }
 
+  // Podrazumevani prikaz: Uređivanje početne stranice i hero banera
   const home = await getHomePageForAdmin();
   return (
     <HomePageEditor

@@ -3,9 +3,9 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, ExternalLink, Save, Sliders, Image as ImageIcon } from "lucide-react";
-import { saveHomePage } from "@/actions/page-cms-actions";
-import type { EditorPageOption } from "@/components/admin/PageEditor";
+import { ArrowLeft, Check, ExternalLink, Save, Sliders } from "lucide-react";
+import ImageUploadField from "@/components/admin/ImageUploadField";
+import { saveHomePage, type EditorPageOption } from "@/actions/page-cms-actions";
 import { DEFAULT_HOME, DEFAULT_HERO_SLIDES, type HomeContent, type HeroSlideItem } from "@/lib/home-content";
 
 function Field({
@@ -75,10 +75,14 @@ export default function HomePageEditor({
     });
   };
 
-  const openPage = (nextId: string) => {
-    if (nextId === "home") return;
+  const openPage = (nextKey: string) => {
+    if (nextKey === "home") return;
     if (!window.confirm("Nečuvane izmene početne stranice će biti odbačene. Nastaviti?")) return;
-    router.push(nextId ? `/admin/editor?id=${nextId}` : "/admin/editor?new=1");
+    if (nextKey === "new") {
+      router.push("/admin/editor?new=1");
+      return;
+    }
+    router.push(`/admin/editor?slug=${nextKey}`);
   };
 
   const handleSave = () => {
@@ -113,16 +117,18 @@ export default function HomePageEditor({
           <select
             value="home"
             onChange={(event) => openPage(event.target.value)}
-            className="max-w-56 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold outline-none focus:border-cyan-500"
-            aria-label="Stranica"
+            className="max-w-64 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white outline-none focus:border-cyan-500"
+            aria-label="Izbor stranice"
           >
-            <option value="home">Početna stranica</option>
-            <option value="">Nova stranica</option>
-            {pages.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.title} /{item.slug}
-              </option>
-            ))}
+            <option value="home">Početna stranica (/)</option>
+            <option value="new">+ Nova stranica</option>
+            <optgroup label="Stranice sajta">
+              {pages.map((item) => (
+                <option key={item.id || item.slug} value={item.slug || item.id}>
+                  {item.title} (/{item.slug})
+                </option>
+              ))}
+            </optgroup>
           </select>
           <span className="hidden text-xs text-slate-400 sm:inline">Uređivanje početne i Hero banera</span>
         </div>
@@ -244,15 +250,12 @@ export default function HomePageEditor({
                 />
               </div>
 
-              <Field
-                label="Putanja do pozadinske slike (opciono)"
+              <ImageUploadField
+                label="Pozadinska slika banera"
                 value={activeSlide.imageUrl || ""}
                 onChange={(val) => updateSlideField(activeSlideTab, "imageUrl", val)}
-                placeholder="/images/baner-alati.webp ili URL"
+                onRemove={() => updateSlideField(activeSlideTab, "imageUrl", "")}
               />
-              <p className="text-[10px] text-slate-500">
-                Možete uneti putanju do slike iz Medijske biblioteke ili <code className="text-cyan-400">public/images</code> foldera.
-              </p>
             </div>
           </div>
 

@@ -18,53 +18,135 @@ import {
   MousePointer,
   Sliders,
   ExternalLink,
+  Loader2,
+  FileText,
 } from "lucide-react";
-import { savePage } from "@/actions/page-cms-actions";
-import { NEW_PAGE_BLOCKS, normalizeBlocks, slugifyTitle, type CanvasBlock } from "@/lib/page-blocks";
-
-export interface EditorPage {
-  id: string;
-  title: string;
-  slug: string;
-  contentJson: unknown;
-  seoTitle: string | null;
-  seoDescription: string | null;
-  isPublished: boolean;
-}
-
-export interface EditorPageOption {
-  id: string;
-  title: string;
-  slug: string;
-}
+import ImageUploadField from "@/components/admin/ImageUploadField";
+import {
+  savePage,
+  getPageForEditor,
+  type EditorPageData,
+  type EditorPageOption,
+} from "@/actions/page-cms-actions";
+import {
+  NEW_PAGE_BLOCKS,
+  slugifyTitle,
+  type CanvasBlock,
+} from "@/lib/page-blocks";
 
 export default function PageEditor({
-  page,
+  initialPageData,
   pages,
 }: {
-  page: EditorPage | null;
+  initialPageData: EditorPageData | null;
   pages: EditorPageOption[];
 }) {
   const router = useRouter();
-  const initialBlocks = page ? normalizeBlocks(page.contentJson) : NEW_PAGE_BLOCKS;
 
-  const [pageId, setPageId] = useState(page?.id);
-  const [title, setTitle] = useState(page?.title ?? "Nova stranica");
-  const [slug, setSlug] = useState(page?.slug ?? "nova-stranica");
-  const [slugTouched, setSlugTouched] = useState(Boolean(page));
-  const [seoTitle, setSeoTitle] = useState(page?.seoTitle ?? "");
-  const [seoDescription, setSeoDescription] = useState(page?.seoDescription ?? "");
-  const [isPublished, setIsPublished] = useState(page?.isPublished ?? false);
-  const [blocks, setBlocks] = useState<CanvasBlock[]>(initialBlocks);
-  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(initialBlocks[0]?.id ?? null);
+  const [pageId, setPageId] = useState<string | undefined>(
+    initialPageData?.id || undefined
+  );
+  const [title, setTitle] = useState(initialPageData?.title ?? "Nova stranica");
+  const [slug, setSlug] = useState(initialPageData?.slug ?? "nova-stranica");
+  const [slugTouched, setSlugTouched] = useState(Boolean(initialPageData));
+  const [description, setDescription] = useState(
+    initialPageData?.description || initialPageData?.seoDescription || ""
+  );
+  const [imageUrl, setImageUrl] = useState(initialPageData?.image || "");
+  const [seoTitle, setSeoTitle] = useState(initialPageData?.seoTitle ?? "");
+  const [seoDescription, setSeoDescription] = useState(
+    initialPageData?.seoDescription ?? ""
+  );
+  const [isPublished, setIsPublished] = useState(
+    initialPageData?.isPublished ?? false
+  );
+  const [blocks, setBlocks] = useState<CanvasBlock[]>(
+    initialPageData?.blocks && initialPageData.blocks.length > 0
+      ? initialPageData.blocks
+      : NEW_PAGE_BLOCKS
+  );
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(
+    initialPageData?.blocks?.[0]?.id ?? NEW_PAGE_BLOCKS[0]?.id ?? null
+  );
+
   const [isSaving, startTransition] = useTransition();
+  const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
-  const openPage = (nextId: string) => {
-    if (nextId === (pageId ?? "")) return;
-    const ok = window.confirm("Nečuvane izmene će biti odbačene. Otvoriti izabranu stranicu?");
-    if (!ok) return;
-    router.push(nextId === "home" ? "/admin/editor?home=1" : nextId ? `/admin/editor?id=${nextId}` : "/admin/editor?new=1");
+  /**
+   * Dinamički izbor stranice iz padajućeg menija.
+   * Povlači podatke iz baze i popunjava polja (naslov, opis, slika, blokovi).
+   */
+  const handleSelectPage = async (selectedKey: string) => {
+    if (selectedKey === "home") {
+      router.push("/admin/editor?home=1");
+      return;
+    }
+    if (selectedKey === "new") {
+      router.push("/admin/editor?new=1");
+      return;
+    }
+
+    setIsLoadingPage(true);
+    try {
+      const data = await getPageForEditor(selectedKey);
+      if (data) {
+        setPageId(data.id || undefined);
+        setTitle(data.title);
+        setSlug(data.slug);
+        setSlugTouched(true);
+        setDescription(data.description || data.seoDescription || "");
+        setImageUrl(data.image || "");
+        setSeoTitle(data.seoTitle || data.title);
+        setSeoDescription(data.seoDescription || data.description || "");
+        setIsPublished(data.isPublished);
+        setBlocks(data.blocks);
+        setSelectedBlockId(data.blocks[0]?.id || null);
+        window.history.pushState(null, "", `/admin/editor?slug=${data.slug}`);
+      }
+    } catch (err) {
+      console.error("Greška pri dinamičkom učitavanju stranice:", err);
+    } finally {
+      setIsLoadingPage(false);
+    }
+  };
+
+  /**
+   * Ažuriranje glavne slike stranice i sinhronizacija sa blokom slike u sadržaju.
+   */
+  const handleMainImageChange = (newUrl: string) => {
+    setImageUrl(newUrl);
+    setBlocks((currentBlocks) => {
+      const imageBlockIndex = currentBlocks.findIndex((b) => b.type === "image");
+      if (imageBlockIndex !== -1) {
+        const next = [...currentBlocks];
+        next[imageBlockIndex] = {
+          ...next[imageBlockIndex],
+          props: { ...next[imageBlockIndex].props, content: newUrl },
+        };
+        return next;
+      }
+      if (newUrl) {
+        return [
+          ...currentBlocks,
+          {
+            id: `block-${Date.now()}`,
+            type: "image",
+            props: { content: newUrl, alt: title },
+            styles: { padding: "py-4", margin: "my-2" },
+          },
+        ];
+      }
+      return currentBlocks;
+    });
+  };
+
+  /**
+   * Ažuriranje opisa stranice i sinhronizacija sa SEO opisom.
+   */
+  const handleDescriptionChange = (newDesc: string) => {
+    setDescription(newDesc);
+    setSeoDescription(newDesc);
   };
 
   const addBlock = (type: CanvasBlock["type"]) => {
@@ -72,7 +154,16 @@ export default function PageEditor({
       id: `block-${Date.now()}`,
       type,
       props: {
-        content: type === "heading" ? "Novi naslov" : type === "text" ? "Unesite tekst ovde..." : type === "button" ? "Klikni ovde" : type === "image" ? "/placeholder-tool.svg" : "",
+        content:
+          type === "heading"
+            ? "Novi naslov"
+            : type === "text"
+            ? "Unesite tekst ovde..."
+            : type === "button"
+            ? "Kliknite ovde"
+            : type === "image"
+            ? imageUrl || "/images/hero-1.webp"
+            : "",
         level: "h2",
         align: "left",
         url: "#",
@@ -86,12 +177,24 @@ export default function PageEditor({
 
   const updateSelectedBlockProps = (key: keyof CanvasBlock["props"], val: string) => {
     if (!selectedBlockId) return;
-    setBlocks(blocks.map((block) => block.id === selectedBlockId ? { ...block, props: { ...block.props, [key]: val } } : block));
+    setBlocks(
+      blocks.map((block) =>
+        block.id === selectedBlockId
+          ? { ...block, props: { ...block.props, [key]: val } }
+          : block
+      )
+    );
   };
 
   const updateSelectedBlockStyles = (key: keyof CanvasBlock["styles"], val: string) => {
     if (!selectedBlockId) return;
-    setBlocks(blocks.map((block) => block.id === selectedBlockId ? { ...block, styles: { ...block.styles, [key]: val } } : block));
+    setBlocks(
+      blocks.map((block) =>
+        block.id === selectedBlockId
+          ? { ...block, styles: { ...block.styles, [key]: val } }
+          : block
+      )
+    );
   };
 
   const removeBlock = (id: string, event: React.MouseEvent) => {
@@ -119,12 +222,14 @@ export default function PageEditor({
           title,
           slug,
           contentJson: JSON.parse(JSON.stringify(blocks)),
-          seoTitle,
-          seoDescription,
+          seoTitle: seoTitle || title,
+          seoDescription: seoDescription || description,
           isPublished,
         });
-        setSuccessMsg(pageId ? "Izmene postojeće stranice su sačuvane." : "Stranica je sačuvana.");
-        setTimeout(() => setSuccessMsg(""), 3000);
+
+        setSuccessMsg(pageId ? "Izmene stranice su uspešno sačuvane." : "Stranica je sačuvana.");
+        setTimeout(() => setSuccessMsg(""), 3500);
+
         if (!pageId && result.pageId) {
           setPageId(result.pageId);
           router.replace(`/admin/editor?id=${result.pageId}`);
@@ -140,27 +245,43 @@ export default function PageEditor({
   const selectedBlock = blocks.find((block) => block.id === selectedBlockId);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col -m-3 sm:-m-5 lg:-m-8">
-      <header className="min-h-16 bg-slate-950 border-b border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0">
+    <div className="-m-3 flex min-h-screen flex-col bg-slate-900 text-white sm:-m-5 lg:-m-8">
+      {/* Zaglavlje editora */}
+      <header className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950 px-4 py-3 shrink-0">
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <Link href="/admin/pages" className="p-2 text-slate-400 hover:text-white bg-slate-800 rounded-xl transition-colors" aria-label="Nazad na stranice">
-            <ArrowLeft className="w-4 h-4" />
+          <Link
+            href="/admin/pages"
+            className="rounded-xl bg-slate-800 p-2 text-slate-400 transition-colors hover:text-white"
+            aria-label="Nazad na stranice"
+          >
+            <ArrowLeft className="h-4 w-4" />
           </Link>
-          <label className="min-w-0">
-            <span className="sr-only">Postojeća stranica</span>
+
+          {/* HTML <select> selektor stranica */}
+          <div className="relative">
             <select
-              value={pageId ?? ""}
-              onChange={(event) => openPage(event.target.value)}
-              className="max-w-56 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white outline-none focus:border-cyan-500"
+              value={slug || pageId || ""}
+              onChange={(event) => handleSelectPage(event.target.value)}
+              disabled={isLoadingPage}
+              className="max-w-64 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white outline-none focus:border-cyan-500 disabled:opacity-50"
+              aria-label="Izbor stranice"
             >
-              <option value="home">Početna stranica</option>
-              <option value="">Nova stranica</option>
-              {pages.map((item) => (
-                <option key={item.id} value={item.id}>{item.title} /{item.slug}</option>
-              ))}
+              <option value="home">Početna stranica (/)</option>
+              <option value="new">+ Nova stranica</option>
+              <optgroup label="Stranice sajta">
+                {pages.map((item) => (
+                  <option key={item.id || item.slug} value={item.slug || item.id}>
+                    {item.title} (/{item.slug})
+                  </option>
+                ))}
+              </optgroup>
             </select>
-          </label>
-          <div className="flex min-w-0 items-center gap-2">
+            {isLoadingPage && (
+              <Loader2 className="absolute right-8 top-2.5 h-3.5 w-3.5 animate-spin text-cyan-400" />
+            )}
+          </div>
+
+          <div className="hidden min-w-0 items-center gap-2 sm:flex">
             <input
               type="text"
               value={title}
@@ -170,7 +291,7 @@ export default function PageEditor({
                 setTitle(value);
                 if (!slugTouched) setSlug(slugifyTitle(value) || "stranica");
               }}
-              className="w-40 bg-transparent text-sm font-black text-white outline-none border-b border-transparent hover:border-slate-700 focus:border-cyan-500 px-1 sm:w-56"
+              className="w-40 border-b border-transparent bg-transparent px-1 text-sm font-black text-white outline-none hover:border-slate-700 focus:border-cyan-500 sm:w-56"
             />
             <span className="text-slate-500">/</span>
             <input
@@ -181,73 +302,182 @@ export default function PageEditor({
                 setSlugTouched(true);
                 setSlug(slugifyTitle(event.target.value));
               }}
-              className="w-32 bg-transparent font-mono text-xs text-cyan-300 outline-none border-b border-transparent hover:border-slate-700 focus:border-cyan-500 sm:w-40"
+              className="w-32 border-b border-transparent bg-transparent font-mono text-xs text-cyan-300 outline-none hover:border-slate-700 focus:border-cyan-500 sm:w-40"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           {successMsg && (
-            <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-              <Check className="w-3.5 h-3.5" /> {successMsg}
+            <span className="flex items-center gap-1 text-xs font-bold text-emerald-400">
+              <Check className="h-3.5 w-3.5" /> {successMsg}
             </span>
           )}
-          {pageId && isPublished && (
-            <Link href={`/${slug}`} target="_blank" className="inline-flex items-center gap-1 text-xs font-bold text-slate-300 hover:text-white">
+          {slug && isPublished && (
+            <Link
+              href={`/${slug}`}
+              target="_blank"
+              className="inline-flex items-center gap-1 text-xs font-bold text-slate-300 hover:text-white"
+            >
               <ExternalLink className="h-3.5 w-3.5" /> Pregled
             </Link>
           )}
-          <label className="flex items-center space-x-2 text-xs font-bold text-slate-300 cursor-pointer">
+          <label className="flex cursor-pointer items-center space-x-2 text-xs font-bold text-slate-300">
             <input
               type="checkbox"
               checked={isPublished}
               onChange={(event) => setIsPublished(event.target.checked)}
-              className="rounded text-cyan-600 focus:ring-cyan-500 w-4 h-4"
+              className="h-4 w-4 rounded text-cyan-600 focus:ring-cyan-500"
             />
             <span>Objavljeno</span>
           </label>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-700 text-white font-bold text-xs rounded-xl transition-all shadow-lg shadow-cyan-600/25 flex items-center gap-2"
+            className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-cyan-600/25 transition-all hover:bg-cyan-700 disabled:bg-slate-700"
           >
-            <Save className="w-4 h-4" /> {isSaving ? "Čuvanje..." : "Sačuvaj izmene"}
+            <Save className="h-4 w-4" /> {isSaving ? "Čuvanje..." : "Sačuvaj izmene"}
           </button>
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        <aside className="w-full lg:w-72 bg-slate-950 border-r border-slate-800 p-6 flex flex-col space-y-6 shrink-0 overflow-y-auto">
+      <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
+        {/* Leva traka: Osnovni podaci, Dodavanje elemenata i SEO */}
+        <aside className="flex w-full shrink-0 flex-col space-y-6 overflow-y-auto border-r border-slate-800 bg-slate-950 p-6 lg:w-80">
+          {/* SEKCIJA 1: OSNOVNI PODACI O STRANICI (Naslov, Opis, Slika) */}
+          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-cyan-400">
+              <FileText className="h-4 w-4" />
+              <span>Podaci o stranici</span>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                Naslov stranice
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(event) => {
+                  const val = event.target.value;
+                  setTitle(val);
+                  if (!slugTouched) setSlug(slugifyTitle(val) || "stranica");
+                }}
+                placeholder="Unesite naslov..."
+                className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-white outline-none focus:border-cyan-500"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                Opis stranice
+              </label>
+              <textarea
+                rows={3}
+                value={description}
+                onChange={(event) => handleDescriptionChange(event.target.value)}
+                placeholder="Unesite kratak opis stranice..."
+                className="w-full resize-none rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+              />
+            </div>
+
+            {/* DIREKTAN UPLOAD SLIKE */}
+            <ImageUploadField
+              label="Glavna slika stranice"
+              value={imageUrl}
+              onChange={handleMainImageChange}
+              onRemove={() => handleMainImageChange("")}
+            />
+          </div>
+
+          {/* SEKCIJA 2: DODAVANJE ELEMENATA */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Dodaj element (Widget)</h3>
+            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+              Dodaj element (Widget)
+            </h3>
             <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => addBlock("heading")} className="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold flex flex-col items-center gap-2 transition-colors"><Type className="w-4 h-4 text-cyan-400" /> Naslov</button>
-              <button onClick={() => addBlock("text")} className="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold flex flex-col items-center gap-2 transition-colors"><Layout className="w-4 h-4 text-cyan-400" /> Tekst</button>
-              <button onClick={() => addBlock("image")} className="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold flex flex-col items-center gap-2 transition-colors"><ImageIcon className="w-4 h-4 text-cyan-400" /> Slika</button>
-              <button onClick={() => addBlock("button")} className="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold flex flex-col items-center gap-2 transition-colors"><MousePointer className="w-4 h-4 text-cyan-400" /> Dugme</button>
-              <button onClick={() => addBlock("container")} className="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold flex flex-col items-center gap-2 transition-colors"><Square className="w-4 h-4 text-cyan-400" /> Sekcija</button>
-              <button onClick={() => addBlock("spacer")} className="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold flex flex-col items-center gap-2 transition-colors"><Sliders className="w-4 h-4 text-cyan-400" /> Razdelnik</button>
+              <button
+                type="button"
+                onClick={() => addBlock("heading")}
+                className="flex flex-col items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-xs font-bold transition-colors hover:bg-slate-800"
+              >
+                <Type className="h-4 w-4 text-cyan-400" /> Naslov
+              </button>
+              <button
+                type="button"
+                onClick={() => addBlock("text")}
+                className="flex flex-col items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-xs font-bold transition-colors hover:bg-slate-800"
+              >
+                <Layout className="h-4 w-4 text-cyan-400" /> Tekst
+              </button>
+              <button
+                type="button"
+                onClick={() => addBlock("image")}
+                className="flex flex-col items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-xs font-bold transition-colors hover:bg-slate-800"
+              >
+                <ImageIcon className="h-4 w-4 text-cyan-400" /> Slika
+              </button>
+              <button
+                type="button"
+                onClick={() => addBlock("button")}
+                className="flex flex-col items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-xs font-bold transition-colors hover:bg-slate-800"
+              >
+                <MousePointer className="h-4 w-4 text-cyan-400" /> Dugme
+              </button>
+              <button
+                type="button"
+                onClick={() => addBlock("container")}
+                className="flex flex-col items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-xs font-bold transition-colors hover:bg-slate-800"
+              >
+                <Square className="h-4 w-4 text-cyan-400" /> Sekcija
+              </button>
+              <button
+                type="button"
+                onClick={() => addBlock("spacer")}
+                className="flex flex-col items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-xs font-bold transition-colors hover:bg-slate-800"
+              >
+                <Sliders className="h-4 w-4 text-cyan-400" /> Razdelnik
+              </button>
             </div>
           </div>
-          <div className="pt-4 border-t border-slate-800 space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">SEO Podešavanja</h3>
+
+          {/* SEKCIJA 3: SEO PODEŠAVANJA */}
+          <div className="space-y-4 border-t border-slate-800 pt-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              SEO Podešavanja
+            </h3>
             <div className="space-y-2 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1">SEO Naslov</label>
-                <input type="text" value={seoTitle} onChange={(event) => setSeoTitle(event.target.value)} placeholder="Naslov u pretraživačima..." className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-cyan-500" />
+                <label className="mb-1 block text-slate-400">SEO Naslov</label>
+                <input
+                  type="text"
+                  value={seoTitle}
+                  onChange={(event) => setSeoTitle(event.target.value)}
+                  placeholder="Naslov u pretraživačima..."
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+                />
               </div>
               <div>
-                <label className="text-slate-400 block mb-1">Meta Opis</label>
-                <textarea rows={2} value={seoDescription} onChange={(event) => setSeoDescription(event.target.value)} placeholder="Opis stranice..." className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-cyan-500 resize-none" />
+                <label className="mb-1 block text-slate-400">Meta Opis</label>
+                <textarea
+                  rows={2}
+                  value={seoDescription}
+                  onChange={(event) => setSeoDescription(event.target.value)}
+                  placeholder="Opis stranice..."
+                  className="w-full resize-none rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+                />
               </div>
             </div>
           </div>
         </aside>
 
-        <main className="flex-1 bg-slate-900 p-8 overflow-y-auto flex flex-col items-center">
-          <div className="w-full max-w-3xl bg-white text-slate-900 rounded-3xl shadow-2xl min-h-[600px] p-8 space-y-4">
+        {/* Centralni Canvas: Pregled i uređivanje stranice uživo */}
+        <main className="flex flex-1 flex-col items-center overflow-y-auto bg-slate-900 p-8">
+          <div className="min-h-[600px] w-full max-w-3xl space-y-4 rounded-3xl bg-white p-8 text-slate-900 shadow-2xl">
             {blocks.length === 0 ? (
-              <div className="py-32 text-center text-slate-400 font-bold text-sm">Canvas je prazan. Izaberite element sa leve strane.</div>
+              <div className="py-32 text-center text-sm font-bold text-slate-400">
+                Radna površina je prazna. Izaberite element sa leve strane.
+              </div>
             ) : (
               blocks.map((block, index) => {
                 const isSelected = block.id === selectedBlockId;
@@ -255,33 +485,92 @@ export default function PageEditor({
                   <div
                     key={block.id}
                     onClick={() => setSelectedBlockId(block.id)}
-                    className={`relative p-4 rounded-2xl cursor-pointer transition-all border-2 ${isSelected ? "border-cyan-500 bg-cyan-50/20 shadow-md" : "border-transparent hover:border-slate-200"}`}
+                    className={`relative cursor-pointer rounded-2xl border-2 p-4 transition-all ${
+                      isSelected
+                        ? "border-cyan-500 bg-cyan-50/20 shadow-md"
+                        : "border-transparent hover:border-slate-200"
+                    }`}
                   >
                     {isSelected && (
-                      <div className="absolute -top-3 right-4 bg-cyan-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-2 shadow-sm z-10">
+                      <div className="absolute -top-3 right-4 z-10 flex items-center gap-2 rounded-full bg-cyan-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
                         <span>{block.type.toUpperCase()}</span>
                         <div className="flex items-center gap-1 border-l border-cyan-500 pl-2">
-                          <button onClick={(event) => moveBlock(index, "up", event)} className="hover:text-cyan-200" aria-label="Pomeri gore"><MoveUp className="w-3 h-3" /></button>
-                          <button onClick={(event) => moveBlock(index, "down", event)} className="hover:text-cyan-200" aria-label="Pomeri dole"><MoveDown className="w-3 h-3" /></button>
-                          <button onClick={(event) => removeBlock(block.id, event)} className="hover:text-red-200" aria-label="Obriši element"><Trash2 className="w-3 h-3" /></button>
+                          <button
+                            type="button"
+                            onClick={(event) => moveBlock(index, "up", event)}
+                            className="hover:text-cyan-200"
+                            aria-label="Pomeri gore"
+                          >
+                            <MoveUp className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(event) => moveBlock(index, "down", event)}
+                            className="hover:text-cyan-200"
+                            aria-label="Pomeri dole"
+                          >
+                            <MoveDown className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(event) => removeBlock(block.id, event)}
+                            className="hover:text-red-200"
+                            aria-label="Obriši element"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
                         </div>
                       </div>
                     )}
-                    <div className={`${block.styles.padding || "py-2"} ${block.styles.margin || "my-0"}`} style={{ color: block.styles.color }}>
-                      {block.type === "heading" && <h2 className="text-2xl font-black" style={{ textAlign: block.props.align || "left" }}>{block.props.content}</h2>}
-                      {block.type === "text" && <p className="text-sm leading-relaxed whitespace-pre-line" style={{ textAlign: block.props.align || "left" }}>{block.props.content}</p>}
+                    <div
+                      className={`${block.styles.padding || "py-2"} ${
+                        block.styles.margin || "my-0"
+                      }`}
+                      style={{ color: block.styles.color }}
+                    >
+                      {block.type === "heading" && (
+                        <h2
+                          className="text-2xl font-black"
+                          style={{ textAlign: block.props.align || "left" }}
+                        >
+                          {block.props.content}
+                        </h2>
+                      )}
+                      {block.type === "text" && (
+                        <p
+                          className="whitespace-pre-line text-sm leading-relaxed"
+                          style={{ textAlign: block.props.align || "left" }}
+                        >
+                          {block.props.content}
+                        </p>
+                      )}
                       {block.type === "button" && (
                         <div style={{ textAlign: block.props.align || "left" }}>
-                          <span className="inline-block px-6 py-3 bg-cyan-600 text-white font-bold text-xs rounded-xl shadow-md">{block.props.content}</span>
+                          <span className="inline-block rounded-xl bg-cyan-600 px-6 py-3 text-xs font-bold text-white shadow-md">
+                            {block.props.content}
+                          </span>
                         </div>
                       )}
                       {block.type === "image" && (
-                        <div className="relative aspect-video bg-slate-100 rounded-xl overflow-hidden">
-                          <img src={block.props.content || "/placeholder-tool.svg"} alt={block.props.alt || "Slika"} className="object-cover w-full h-full" />
+                        <div className="relative aspect-video overflow-hidden rounded-xl bg-slate-100">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={block.props.content || "/placeholder-tool.svg"}
+                            alt={block.props.alt || "Slika"}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
                       )}
-                      {block.type === "container" && <div className="p-6 bg-slate-100 rounded-2xl border border-slate-200 text-center font-bold text-slate-500">{block.props.content || "[Sekcija / Kontejner]"}</div>}
-                      {block.type === "spacer" && <div className="h-8 border-b border-dashed border-slate-200 flex items-center justify-center text-[10px] text-slate-400">Razdelnik prostor</div>}
+                      {block.type === "container" && (
+                        <div className="rounded-2xl border border-slate-200 bg-slate-100 p-6 text-center font-bold text-slate-500">
+                          {block.props.content || "[Sekcija / Kontejner]"}
+                        </div>
+                      )}
+                      {block.type === "spacer" && (
+                        <div className="flex h-8 items-center justify-center border-b border-dashed border-slate-200 text-[10px] text-slate-400">
+                          Razdelnik prostor
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -290,46 +579,102 @@ export default function PageEditor({
           </div>
         </main>
 
-        <aside className="w-full lg:w-80 bg-slate-950 border-l border-slate-800 p-6 flex flex-col space-y-6 shrink-0 overflow-y-auto">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-            <Settings className="w-4 h-4 text-cyan-400" /> Inspektor / Stilovi
+        {/* Desna traka: Inspektor selektovanog elementa */}
+        <aside className="flex w-full shrink-0 flex-col space-y-6 overflow-y-auto border-l border-slate-800 bg-slate-950 p-6 lg:w-80">
+          <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+            <Settings className="h-4 w-4 text-cyan-400" /> Inspektor / Svojstva
           </h3>
           {selectedBlock ? (
             <div className="space-y-4 text-xs">
-              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800">
-                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest block mb-1">Selektovani element</span>
-                <span className="font-bold text-white text-sm capitalize">{selectedBlock.type}</span>
+              <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-cyan-400">
+                  Selektovani element
+                </span>
+                <span className="text-sm font-bold capitalize text-white">
+                  {selectedBlock.type}
+                </span>
               </div>
-              {selectedBlock.type !== "spacer" && (
+
+              {/* Ako je selektovan element SLIKA, prikaži ImageUploadField umesto tekstualnog polja */}
+              {selectedBlock.type === "image" ? (
+                <ImageUploadField
+                  label="Otpremite ili zamenite sliku"
+                  value={selectedBlock.props.content || ""}
+                  onChange={(url) => {
+                    updateSelectedBlockProps("content", url);
+                    if (!imageUrl) setImageUrl(url);
+                  }}
+                  onRemove={() => updateSelectedBlockProps("content", "")}
+                />
+              ) : selectedBlock.type !== "spacer" ? (
                 <div className="space-y-1">
-                  <label className="text-slate-400 block">{selectedBlock.type === "image" ? "URL slike" : "Sadržaj"}</label>
-                  <textarea rows={3} value={selectedBlock.props.content || ""} onChange={(event) => updateSelectedBlockProps("content", event.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-cyan-500 resize-none" />
+                  <label className="block text-slate-400">Sadržaj</label>
+                  <textarea
+                    rows={3}
+                    value={selectedBlock.props.content || ""}
+                    onChange={(event) =>
+                      updateSelectedBlockProps("content", event.target.value)
+                    }
+                    className="w-full resize-none rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+                  />
                 </div>
-              )}
+              ) : null}
+
               {selectedBlock.type === "button" && (
                 <div className="space-y-1">
-                  <label className="text-slate-400 block">Link dugmeta</label>
-                  <input type="text" value={selectedBlock.props.url || ""} onChange={(event) => updateSelectedBlockProps("url", event.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-mono text-white outline-none focus:border-cyan-500" />
+                  <label className="block text-slate-400">Link dugmeta</label>
+                  <input
+                    type="text"
+                    value={selectedBlock.props.url || ""}
+                    onChange={(event) =>
+                      updateSelectedBlockProps("url", event.target.value)
+                    }
+                    className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 font-mono text-xs text-white outline-none focus:border-cyan-500"
+                  />
                 </div>
               )}
+
               <div className="space-y-1">
-                <label className="text-slate-400 block">Poravnanje</label>
-                <select value={selectedBlock.props.align || "left"} onChange={(event) => updateSelectedBlockProps("align", event.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-cyan-500">
+                <label className="block text-slate-400">Poravnanje</label>
+                <select
+                  value={selectedBlock.props.align || "left"}
+                  onChange={(event) =>
+                    updateSelectedBlockProps("align", event.target.value)
+                  }
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+                >
                   <option value="left">Levo</option>
                   <option value="center">Centrirano</option>
                   <option value="right">Desno</option>
                 </select>
               </div>
+
               <div className="space-y-1">
-                <label className="text-slate-400 block">Boja teksta</label>
+                <label className="block text-slate-400">Boja teksta</label>
                 <div className="flex gap-2">
-                  <input type="color" value={selectedBlock.styles.color || "#0f172a"} onChange={(event) => updateSelectedBlockStyles("color", event.target.value)} className="w-10 h-8 bg-transparent cursor-pointer rounded" />
-                  <input type="text" value={selectedBlock.styles.color || "#0f172a"} onChange={(event) => updateSelectedBlockStyles("color", event.target.value)} className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs font-mono text-white" />
+                  <input
+                    type="color"
+                    value={selectedBlock.styles.color || "#0f172a"}
+                    onChange={(event) =>
+                      updateSelectedBlockStyles("color", event.target.value)
+                    }
+                    className="h-8 w-10 cursor-pointer rounded bg-transparent"
+                  />
+                  <input
+                    type="text"
+                    value={selectedBlock.styles.color || "#0f172a"}
+                    onChange={(event) =>
+                      updateSelectedBlockStyles("color", event.target.value)
+                    }
+                    className="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-1.5 font-mono text-xs text-white"
+                  />
                 </div>
               </div>
             </div>
           ) : (
-            <div className="py-12 text-center text-slate-500 text-xs">Kliknite na bilo koji element na canvasu da biste uredili njegova svojstva.</div>
+            <div className="py-12 text-center text-xs text-slate-500">
+              Kliknite na bilo koji element na radnoj površini da biste uredili njegova svojstva.
+            </div>
           )}
         </aside>
       </div>
