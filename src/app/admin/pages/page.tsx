@@ -1,18 +1,28 @@
 import React from "react";
 import Link from "next/link";
-import { Plus, FileText, Edit, ExternalLink, CheckCircle2, XCircle } from "lucide-react";
-import { getPages } from "@/actions/page-cms-actions";
+import {
+  Plus,
+  FileText,
+  Edit,
+  ExternalLink,
+  CheckCircle2,
+  XCircle,
+  ShieldCheck,
+} from "lucide-react";
+import { getAllAdminPages } from "@/actions/page-cms-actions";
 import DeletePageButton from "@/components/admin/DeletePageButton";
 
 export default async function AdminPagesPage() {
-  const pages = await getPages();
+  const pages = await getAllAdminPages();
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-5 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Upravljanje stranicama</h1>
-          <p className="text-slate-500 text-xs mt-1">Kreirajte i uredite statičke stranice i landing stranice pomoću vizuelnog editora.</p>
+          <p className="text-slate-500 text-xs mt-1">
+            Uredite postojeće stranice sajta ili kreirajte nove landing stranice pomoću vizuelnog editora.
+          </p>
         </div>
         <Link
           href="/admin/editor?new=1"
@@ -28,8 +38,8 @@ export default async function AdminPagesPage() {
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mx-auto">
               <FileText className="w-8 h-8" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900">Nema kreiranih stranica</h3>
-            <p className="text-xs text-slate-500">Kliknite na dugme gore da kreirate prvu stranicu.</p>
+            <h3 className="text-sm font-bold text-slate-900">Nema pronađenih stranica</h3>
+            <p className="text-xs text-slate-500">Kliknite na dugme gore da kreirate novu stranicu.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -46,8 +56,22 @@ export default async function AdminPagesPage() {
               <tbody className="divide-y divide-slate-100">
                 {pages.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-4 px-4 font-bold text-slate-900">{p.title}</td>
-                    <td className="py-4 px-4 font-mono text-cyan-700">/{p.slug}</td>
+                    <td className="py-4 px-4 font-bold text-slate-900">
+                      <div className="flex items-center gap-2">
+                        <span>{p.title}</span>
+                        {p.isSystem && (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500"
+                            title="Sistemska stranica"
+                          >
+                            <ShieldCheck className="h-3 w-3 text-cyan-600" /> Sistemska
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 font-mono text-cyan-700">
+                      {p.slug === "pocetna" ? "/" : `/${p.slug}`}
+                    </td>
                     <td className="py-4 px-4">
                       {p.isPublished ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-full text-[10px]">
@@ -63,25 +87,23 @@ export default async function AdminPagesPage() {
                       {new Date(p.updatedAt).toLocaleDateString("sr-RS")}
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {p.isPublished && (
-                          <Link
-                            href={`/${p.slug}`}
-                            target="_blank"
-                            className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
-                            title="Pregledaj stranicu"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Link>
-                        )}
+                      <div className="flex items-center justify-end gap-1.5">
                         <Link
-                          href={p.slug === "pocetna" ? "/admin/editor?home=1" : `/admin/editor?id=${p.id}`}
+                          href={p.viewUrl}
+                          target="_blank"
+                          className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                          title="Pogledaj stranicu na sajtu"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Link>
+                        <Link
+                          href={p.editUrl}
                           className="p-2 text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-colors"
                           title="Uredi u vizuelnom editoru"
                         >
                           <Edit className="w-4 h-4" />
                         </Link>
-                        <DeletePageButton id={p.id} title={p.title} />
+                        {!p.isSystem && <DeletePageButton id={p.id} title={p.title} />}
                       </div>
                     </td>
                   </tr>

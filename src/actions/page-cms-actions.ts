@@ -25,6 +25,17 @@ export interface EditorPageOption {
   isStandard?: boolean;
 }
 
+export interface AdminPageListItem {
+  id: string;
+  title: string;
+  slug: string;
+  isPublished: boolean;
+  updatedAt: string;
+  isSystem: boolean;
+  editUrl: string;
+  viewUrl: string;
+}
+
 export interface EditorPageData {
   id: string;
   title: string;
@@ -35,6 +46,66 @@ export interface EditorPageData {
   seoTitle: string | null;
   seoDescription: string | null;
   isPublished: boolean;
+}
+
+/**
+ * Vraća objedinjenu listu svih stranica sajta za tabelu u Upravljanju stranicama (/admin/pages).
+ */
+export async function getAllAdminPages(): Promise<AdminPageListItem[]> {
+  await requireAdminOrEditor();
+  const dbPages = await getPages();
+
+  const list: AdminPageListItem[] = [];
+  const handledSlugs = new Set<string>();
+
+  // 1. Početna stranica
+  const homeInDb = dbPages.find((p) => p.slug === HOME_SLUG);
+  list.push({
+    id: homeInDb ? homeInDb.id : "home",
+    title: "Početna stranica",
+    slug: HOME_SLUG,
+    isPublished: homeInDb ? homeInDb.isPublished : true,
+    updatedAt: homeInDb ? homeInDb.updatedAt : new Date().toISOString(),
+    isSystem: true,
+    editUrl: "/admin/editor?home=1",
+    viewUrl: "/",
+  });
+  handledSlugs.add(HOME_SLUG);
+
+  // 2. Standardne sistemske stranice
+  for (const std of STANDARD_CMS_PAGES) {
+    const existing = dbPages.find((p) => p.slug === std.slug);
+    list.push({
+      id: existing ? existing.id : `std-${std.slug}`,
+      title: existing ? existing.title : std.title,
+      slug: std.slug,
+      isPublished: existing ? existing.isPublished : true,
+      updatedAt: existing ? existing.updatedAt : new Date().toISOString(),
+      isSystem: true,
+      editUrl: `/admin/editor?slug=${std.slug}`,
+      viewUrl: `/${std.slug}`,
+    });
+    handledSlugs.add(std.slug);
+  }
+
+  // 3. Korisničke stranice kreirane kroz CMS
+  for (const p of dbPages) {
+    if (!handledSlugs.has(p.slug)) {
+      list.push({
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        isPublished: p.isPublished,
+        updatedAt: p.updatedAt,
+        isSystem: false,
+        editUrl: `/admin/editor?id=${p.id}`,
+        viewUrl: `/${p.slug}`,
+      });
+      handledSlugs.add(p.slug);
+    }
+  }
+
+  return list;
 }
 
 /**
@@ -371,6 +442,13 @@ export async function savePage(input: PageInput) {
 
 export async function deletePage(id: string) {
   await requireAdminOrEditor();
+  if (id.startsWith("std-") || id === "home") {
+    throw new Error("Sistemske stranice se ne mogu brisati.");
+  }
+  const page = await db.page.findUnique({ where: { id } });
+  if (page && (page.slug === HOME_SLUG || STANDARD_CMS_PAGES.some((s) => s.slug === page.slug))) {
+    throw new Error("Sistemske stranice se ne mogu brisati.");
+  }
   try {
     await db.page.delete({ where: { id } });
     revalidatePath("/admin/pages");
