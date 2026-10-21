@@ -1,4 +1,5 @@
 import React from "react";
+import type { Metadata, Viewport } from "next";
 import { requireAdminOrEditor } from "@/lib/admin-auth";
 import { logoutAdminAction } from "@/actions/admin-auth-actions";
 import Link from "next/link";
@@ -7,6 +8,33 @@ import {
   Image as ImageIcon, Menu, ShoppingCart, Users, Search, Palette,
   Settings, Warehouse, LogOut, ExternalLink, MoreHorizontal
 } from "lucide-react";
+
+export const viewport: Viewport = {
+  themeColor: "#005B94",
+  width: "device-width",
+  initialScale: 1,
+};
+
+export const metadata: Metadata = {
+  title: "Aqua Still Admin",
+  description: "Aqua Still Shop — Kontrolna tabla i upravljanje prodavnicom",
+  manifest: "/admin-manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "AS Admin",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/aqua-admin-icon.svg", type: "image/svg+xml" },
+      { url: "/icons/aqua-admin-icon.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/aqua-admin-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/icons/aqua-admin-icon.svg", type: "image/svg+xml" },
+    ],
+  },
+};
 
 const adminNavItems = [
   { name: "Kontrolna tabla", href: "/admin", icon: LayoutDashboard },

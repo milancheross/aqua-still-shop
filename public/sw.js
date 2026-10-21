@@ -3,8 +3,11 @@ const CACHE_NAME = 'aqua-still-v1';
 const PRECACHE_ASSETS = [
   '/',
   '/manifest.json',
+  '/admin-manifest.json',
   '/favicon.ico',
   '/icons/aqua-icon.svg',
+  '/icons/aqua-admin-icon.svg',
+  '/icons/aqua-admin-icon.png',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
   '/icons/icon-192x192.svg',
