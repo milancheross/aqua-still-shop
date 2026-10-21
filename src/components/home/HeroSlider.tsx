@@ -90,78 +90,46 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
       )}
       <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
-        <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-12">
-          {/* Tekstualni sadržaj slajda */}
-          <div className="lg:col-span-8 space-y-3 sm:space-y-3.5">
-            {/* Oznaka / Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300 backdrop-blur-sm sm:text-[11px]">
-              <SlideIcon idOrCategory={activeSlide.id || activeSlide.category} className="h-3.5 w-3.5 text-cyan-400" />
-              <span>{activeSlide.badge}</span>
-            </div>
-
-            {/* Glavni naslov */}
-            <h1 className="text-2xl font-black leading-[1.12] tracking-tight sm:text-3xl md:text-4xl lg:text-[40px]">
-              {activeSlide.title}{" "}
-              <span
-                className={`bg-gradient-to-r ${activeSlide.accentColor || "from-amber-400 to-cyan-400"} bg-clip-text text-transparent`}
-              >
-                {activeSlide.highlight}
-              </span>
-            </h1>
-
-            {/* Opis */}
-            <p className="max-w-xl text-xs leading-relaxed text-slate-300 sm:text-sm">
-              {activeSlide.description}
-            </p>
-
-            {/* Dugmad za akciju */}
-            <div className="flex flex-wrap items-center gap-2.5 pt-1">
-              <Link
-                href={activeSlide.buttonHref || "/katalog"}
-                className="group inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#F37021] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-[#F37021]/25 transition-all hover:bg-[#D95D13] active:scale-95"
-              >
-                <span>{activeSlide.buttonLabel || "POGLEDAJ PONUDU"}</span>
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-              </Link>
-
-              <Link
-                href="/katalog"
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white/10"
-              >
-                Ceo katalog
-              </Link>
-            </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+        {/* Tekstualni sadržaj slajda (otvoren i čist prostor) */}
+        <div className="max-w-2xl space-y-3 sm:space-y-4">
+          {/* Oznaka / Badge */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300 backdrop-blur-sm sm:text-[11px]">
+            <SlideIcon idOrCategory={activeSlide.id || activeSlide.category} className="h-3.5 w-3.5 text-cyan-400" />
+            <span>{activeSlide.badge}</span>
           </div>
 
-          {/* Desni panel sa preview karticom kategorije */}
-          <div className="hidden lg:col-span-4 lg:flex lg:justify-end">
-            <div className="w-full max-w-[280px] rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5 backdrop-blur-md shadow-2xl overflow-hidden">
-              {activeSlide.imageUrl ? (
-                <div className="relative aspect-video w-full rounded-xl overflow-hidden mb-3 border border-white/10 shadow-inner bg-slate-900">
-                  <Image
-                    src={activeSlide.imageUrl}
-                    alt={activeSlide.category}
-                    fill
-                    sizes="280px"
-                    unoptimized
-                    className="object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-              ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-cyan-300 mb-3">
-                  <SlideIcon idOrCategory={activeSlide.id || activeSlide.category} className="h-5 w-5" />
-                </div>
-              )}
-              <h3 className="text-sm font-black text-white">{activeSlide.category}</h3>
-              <p className="mt-1 text-[11px] text-slate-300 leading-relaxed">
-                Istražite kompletan asortiman, proverite trenutno stanje lagera i poručite sa isporukom na adresu.
-              </p>
-              <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-bold text-cyan-300">
-                <span>Aqua Still Zlatibor</span>
-                <span>Deo ponude &rarr;</span>
-              </div>
-            </div>
+          {/* Glavni naslov */}
+          <h1 className="text-2xl font-black leading-[1.14] tracking-tight sm:text-3xl md:text-4xl lg:text-[42px]">
+            {activeSlide.title}{" "}
+            <span
+              className={`bg-gradient-to-r ${activeSlide.accentColor || "from-amber-400 to-cyan-400"} bg-clip-text text-transparent`}
+            >
+              {activeSlide.highlight}
+            </span>
+          </h1>
+
+          {/* Opis */}
+          <p className="max-w-xl text-xs leading-relaxed text-slate-300 sm:text-sm">
+            {activeSlide.description}
+          </p>
+
+          {/* Dugmad za akciju */}
+          <div className="flex flex-wrap items-center gap-2.5 pt-1">
+            <Link
+              href={activeSlide.buttonHref || "/katalog"}
+              className="group inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#F37021] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-[#F37021]/25 transition-all hover:bg-[#D95D13] active:scale-95"
+            >
+              <span>{activeSlide.buttonLabel || "POGLEDAJ PONUDU"}</span>
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+            </Link>
+
+            <Link
+              href="/katalog"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white/10"
+            >
+              Ceo katalog
+            </Link>
           </div>
         </div>
 
