@@ -1,0 +1,57 @@
+{
+  "name": "Aqua Still Shop | Alati, vodovod i kupatilska oprema",
+  "short_name": "Aqua Still",
+  "description": "Aqua Still Zlatibor – alati, vodovodni materijal, kupatilska oprema, navodnjavanje i grejanje.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#005B94",
+  "background_color": "#ffffff",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Katalog proizvoda",
+      "url": "/katalog",
+      "description": "Pregledajte kompletan asortiman artikala"
+    },
+    {
+      "name": "Korpa",
+      "url": "/korpa",
+      "description": "Pregledajte vašu korpu"
+    }
+  ]
+}
+
