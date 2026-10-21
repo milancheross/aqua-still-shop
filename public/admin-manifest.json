@@ -3,7 +3,7 @@
   "short_name": "AS Admin",
   "description": "Aqua Still Shop — Kontrolna tabla i upravljanje prodavnicom",
   "start_url": "/admin",
-  "scope": "/admin/",
+  "scope": "/admin",
   "display": "standalone",
   "orientation": "any",
   "theme_color": "#005B94",
@@ -36,4 +36,3 @@
     }
   ]
 }
-

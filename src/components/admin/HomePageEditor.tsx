@@ -205,9 +205,43 @@ export default function HomePageEditor({
 
             {/* Polja aktivnog banera */}
             <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-3.5">
-              <div className="text-[11px] font-bold text-cyan-300">
-                Podešavanje za: <span className="text-white">{activeSlide.category}</span>
+              <div className="flex items-center justify-between text-[11px] font-bold text-cyan-300">
+                <span>Podešavanje za: <strong className="text-white">{activeSlide.category}</strong></span>
+                <span className="text-[10px] text-slate-400">Slajd {activeSlideTab + 1} od {heroSlides.length}</span>
               </div>
+
+              {/* Minijaturni živi prikaz slajda sa postavljenom slikom */}
+              <div className="relative overflow-hidden rounded-xl border border-slate-700 bg-slate-950 p-4 min-h-[120px] flex flex-col justify-end shadow-inner">
+                {activeSlide.imageUrl ? (
+                  <div className="absolute inset-0 z-0 pointer-events-none">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={activeSlide.imageUrl}
+                      alt={activeSlide.category}
+                      className="h-full w-full object-cover object-center"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/30" />
+                  </div>
+                ) : (
+                  <div className={`absolute inset-0 z-0 bg-gradient-to-r ${activeSlide.bgGradient || "from-slate-950 via-slate-900 to-cyan-950"}`} />
+                )}
+                <div className="relative z-10 space-y-1">
+                  <span className="inline-block rounded border border-white/20 bg-black/40 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-cyan-300 backdrop-blur-sm">
+                    {activeSlide.badge || "Oznaka"}
+                  </span>
+                  <p className="text-xs font-black text-white drop-shadow">
+                    {activeSlide.title}{" "}
+                    <span className="text-amber-400">{activeSlide.highlight}</span>
+                  </p>
+                </div>
+              </div>
+
+              <ImageUploadField
+                label="Pozadinska slika banera"
+                value={activeSlide.imageUrl || ""}
+                onChange={(val) => updateSlideField(activeSlideTab, "imageUrl", val)}
+                onRemove={() => updateSlideField(activeSlideTab, "imageUrl", "")}
+              />
 
               <Field
                 label="Oznaka / Badge (gore)"
@@ -249,13 +283,6 @@ export default function HomePageEditor({
                   placeholder="/katalog/alati"
                 />
               </div>
-
-              <ImageUploadField
-                label="Pozadinska slika banera"
-                value={activeSlide.imageUrl || ""}
-                onChange={(val) => updateSlideField(activeSlideTab, "imageUrl", val)}
-                onRemove={() => updateSlideField(activeSlideTab, "imageUrl", "")}
-              />
             </div>
           </div>
 
@@ -290,8 +317,20 @@ export default function HomePageEditor({
         {/* Desna kolona: Pregled uživo */}
         <div className="bg-slate-950 p-6">
           <div className="overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl">
-            {/* Pregled aktivnog banera */}
-            <div className={`relative overflow-hidden bg-gradient-to-r ${activeSlide.bgGradient || "from-slate-950 via-slate-900 to-cyan-950"} p-8`}>
+            {/* Pregled aktivnog banera sa živom slikom */}
+            <div className={`relative overflow-hidden bg-gradient-to-r ${activeSlide.bgGradient || "from-slate-950 via-slate-900 to-cyan-950"} p-8 min-h-[260px] flex items-center`}>
+              {activeSlide.imageUrl && (
+                <div className="absolute inset-0 z-0 pointer-events-none">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={activeSlide.imageUrl}
+                    alt={activeSlide.category}
+                    className="h-full w-full object-cover object-center"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-slate-950/40" />
+                </div>
+              )}
+
               <div className="relative z-10 max-w-xl space-y-4">
                 <span className="inline-block rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-300">
                   {activeSlide.badge}
@@ -335,6 +374,17 @@ export default function HomePageEditor({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Plutajuće dugme za čuvanje na mobilnim uređajima */}
+      <div className="fixed bottom-4 right-4 z-40 sm:hidden">
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex items-center gap-2 rounded-2xl bg-cyan-600 px-5 py-3 text-xs font-black text-white shadow-2xl hover:bg-cyan-700 disabled:bg-slate-700 active:scale-95"
+        >
+          <Save className="h-4 w-4" /> {isSaving ? "Čuvanje..." : "Sačuvaj"}
+        </button>
       </div>
     </div>
   );

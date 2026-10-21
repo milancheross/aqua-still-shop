@@ -68,25 +68,26 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
       onTouchEnd={handleTouchEnd}
     >
       {/* 1. Pozadinska fotografija sa glatkom tranzicijom */}
-      {activeSlide.imageUrl && (
+      {activeSlide.imageUrl ? (
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <Image
             src={activeSlide.imageUrl}
-            alt={activeSlide.category}
+            alt={activeSlide.category || activeSlide.title}
             fill
             priority={current === 0}
             sizes="100vw"
-            className="object-cover object-center opacity-25 transition-all duration-700 scale-105"
+            unoptimized
+            className="object-cover object-center transition-all duration-700 scale-100"
           />
+          {/* Poluprovidni preliv: taman sa leve strane za čitljivost teksta, prozirniji sa desne da slika bude jasna */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-slate-950/30" />
         </div>
+      ) : (
+        /* 2. Rezervni gradient preliv samo ukoliko nema slike */
+        <div
+          className={`absolute inset-0 z-0 bg-gradient-to-r ${activeSlide.bgGradient || "from-slate-950 via-slate-900 to-cyan-950"} transition-all duration-700 ease-in-out opacity-95`}
+        />
       )}
-
-      {/* 2. Pozadinski prelivi i grafički slojevi */}
-      <div
-        className={`absolute inset-0 z-0 bg-gradient-to-r ${activeSlide.bgGradient || "from-slate-950 via-slate-900 to-cyan-950"} transition-all duration-700 ease-in-out ${
-          activeSlide.imageUrl ? "opacity-90" : "opacity-95"
-        }`}
-      />
       <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
@@ -135,10 +136,23 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
 
           {/* Desni panel sa preview karticom kategorije */}
           <div className="hidden lg:col-span-4 lg:flex lg:justify-end">
-            <div className="w-full max-w-[270px] rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5 backdrop-blur-md shadow-xl">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-cyan-300 mb-3">
-                <SlideIcon idOrCategory={activeSlide.id || activeSlide.category} className="h-5 w-5" />
-              </div>
+            <div className="w-full max-w-[280px] rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5 backdrop-blur-md shadow-2xl overflow-hidden">
+              {activeSlide.imageUrl ? (
+                <div className="relative aspect-video w-full rounded-xl overflow-hidden mb-3 border border-white/10 shadow-inner bg-slate-900">
+                  <Image
+                    src={activeSlide.imageUrl}
+                    alt={activeSlide.category}
+                    fill
+                    sizes="280px"
+                    unoptimized
+                    className="object-cover transition-transform duration-500 hover:scale-105"
+                  />
+                </div>
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-cyan-300 mb-3">
+                  <SlideIcon idOrCategory={activeSlide.id || activeSlide.category} className="h-5 w-5" />
+                </div>
+              )}
               <h3 className="text-sm font-black text-white">{activeSlide.category}</h3>
               <p className="mt-1 text-[11px] text-slate-300 leading-relaxed">
                 Istražite kompletan asortiman, proverite trenutno stanje lagera i poručite sa isporukom na adresu.
