@@ -62,7 +62,7 @@ export default function B2BInquiryModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-600 text-white shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#005B94] text-white shadow-sm">
               <Building2 className="h-4 w-4" />
             </div>
             <div>
@@ -96,7 +96,7 @@ export default function B2BInquiryModal({
             <button
               type="button"
               onClick={handleReset}
-              className="mt-6 rounded-xl bg-cyan-600 px-6 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-cyan-700"
+              className="mt-6 rounded-xl bg-[#005B94] px-6 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-[#004570]"
             >
               Zatvori
             </button>
@@ -109,7 +109,7 @@ export default function B2BInquiryModal({
                 <span className="font-bold text-slate-900 truncate max-w-[280px]">
                   {product.name}
                 </span>
-                <span className="font-black text-cyan-700">
+                <span className="font-black text-[#005B94]">
                   {formatPrice(product.salePrice ?? product.price)}
                 </span>
               </div>
@@ -229,7 +229,7 @@ export default function B2BInquiryModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-cyan-600 px-5 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-cyan-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#005B94] px-5 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-[#004570] disabled:opacity-50"
               >
                 <Send className="h-3.5 w-3.5" />
                 <span>{loading ? "Slanje..." : "Pošalji upit za ponudu"}</span>

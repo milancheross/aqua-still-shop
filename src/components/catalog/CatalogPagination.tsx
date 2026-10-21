@@ -82,7 +82,7 @@ export default function CatalogPagination({
           tabIndex={hasPrev ? 0 : -1}
           className={`inline-flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-bold transition ${
             hasPrev
-              ? "bg-white text-slate-700 ring-1 ring-slate-200 hover:border-cyan-500 hover:bg-slate-50"
+              ? "bg-white text-slate-700 ring-1 ring-slate-200 hover:border-[#005B94] hover:bg-slate-50"
               : "pointer-events-none bg-slate-100 text-slate-400"
           }`}
         >
@@ -113,8 +113,8 @@ export default function CatalogPagination({
               aria-current={isCurrent ? "page" : undefined}
               className={`min-w-9 rounded-xl px-3 py-2 text-center text-xs font-bold transition ${
                 isCurrent
-                  ? "bg-cyan-600 text-white shadow-sm ring-1 ring-cyan-600"
-                  : "bg-white text-slate-700 ring-1 ring-slate-200 hover:border-cyan-500 hover:bg-slate-50"
+                  ? "bg-[#005B94] text-white shadow-sm ring-1 ring-[#005B94]"
+                  : "bg-white text-slate-700 ring-1 ring-slate-200 hover:border-[#005B94] hover:bg-blue-50/50"
               }`}
             >
               {pageNum}
@@ -129,7 +129,7 @@ export default function CatalogPagination({
           tabIndex={hasNext ? 0 : -1}
           className={`inline-flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-bold transition ${
             hasNext
-              ? "bg-white text-slate-700 ring-1 ring-slate-200 hover:border-cyan-500 hover:bg-slate-50"
+              ? "bg-white text-slate-700 ring-1 ring-slate-200 hover:border-[#005B94] hover:bg-slate-50"
               : "pointer-events-none bg-slate-100 text-slate-400"
           }`}
         >

@@ -52,11 +52,11 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       <div className="container mx-auto space-y-6 px-3 sm:space-y-12 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <div className="flex items-center gap-2 overflow-hidden text-[10px] font-medium text-slate-500 sm:text-xs">
-          <Link href="/" className="hover:text-cyan-600">Početna</Link>
+          <Link href="/" className="hover:text-[#005B94]">Početna</Link>
           <span>/</span>
-          <Link href="/katalog" className="hover:text-cyan-600">Katalog</Link>
+          <Link href="/katalog" className="hover:text-[#005B94]">Katalog</Link>
           <span>/</span>
-          <Link href={`/katalog/${product.categorySlug}`} className="hover:text-cyan-600">{product.categoryName}</Link>
+          <Link href={`/katalog/${product.categorySlug}`} className="hover:text-[#005B94]">{product.categoryName}</Link>
           <span>/</span>
           <span className="text-slate-900 font-bold truncate max-w-xs">{product.name}</span>
         </div>
@@ -80,7 +80,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <div className="space-y-5 lg:col-span-6 lg:space-y-6">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold bg-cyan-100 text-cyan-800 px-3 py-1 rounded-full uppercase tracking-wider">
+                <span className="text-xs font-black bg-blue-100 text-[#005B94] px-3 py-1 rounded-full uppercase tracking-wider">
                   {product.brand}
                 </span>
                 <span className="text-xs text-slate-400 font-mono">Šifra: {product.sku}</span>

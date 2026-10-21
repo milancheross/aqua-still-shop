@@ -97,7 +97,7 @@ export default async function HomePage() {
               <Link
                 key={tag}
                 href={"/katalog?q=" + encodeURIComponent(tag)}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-[11px] font-bold text-slate-700 transition hover:border-cyan-400 hover:bg-cyan-50 hover:text-cyan-800"
+                className="rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-[11px] font-bold text-slate-700 transition hover:border-[#005B94]/40 hover:bg-blue-50/50 hover:text-[#005B94]"
               >
                 {tag}
               </Link>
@@ -126,10 +126,10 @@ export default async function HomePage() {
       <section className="container mx-auto px-4 pt-9 sm:px-6 lg:px-8">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-700">Istražite ponudu</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#005B94]">Istražite ponudu</p>
             <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Kategorije</h2>
           </div>
-          <Link href="/katalog" className="text-xs font-black text-cyan-700 hover:text-cyan-900">
+          <Link href="/katalog" className="text-xs font-black text-[#005B94] hover:text-[#004570]">
             Sve kategorije <ArrowRight className="ml-1 inline h-3.5 w-3.5" />
           </Link>
         </div>
@@ -168,7 +168,7 @@ export default async function HomePage() {
                         {category.description || "Pogledajte ponudu"}
                       </p>
                     </div>
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-slate-900 shadow-sm transition group-hover:bg-cyan-600 group-hover:text-white">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-slate-900 shadow-sm transition group-hover:bg-[#005B94] group-hover:text-white">
                       <ChevronRight className="h-4 w-4" />
                     </span>
                   </div>
@@ -183,10 +183,10 @@ export default async function HomePage() {
       <section className="container mx-auto px-4 pt-10 sm:px-6 lg:px-8">
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-700">Brz pristup</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#005B94]">Brz pristup</p>
             <h2 className="mt-1 text-2xl font-black">Najtraženije grupe</h2>
           </div>
-          <Link href="/katalog" className="text-xs font-bold text-cyan-700">
+          <Link href="/katalog" className="text-xs font-bold text-[#005B94]">
             Ceo katalog <ArrowRight className="ml-1 inline h-3.5 w-3.5" />
           </Link>
         </div>
@@ -225,11 +225,11 @@ export default async function HomePage() {
       <section className="container mx-auto px-4 pt-10 sm:px-6 lg:px-8">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-700">Izdvojeno</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#005B94]">Izdvojeno</p>
             <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Najtraženiji proizvodi</h2>
             <p className="mt-1 text-xs text-slate-500">Provereni proizvodi koje kupci najčešće biraju.</p>
           </div>
-          <Link href="/katalog" className="text-xs font-black text-cyan-700">
+          <Link href="/katalog" className="text-xs font-black text-[#005B94] hover:text-[#004570]">
             Pogledaj sve <ArrowRight className="ml-1 inline h-3.5 w-3.5" />
           </Link>
         </div>

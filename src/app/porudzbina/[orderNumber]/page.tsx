@@ -152,7 +152,7 @@ export default async function OrderConfirmationPage({ params, searchParams }: Or
               <div className="pt-4 border-t border-slate-200">
                 <div className="flex justify-between text-sm font-black text-slate-900">
                   <span>Ukupan iznos za uplatu:</span>
-                  <span className="text-cyan-700">{formatPrice(Number(order.total))}</span>
+                  <span className="text-[#005B94]">{formatPrice(Number(order.total))}</span>
                 </div>
               </div>
             </div>
@@ -161,7 +161,7 @@ export default async function OrderConfirmationPage({ params, searchParams }: Or
           <div className="pt-4 flex flex-wrap justify-center gap-4">
             <Link
               href="/katalog"
-              className="px-8 py-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-sm rounded-2xl transition-colors shadow-lg flex items-center gap-2"
+              className="px-8 py-4 bg-[#005B94] hover:bg-[#004570] text-white font-black text-sm rounded-2xl transition-colors shadow-lg flex items-center gap-2"
             >
               Nastavi kupovinu <ArrowRight className="w-4 h-4" />
             </Link>

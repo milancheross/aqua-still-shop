@@ -82,11 +82,11 @@ export default function CatalogActiveFilters({
         <button
           type="button"
           onClick={() => removeFilter(["q"])}
-          className="group inline-flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-800 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+          className="group inline-flex items-center gap-1.5 rounded-lg border border-[#005B94]/20 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-[#005B94] transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
           title="Ukloni pretragu"
         >
           <span>Pretraga: &ldquo;{searchQuery}&rdquo;</span>
-          <X className="h-3.5 w-3.5 text-cyan-600 transition group-hover:text-red-600" />
+          <X className="h-3.5 w-3.5 text-[#005B94] transition group-hover:text-red-600" />
         </button>
       )}
 

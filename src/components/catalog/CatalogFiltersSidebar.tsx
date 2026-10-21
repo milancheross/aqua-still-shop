@@ -122,9 +122,9 @@ export default function CatalogFiltersSidebar({
       {/* Header filtera */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-4">
         <h3 className="flex items-center gap-2 font-black text-slate-900">
-          <Filter className="h-4 w-4 text-cyan-600" /> Filteri
+          <Filter className="h-4 w-4 text-[#005B94]" /> Filteri
           {isPending && (
-            <span className="inline-block h-2 w-2 animate-ping rounded-full bg-cyan-600" />
+            <span className="inline-block h-2 w-2 animate-ping rounded-full bg-[#005B94]" />
           )}
         </h3>
         {hasAnyFilter && (
@@ -150,7 +150,7 @@ export default function CatalogFiltersSidebar({
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Naziv, SKU ili brend..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-8 text-xs outline-none transition focus:border-cyan-500 focus:bg-white"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-8 text-xs outline-none transition focus:border-[#005B94] focus:bg-white"
             />
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             {searchInput && (
@@ -180,7 +180,7 @@ export default function CatalogFiltersSidebar({
               onClick={() => updateFilters({ category: null, subcategory: null })}
               className={`w-full rounded-lg px-3 py-2 text-left text-xs font-bold transition ${
                 !selectedCategory
-                  ? "bg-cyan-50 text-cyan-700 font-black"
+                  ? "bg-blue-50 text-[#005B94] font-black"
                   : "text-slate-600 hover:bg-slate-50"
               }`}
             >
@@ -202,7 +202,7 @@ export default function CatalogFiltersSidebar({
                     }
                     className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs transition ${
                       isCatSelected
-                        ? "bg-cyan-50 font-bold text-cyan-700"
+                        ? "bg-blue-50 font-bold text-[#005B94]"
                         : "font-medium text-slate-700 hover:bg-slate-50"
                     }`}
                   >
@@ -217,7 +217,7 @@ export default function CatalogFiltersSidebar({
 
                   {/* Podkategorije */}
                   {isCatSelected && cat.subcategories.length > 0 && (
-                    <div className="ml-3 mt-1 space-y-0.5 border-l-2 border-cyan-200 pl-2">
+                    <div className="ml-3 mt-1 space-y-0.5 border-l-2 border-blue-200 pl-2">
                       {cat.subcategories.map((sub) => {
                         const isSubSelected = selectedSubcategory === sub.slug;
                         const SubcategoryIcon = getCategoryIcon(sub.slug || sub.name);
@@ -234,7 +234,7 @@ export default function CatalogFiltersSidebar({
                             }
                             className={`flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-[11px] transition ${
                               isSubSelected
-                                ? "bg-cyan-100 font-bold text-cyan-800"
+                                ? "bg-blue-100 font-bold text-[#004570]"
                                 : "text-slate-600 hover:bg-slate-50"
                             }`}
                           >
@@ -277,7 +277,7 @@ export default function CatalogFiltersSidebar({
                   }
                   className={`flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-xs transition ${
                     isBrandSelected
-                      ? "bg-cyan-600 font-bold text-white shadow-sm"
+                      ? "bg-[#005B94] font-bold text-white shadow-sm"
                       : "text-slate-700 hover:bg-slate-50"
                   }`}
                 >
@@ -314,7 +314,7 @@ export default function CatalogFiltersSidebar({
                 value={minPriceInput}
                 onChange={(e) => setMinPriceInput(e.target.value)}
                 placeholder="Od"
-                className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs outline-none focus:border-cyan-500"
+                className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs outline-none focus:border-[#005B94]"
               />
               <input
                 type="number"
@@ -323,7 +323,7 @@ export default function CatalogFiltersSidebar({
                 value={maxPriceInput}
                 onChange={(e) => setMaxPriceInput(e.target.value)}
                 placeholder="Do"
-                className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs outline-none focus:border-cyan-500"
+                className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs outline-none focus:border-[#005B94]"
               />
             </div>
             <button
@@ -369,7 +369,7 @@ export default function CatalogFiltersSidebar({
                       }
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-xs transition ${
                         isSelected
-                          ? "bg-cyan-50 font-bold text-cyan-700"
+                          ? "bg-blue-50 font-bold text-[#005B94]"
                           : "text-slate-700 hover:bg-slate-50"
                       }`}
                     >
@@ -377,7 +377,7 @@ export default function CatalogFiltersSidebar({
                         {value}
                         {definition.unit ? ` ${definition.unit}` : ""}
                       </span>
-                      {isSelected && <Check className="h-3.5 w-3.5 text-cyan-600" />}
+                      {isSelected && <Check className="h-3.5 w-3.5 text-[#005B94]" />}
                     </button>
                   );
                 })}
@@ -397,7 +397,7 @@ export default function CatalogFiltersSidebar({
                   inStock: e.target.checked ? "true" : null,
                 })
               }
-              className="h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
+              className="h-4 w-4 rounded border-slate-300 text-[#005B94] focus:ring-[#005B94]"
             />
             Samo artikli na stanju
           </label>

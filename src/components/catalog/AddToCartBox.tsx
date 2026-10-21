@@ -66,13 +66,13 @@ export default function AddToCartBox({ product }: AddToCartBoxProps) {
           </button>
         </div>
 
-        {/* Add to Cart Button */}
+        {/* Add to Cart Button - Orange #F37021 CTA */}
         <button
           onClick={handleAddToCart}
-          className={`min-h-12 flex-1 rounded-2xl px-4 py-3 font-bold text-sm uppercase tracking-wider transition-all shadow-xl flex items-center justify-center gap-2 ${
+          className={`min-h-12 flex-1 rounded-2xl px-5 py-3 font-black text-sm uppercase tracking-wider transition-all shadow-xl flex items-center justify-center gap-2 ${
             addedSuccess
               ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/25"
-              : "bg-cyan-600 hover:bg-cyan-700 text-white shadow-cyan-600/25 active:scale-[0.98]"
+              : "bg-[#F37021] hover:bg-[#D95D13] text-white shadow-[#F37021]/30 active:scale-[0.98]"
           }`}
         >
           {addedSuccess ? (

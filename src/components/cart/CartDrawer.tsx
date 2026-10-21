@@ -150,7 +150,7 @@ export default function CartDrawer() {
                 </div>
                 <div className="flex justify-between text-base font-black text-slate-900 pt-2 border-t border-slate-200">
                   <span>Ukupno za uplatu</span>
-                  <span className="text-cyan-700">{formatPrice(cart.total)}</span>
+                  <span className="text-[#005B94]">{formatPrice(cart.total)}</span>
                 </div>
               </div>
 
@@ -165,7 +165,7 @@ export default function CartDrawer() {
                 <Link
                   href="/placanje"
                   onClick={() => setIsCartOpen(false)}
-                  className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs rounded-xl text-center transition-colors shadow-md flex items-center justify-center gap-1.5"
+                  className="w-full py-3 bg-[#F37021] hover:bg-[#D95D13] text-white font-bold text-xs rounded-xl text-center transition-colors shadow-md shadow-[#F37021]/20 flex items-center justify-center gap-1.5"
                 >
                   Na plaćanje <ArrowRight className="w-3.5 h-3.5" />
                 </Link>

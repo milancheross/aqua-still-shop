@@ -118,7 +118,7 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link
                 href={activeSlide.buttonHref || "/katalog"}
-                className="group inline-flex min-h-12 items-center gap-2.5 rounded-xl bg-cyan-600 px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-cyan-950/50 transition-all hover:bg-cyan-500 hover:shadow-cyan-900/60 active:scale-95 sm:text-sm"
+                className="group inline-flex min-h-12 items-center gap-2.5 rounded-xl bg-[#F37021] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-xl shadow-[#F37021]/30 transition-all hover:bg-[#D95D13] hover:shadow-[#F37021]/50 active:scale-95 sm:text-sm"
               >
                 <span>{activeSlide.buttonLabel || "POGLEDAJ PONUDU"}</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -164,7 +164,7 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
                   onClick={() => setCurrent(index)}
                   className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
                     isCurrent
-                      ? "bg-white text-slate-900 shadow-md ring-2 ring-cyan-400"
+                      ? "bg-white text-slate-900 shadow-md ring-2 ring-[#F37021]"
                       : "bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white"
                   }`}
                   aria-label={`Prebaci na baner: ${slide.category}`}
@@ -172,7 +172,7 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
                 >
                   <span
                     className={`h-2 w-2 rounded-full ${
-                      isCurrent ? "bg-cyan-600" : "bg-slate-400"
+                      isCurrent ? "bg-[#F37021]" : "bg-slate-400"
                     }`}
                   />
                   <span>{slide.category}</span>

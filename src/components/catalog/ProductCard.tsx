@@ -27,7 +27,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <article className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-md">
+      <article className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[#005B94]/30 hover:shadow-md">
         <Link href={`/proizvod/${product.slug}`} aria-label={product.name} className="block">
           <div className="relative aspect-[1.12] overflow-hidden bg-slate-50 sm:aspect-[1.08]">
             <Image
@@ -39,11 +39,11 @@ export default function ProductCard({ product }: ProductCardProps) {
             />
 
             <div className="absolute left-2 top-2 flex max-w-[calc(100%-2.75rem)] items-center gap-1.5 sm:left-2.5 sm:top-2.5">
-              <span className="max-w-full truncate rounded bg-white/95 px-1.5 py-1 text-[8px] font-black uppercase tracking-wide text-cyan-700 shadow-sm sm:text-[9px]">
+              <span className="max-w-full truncate rounded bg-white/95 px-1.5 py-1 text-[8px] font-black uppercase tracking-wider text-[#005B94] border border-slate-100 shadow-sm sm:text-[9px]">
                 {product.brand}
               </span>
               {product.isPromo && (
-                <span className="shrink-0 rounded bg-amber-50 px-1.5 py-1 text-[8px] font-black text-amber-700 shadow-sm sm:text-[9px]">
+                <span className="shrink-0 rounded bg-amber-50 px-1.5 py-1 text-[8px] font-black uppercase tracking-wider text-amber-700 border border-amber-200/50 shadow-sm sm:text-[9px]">
                   AKCIJA
                 </span>
               )}
@@ -59,7 +59,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex min-h-0 flex-1 flex-col p-2.5 sm:p-3.5">
           <Link href={`/proizvod/${product.slug}`} className="block min-w-0">
-            <h3 className="line-clamp-2 min-h-[2.5rem] text-[12px] font-extrabold leading-5 text-slate-900 transition-colors group-hover:text-cyan-700 sm:text-[13px]">
+            <h3 className="line-clamp-2 min-h-[2.5rem] text-[12px] font-extrabold leading-5 text-slate-900 transition-colors group-hover:text-[#005B94] sm:text-[13px]">
               {product.name}
             </h3>
           </Link>
@@ -125,6 +125,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </button>
               </div>
 
+              {/* CTA Dugme za kupovinu - Orange #F37021 */}
               <button
                 type="button"
                 disabled={!available}
@@ -132,7 +133,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                   void addToCart(product, quantity);
                   setQuantity(1);
                 }}
-                className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-lg bg-cyan-600 px-2 text-white shadow-sm transition-[background-color,transform] hover:bg-cyan-700 active:scale-[.98] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none sm:h-10 sm:gap-1.5 sm:px-2.5"
+                className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-lg bg-[#F37021] hover:bg-[#D95D13] px-2 text-white shadow-sm shadow-[#F37021]/20 transition-[background-color,transform] active:scale-[.98] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none sm:h-10 sm:gap-1.5 sm:px-2.5"
                 title={available ? `Dodaj ${quantity} ${product.unit} u korpu` : "Proizvod trenutno nije dostupan"}
                 aria-label={
                   available
@@ -141,11 +142,11 @@ export default function ProductCard({ product }: ProductCardProps) {
                 }
               >
                 <ShoppingCart className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate text-[9px] font-black sm:text-[10px]">Dodaj</span>
+                <span className="truncate text-[9px] font-black uppercase tracking-wider sm:text-[10px]">Dodaj</span>
               </button>
             </div>
 
-            {/* B2B opcija za majstore i investitore */}
+            {/* B2B opcija za majstore i investitore - Navy industrijski akcenat */}
             <button
               type="button"
               onClick={(e) => {
@@ -153,10 +154,10 @@ export default function ProductCard({ product }: ProductCardProps) {
                 e.stopPropagation();
                 setIsB2bOpen(true);
               }}
-              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-200 bg-slate-50/80 py-1.5 text-[9px] font-bold text-slate-600 transition hover:border-cyan-500 hover:bg-cyan-50 hover:text-cyan-800 sm:text-[10px]"
+              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-200 bg-slate-50/70 py-1.5 text-[9px] font-bold text-slate-600 transition hover:border-[#005B94] hover:bg-blue-50/50 hover:text-[#005B94] sm:text-[10px]"
               title="Zatražite B2B ponudu za veću količinu ili spisak materijala"
             >
-              <FileText className="h-3 w-3 text-cyan-600" />
+              <FileText className="h-3 w-3 text-[#005B94]" />
               <span>Pošalji upit / spisak za ponudu</span>
             </button>
           </div>

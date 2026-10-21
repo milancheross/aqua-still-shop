@@ -97,7 +97,7 @@ export default function Header() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <button type="submit" className="absolute right-1 top-1 bottom-1 px-6 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-full text-sm flex items-center gap-2 transition-colors shadow-sm">
+            <button type="submit" className="absolute right-1 top-1 bottom-1 px-6 bg-[#005B94] hover:bg-[#004570] text-white font-bold rounded-full text-sm flex items-center gap-2 transition-colors shadow-sm">
               <Search className="w-4 h-4" /> Pretraži
             </button>
           </form>
@@ -129,7 +129,7 @@ export default function Header() {
               <div className="relative">
                 <ShoppingCart className="w-5 h-5" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-red-600 text-white text-[10px] font-bold rounded-full">
+                  <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 bg-[#F37021] text-white text-[10px] font-black rounded-full shadow-sm">
                     {totalItems}
                   </span>
                 )}
@@ -156,7 +156,7 @@ export default function Header() {
       <form action="/katalog" method="GET" className="flex gap-2 border-t border-slate-100 bg-white px-3 pb-3 pt-2 md:hidden">
         <label htmlFor="mobile-store-search" className="sr-only">Pretraga proizvoda</label>
         <input id="mobile-store-search" type="search" name="q" placeholder="Pretraži proizvode..." className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-cyan-500 focus:bg-white focus:ring-2 focus:ring-cyan-100" />
-        <button type="submit" aria-label="Pretraži" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-cyan-600 px-4 text-sm font-bold text-white hover:bg-cyan-700"><Search className="h-4 w-4" /><span>Traži</span></button>
+        <button type="submit" aria-label="Pretraži" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#005B94] px-4 text-sm font-bold text-white hover:bg-[#004570]"><Search className="h-4 w-4" /><span>Traži</span></button>
       </form>
       {/* Main category navigation */}
       <div className="relative z-40 hidden bg-slate-900 text-white md:block">
@@ -167,7 +167,7 @@ export default function Header() {
               aria-expanded={isCategoriesOpen}
               aria-controls="desktop-category-menu"
               onClick={() => setIsCategoriesOpen((open) => !open)}
-              className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap"
+              className="flex items-center gap-2 bg-[#005B94] hover:bg-[#004570] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-colors whitespace-nowrap"
             >
               <Menu className="w-4 h-4" />
               Sve kategorije

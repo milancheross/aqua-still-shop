@@ -150,14 +150,14 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between text-lg font-black text-slate-900 pt-3 border-t border-slate-200">
                     <span>Ukupno</span>
-                    <span className="text-cyan-700">{formatPrice(cart.total)}</span>
+                    <span className="text-[#005B94]">{formatPrice(cart.total)}</span>
                   </div>
                 </div>
 
                 <div className="space-y-3 pt-2">
                   <Link
                     href="/placanje"
-                    className="w-full py-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-cyan-600/25 flex items-center justify-center gap-2 text-sm text-center"
+                    className="w-full py-4 bg-[#F37021] hover:bg-[#D95D13] text-white font-black rounded-2xl transition-all shadow-xl shadow-[#F37021]/25 flex items-center justify-center gap-2 text-sm text-center"
                   >
                     Nastavi na plaćanje <ArrowRight className="w-4 h-4" />
                   </Link>

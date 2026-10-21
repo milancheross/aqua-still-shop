@@ -373,14 +373,14 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-lg font-black text-slate-900 pt-3 border-t border-slate-200">
                   <span>Ukupno</span>
-                  <span className="text-cyan-700">{formatPrice(dynamicTotal)}</span>
+                  <span className="text-[#005B94]">{formatPrice(dynamicTotal)}</span>
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-300 text-white font-bold rounded-2xl transition-all shadow-xl shadow-cyan-600/25 flex items-center justify-center gap-2 text-base"
+                className="w-full py-4 bg-[#F37021] hover:bg-[#D95D13] disabled:bg-slate-300 text-white font-black rounded-2xl transition-all shadow-xl shadow-[#F37021]/25 flex items-center justify-center gap-2 text-base"
               >
                 {isSubmitting ? "Obrada u toku..." : "Potvrdi porudžbinu"} <ArrowRight className="w-5 h-5" />
               </button>
