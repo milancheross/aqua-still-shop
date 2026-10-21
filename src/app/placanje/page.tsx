@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag, ArrowRight, Truck, ShieldCheck, CheckCircle2, AlertCircle, Store } from "lucide-react";
+import { ShoppingBag, ArrowRight, Truck, ShieldCheck, AlertCircle, Store, Clock } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/utils";
 import { createOrderAction } from "@/actions/checkout-actions";
@@ -90,7 +90,7 @@ export default function CheckoutPage() {
       <div className="container mx-auto max-w-6xl px-3 sm:px-6 lg:px-8">
         <div className="mb-5 sm:mb-8">
           <h1 className="text-2xl font-black text-slate-900 sm:text-3xl">Završetak kupovine (Checkout)</h1>
-          <p className="text-slate-500 text-sm mt-1">Izaberite način preuzimanja i popunite podatke.</p>
+          <p className="text-slate-500 text-sm mt-1">Izaberite način preuzimanja i popunite podatke za naplatu.</p>
         </div>
 
         {errorMessage && (
@@ -137,7 +137,12 @@ export default function CheckoutPage() {
                     />
                     <span className="text-sm font-black text-slate-900 flex items-center gap-1.5"><Store className="w-4 h-4 text-cyan-600" /> Preuzimanje u radnji</span>
                   </div>
-                  <span className="text-xs text-slate-500 pl-7">Spremno za preuzimanje narednog dana u salonu (Besplatno).</span>
+                  <span className="text-xs text-slate-500 pl-7">Lično preuzimanje u našem salonu (Besplatno).</span>
+                  <div className="pl-7 mt-2">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-cyan-100 text-cyan-800">
+                      <Clock className="w-3 h-3" /> Dostupno narednog radnog dana
+                    </span>
+                  </div>
                 </label>
               </div>
             </div>
@@ -255,9 +260,20 @@ export default function CheckoutPage() {
               )}
 
               {isStorePickup && (
-                <div className="p-4 bg-cyan-50 rounded-2xl border border-cyan-100 text-xs text-cyan-900 space-y-1">
-                  <span className="font-bold block">Lokacija preuzimanja:</span>
-                  <p>Aqua Still Zlatibor (Salon / Magacin). Porudžbina će biti spremna za preuzimanje narednog dana u toku radnog vremena.</p>
+                <div className="p-4 sm:p-5 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-2xl border border-cyan-200 text-xs text-cyan-950 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-cyan-600 text-white font-black text-[10px]">✓</span>
+                    <span className="font-black uppercase tracking-wider text-cyan-900 text-[11px]">Lično preuzimanje u salonu Aqua Still</span>
+                  </div>
+                  <p className="text-slate-800">
+                    📍 <strong>Lokacija preuzimanja:</strong> Aqua Still Zlatibor (Salon / Magacin).
+                  </p>
+                  <p className="text-slate-800">
+                    ⏰ <strong>Dostupnost:</strong> Roba je dostupna za preuzimanje <strong>narednog dana nakon potvrde porudžbine</strong> u toku radnog vremena (Pon–Sub 07:00–17:00h).
+                  </p>
+                  <p className="text-[11px] text-cyan-800 font-medium">
+                    * Za ovu opciju nije potrebno unositi kućnu adresu – dovoljni su vaši kontakt podaci radi potvrde i obaveštenja.
+                  </p>
                 </div>
               )}
 
@@ -268,7 +284,7 @@ export default function CheckoutPage() {
                   rows={3} 
                   value={formData.notes} 
                   onChange={handleChange}
-                  placeholder="Npr. vreme preuzimanja / dostave..." 
+                  placeholder="Npr. željeno vreme preuzimanja ili posebne napomene za isporuku..." 
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-cyan-500 outline-none resize-none"
                 />
               </div>
@@ -281,7 +297,7 @@ export default function CheckoutPage() {
               </h2>
 
               <div className="space-y-3">
-                <label className="flex items-center space-x-3 p-4 bg-cyan-50 border-2 border-cyan-500 rounded-2xl cursor-pointer">
+                <label className="flex items-center space-x-3 p-4 bg-cyan-50/70 border-2 border-cyan-500 rounded-2xl cursor-pointer">
                   <input 
                     type="radio" 
                     name="paymentMethod" 
@@ -294,10 +310,27 @@ export default function CheckoutPage() {
                       {isStorePickup ? "Plaćanje prilikom preuzimanja u radnji" : "Plaćanje pouzećem (gotovinom kuriru)"}
                     </span>
                     <span className="text-xs text-slate-500">
-                      {isStorePickup ? "Plaćate gotovinom ili karticom u salonu prilikom preuzimanja." : "Plaćate gotovinom kuriru brze pošte."}
+                      {isStorePickup ? "Plaćate gotovinom ili platnom karticom na licu mesta u salonu prilikom preuzimanja." : "Plaćate gotovinom kuriru brze pošte pri uručenju pošiljke."}
                     </span>
                   </div>
                 </label>
+
+                {/* DISABLED OPTION: Prepared architecture for online card payments */}
+                <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl opacity-60 cursor-not-allowed">
+                  <div className="flex items-center space-x-3">
+                    <input 
+                      type="radio" 
+                      name="paymentMethod_disabled" 
+                      disabled 
+                      className="w-4 h-4 text-slate-300"
+                    />
+                    <div>
+                      <span className="text-sm font-bold text-slate-600 block">Online platne kartice (Visa, Mastercard, DinaCard)</span>
+                      <span className="text-xs text-slate-400">Direktno online plaćanje karticama preko banke biće uskoro aktivirano.</span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-slate-200 text-slate-600 rounded-md">Uskoro</span>
+                </div>
               </div>
             </div>
           </div>

@@ -17,7 +17,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const query = (params.q ?? "").trim().toLowerCase();
   const filters = [
     ["", "Sve"],
-    ["pending", "Na čekanju"],
+    ["pending", "Nova"],
     ["processing", "U obradi"],
     ["shipped", "Poslato"],
     ["ready_for_pickup", "Za preuzimanje"],
@@ -39,7 +39,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     <div className="mx-auto w-full max-w-7xl space-y-5 sm:space-y-8">
       <div>
         <h1 className="text-2xl font-black text-slate-900">Upravljanje porudžbinama</h1>
-        <p className="text-slate-500 text-xs mt-1">Pregledajte prispele porudžbine i pratite statuse isporuke i preuzimanja. Porudžbine na čekanju drže zalihe 48 sati, pa se same otkazuju ako ostanu nepotvrđene. Premestite prihvaćenu porudžbinu u obradu.</p>
+        <p className="text-slate-500 text-xs mt-1">Pregledajte prispele porudžbine i pratite statuse isporuke i preuzimanja. Porudžbine u statusu &quot;Nova&quot; drže zalihe 48 sati, pa se same otkazuju ako ostanu nepotvrđene. Premestite prihvaćenu porudžbinu u obradu.</p>
       </div>
 
       <form className="grid gap-2 sm:flex sm:flex-wrap sm:items-center" action="/admin/orders">

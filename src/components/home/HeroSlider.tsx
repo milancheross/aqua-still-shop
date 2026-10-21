@@ -6,13 +6,13 @@ import Image from "next/image";
 import { ArrowRight, ChevronLeft, ChevronRight, Wrench, Droplets, Bath, Sprout, Sparkles } from "lucide-react";
 import { HeroSlideItem, DEFAULT_HERO_SLIDES } from "@/lib/home-content";
 
-function getSlideIcon(idOrCategory: string) {
+function SlideIcon({ idOrCategory, className }: { idOrCategory: string; className?: string }) {
   const text = (idOrCategory || "").toLowerCase();
-  if (text.includes("alat")) return Wrench;
-  if (text.includes("vodovod") || text.includes("cev")) return Droplets;
-  if (text.includes("kupat")) return Bath;
-  if (text.includes("navodnj") || text.includes("bast") || text.includes("pump")) return Sprout;
-  return Sparkles;
+  if (text.includes("alat")) return <Wrench className={className} />;
+  if (text.includes("vodovod") || text.includes("cev")) return <Droplets className={className} />;
+  if (text.includes("kupat")) return <Bath className={className} />;
+  if (text.includes("navodnj") || text.includes("bast") || text.includes("pump")) return <Sprout className={className} />;
+  return <Sparkles className={className} />;
 }
 
 interface HeroSliderProps {
@@ -58,7 +58,6 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
   };
 
   const activeSlide = activeSlides[current] || activeSlides[0];
-  const IconComponent = getSlideIcon(activeSlide.id || activeSlide.category);
 
   return (
     <div
@@ -96,7 +95,7 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
           <div className="lg:col-span-8 space-y-4 sm:space-y-5">
             {/* Oznaka / Badge */}
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300 backdrop-blur-sm sm:text-xs">
-              <IconComponent className="h-3.5 w-3.5 text-cyan-400" />
+              <SlideIcon idOrCategory={activeSlide.id || activeSlide.category} className="h-3.5 w-3.5 text-cyan-400" />
               <span>{activeSlide.badge}</span>
             </div>
 
@@ -138,7 +137,7 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
           <div className="hidden lg:col-span-4 lg:flex lg:justify-end">
             <div className="w-full max-w-xs rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md shadow-2xl">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-cyan-300 mb-4">
-                <IconComponent className="h-6 w-6" />
+                <SlideIcon idOrCategory={activeSlide.id || activeSlide.category} className="h-6 w-6" />
               </div>
               <h3 className="text-base font-black text-white">{activeSlide.category}</h3>
               <p className="mt-1 text-xs text-slate-300 leading-relaxed">

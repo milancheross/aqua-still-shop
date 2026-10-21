@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useCallback, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Filter, X, Check, ChevronDown, RotateCcw } from "lucide-react";
 import { ProductCategory } from "@/types";
@@ -34,36 +34,29 @@ export default function CatalogFiltersSidebar({
   const currentMaxPrice = searchParams.get("maxPrice") ?? "";
 
   // Local state for debounced search and price inputs
+  const [prevSearch, setPrevSearch] = useState(currentSearch);
   const [searchInput, setSearchInput] = useState(currentSearch);
-  const [minPriceInput, setMinPriceInput] = useState(currentMinPrice);
-  const [maxPriceInput, setMaxPriceInput] = useState(currentMaxPrice);
-
-  // Sync local inputs when URL searchParams change
-  useEffect(() => {
+  if (prevSearch !== currentSearch) {
+    setPrevSearch(currentSearch);
     setSearchInput(currentSearch);
-  }, [currentSearch]);
+  }
 
-  useEffect(() => {
+  const [prevMinPrice, setPrevMinPrice] = useState(currentMinPrice);
+  const [minPriceInput, setMinPriceInput] = useState(currentMinPrice);
+  if (prevMinPrice !== currentMinPrice) {
+    setPrevMinPrice(currentMinPrice);
     setMinPriceInput(currentMinPrice);
-  }, [currentMinPrice]);
+  }
 
-  useEffect(() => {
+  const [prevMaxPrice, setPrevMaxPrice] = useState(currentMaxPrice);
+  const [maxPriceInput, setMaxPriceInput] = useState(currentMaxPrice);
+  if (prevMaxPrice !== currentMaxPrice) {
+    setPrevMaxPrice(currentMaxPrice);
     setMaxPriceInput(currentMaxPrice);
-  }, [currentMaxPrice]);
-
-  // Debounced search effect
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchInput !== currentSearch) {
-        updateFilters({ q: searchInput.trim() || null });
-      }
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [searchInput]);
+  }
 
   // Helper to update query parameters in URL
-  const updateFilters = (changes: Record<string, string | null | undefined>) => {
+  const updateFilters = useCallback((changes: Record<string, string | null | undefined>) => {
     const params = new URLSearchParams(searchParams.toString());
     for (const [key, value] of Object.entries(changes)) {
       if (value === null || value === undefined || value === "") {
@@ -77,7 +70,18 @@ export default function CatalogFiltersSidebar({
       const qs = params.toString();
       router.push(qs ? `/katalog?${qs}` : "/katalog");
     });
-  };
+  }, [searchParams, router]);
+
+  // Debounced search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput !== currentSearch) {
+        updateFilters({ q: searchInput.trim() || null });
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchInput, currentSearch, updateFilters]);
 
   const handlePriceApply = (e?: React.FormEvent) => {
     if (e) e.preventDefault();

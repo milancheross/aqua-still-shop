@@ -1,7 +1,8 @@
 export const STOCK_RESERVATION_MS = 48 * 60 * 60 * 1000;
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: "Na čekanju",
+  pending: "Nova",
+  nova: "Nova",
   processing: "U obradi",
   shipped: "Poslato",
   delivered: "Isporučeno",
@@ -26,6 +27,9 @@ export function orderStatusClass(status: string) {
       return "bg-amber-50 text-amber-700";
     case "cancelled":
       return "bg-red-50 text-red-700";
+    case "pending":
+    case "nova":
+      return "bg-blue-50 text-blue-700";
     default:
       return "bg-slate-100 text-slate-700";
   }
@@ -35,14 +39,14 @@ export function statusOptionsFor(shippingMethod: unknown) {
   const pickup = shippingMethod === "store_pickup";
   return pickup
     ? [
-        ["pending", "Na čekanju"],
+        ["pending", "Nova"],
         ["processing", "U obradi"],
         ["ready_for_pickup", "Spremno za preuzimanje"],
         ["picked_up", "Preuzeto u radnji"],
         ["cancelled", "Otkazano"],
       ]
     : [
-        ["pending", "Na čekanju"],
+        ["pending", "Nova"],
         ["processing", "U obradi"],
         ["shipped", "Poslato"],
         ["delivered", "Isporučeno"],

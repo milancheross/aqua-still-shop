@@ -89,7 +89,7 @@ export async function notifyOrderCreated(input: OrderEmailInput) {
     "",
     lines,
     "",
-    "Ako porudžbina ostane na čekanju duže od 48 sati, zalihe se automatski vraćaju.",
+    "Ako porudžbina u statusu Nova ostane duže od 48 sati, zalihe se automatski vraćaju.",
     "Premestite je u obradu ako je prihvatate.",
   ].join("\n");
 
