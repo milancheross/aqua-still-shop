@@ -5,6 +5,7 @@ import { Plus, Search, Edit, CheckCircle2, XCircle, Package } from "lucide-react
 import ProductStatusSelect from "@/components/admin/ProductStatusSelect";
 import DeleteProductButton from "@/components/admin/DeleteProductButton";
 import DuplicateProductButton from "@/components/admin/DuplicateProductButton";
+import CsvImportModal from "@/components/admin/products/CsvImportModal";
 import { getAdminProducts } from "@/actions/product-admin-actions";
 import { formatPrice } from "@/lib/utils";
 
@@ -28,9 +29,15 @@ export default async function AdminProductsPage({ searchParams }: ProductsPagePr
           <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-900">Proizvodi</h1>
           <p className="mt-1 text-xs text-slate-500 sm:text-sm">Dodajte, uređujte i kontrolišite artikle.</p>
         </div>
-        <Link href="/admin/products/new" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-cyan-600 px-5 text-sm font-black text-white shadow-lg shadow-cyan-600/20 transition hover:bg-cyan-700">
-          <Plus className="h-4 w-4" /> Dodaj proizvod
-        </Link>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <CsvImportModal />
+          <Link
+            href="/admin/products/new"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-cyan-600 px-5 text-sm font-black text-white shadow-lg shadow-cyan-600/20 transition hover:bg-cyan-700 active:scale-95"
+          >
+            <Plus className="h-4 w-4" /> Dodaj proizvod
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:grid-cols-[1fr_auto_auto] sm:p-4">
@@ -53,10 +60,25 @@ export default async function AdminProductsPage({ searchParams }: ProductsPagePr
       </div>
 
       {products.length === 0 ? (
-        <div className="rounded-3xl border border-slate-200 bg-white py-16 text-center shadow-sm">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400"><Package className="h-8 w-8" /></div>
-          <h3 className="mt-4 text-sm font-bold text-slate-900">Nema pronađenih proizvoda</h3>
-          <p className="mt-1 text-xs text-slate-500">Kliknite na „Dodaj proizvod” da kreirate prvi artikal.</p>
+        <div className="rounded-3xl border border-slate-200 bg-white py-16 text-center shadow-sm space-y-4">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+            <Package className="h-8 w-8" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Nema pronađenih proizvoda</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Možete uneti novi pojedinačni artikal ili masovno uvesti katalog putem CSV fajla.
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <CsvImportModal />
+            <Link
+              href="/admin/products/new"
+              className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-cyan-600 px-4 text-xs font-bold text-white shadow hover:bg-cyan-700 transition"
+            >
+              <Plus className="h-3.5 w-3.5" /> Dodaj proizvod
+            </Link>
+          </div>
         </div>
       ) : (
         <>
