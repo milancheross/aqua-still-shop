@@ -89,18 +89,18 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
       />
       <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
 
-      <div className="relative z-10 container mx-auto px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
-        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
+        <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-12">
           {/* Tekstualni sadržaj slajda */}
-          <div className="lg:col-span-8 space-y-4 sm:space-y-5">
+          <div className="lg:col-span-8 space-y-3 sm:space-y-3.5">
             {/* Oznaka / Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300 backdrop-blur-sm sm:text-xs">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300 backdrop-blur-sm sm:text-[11px]">
               <SlideIcon idOrCategory={activeSlide.id || activeSlide.category} className="h-3.5 w-3.5 text-cyan-400" />
               <span>{activeSlide.badge}</span>
             </div>
 
             {/* Glavni naslov */}
-            <h1 className="text-3xl font-black leading-[1.08] tracking-tight sm:text-4xl md:text-5xl lg:text-5xl">
+            <h1 className="text-2xl font-black leading-[1.12] tracking-tight sm:text-3xl md:text-4xl lg:text-[40px]">
               {activeSlide.title}{" "}
               <span
                 className={`bg-gradient-to-r ${activeSlide.accentColor || "from-amber-400 to-cyan-400"} bg-clip-text text-transparent`}
@@ -110,23 +110,23 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
             </h1>
 
             {/* Opis */}
-            <p className="max-w-2xl text-xs leading-relaxed text-slate-300 sm:text-sm md:text-base">
+            <p className="max-w-xl text-xs leading-relaxed text-slate-300 sm:text-sm">
               {activeSlide.description}
             </p>
 
             {/* Dugmad za akciju */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
               <Link
                 href={activeSlide.buttonHref || "/katalog"}
-                className="group inline-flex min-h-12 items-center gap-2.5 rounded-xl bg-[#F37021] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-xl shadow-[#F37021]/30 transition-all hover:bg-[#D95D13] hover:shadow-[#F37021]/50 active:scale-95 sm:text-sm"
+                className="group inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#F37021] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-[#F37021]/25 transition-all hover:bg-[#D95D13] active:scale-95"
               >
                 <span>{activeSlide.buttonLabel || "POGLEDAJ PONUDU"}</span>
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </Link>
 
               <Link
                 href="/katalog"
-                className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white/10 sm:text-sm"
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white/10"
               >
                 Ceo katalog
               </Link>
@@ -135,15 +135,15 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
 
           {/* Desni panel sa preview karticom kategorije */}
           <div className="hidden lg:col-span-4 lg:flex lg:justify-end">
-            <div className="w-full max-w-xs rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md shadow-2xl">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-cyan-300 mb-4">
-                <SlideIcon idOrCategory={activeSlide.id || activeSlide.category} className="h-6 w-6" />
+            <div className="w-full max-w-[270px] rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5 backdrop-blur-md shadow-xl">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-cyan-300 mb-3">
+                <SlideIcon idOrCategory={activeSlide.id || activeSlide.category} className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-black text-white">{activeSlide.category}</h3>
-              <p className="mt-1 text-xs text-slate-300 leading-relaxed">
+              <h3 className="text-sm font-black text-white">{activeSlide.category}</h3>
+              <p className="mt-1 text-[11px] text-slate-300 leading-relaxed">
                 Istražite kompletan asortiman, proverite trenutno stanje lagera i poručite sa isporukom na adresu.
               </p>
-              <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] font-bold text-cyan-300">
+              <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-bold text-cyan-300">
                 <span>Aqua Still Zlatibor</span>
                 <span>Deo ponude &rarr;</span>
               </div>
@@ -152,7 +152,7 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
         </div>
 
         {/* Donja kontrolna traka: Tabovi i Strelice */}
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
+        <div className="mt-6 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-4 sm:flex-row">
           {/* Tab indikatori za teme */}
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             {activeSlides.map((slide, index) => {
@@ -162,7 +162,7 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
                   key={slide.id || index}
                   type="button"
                   onClick={() => setCurrent(index)}
-                  className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
+                  className={`flex items-center gap-2 rounded-xl px-2.5 py-1 text-[11px] font-bold transition-all ${
                     isCurrent
                       ? "bg-white text-slate-900 shadow-md ring-2 ring-[#F37021]"
                       : "bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white"
@@ -187,17 +187,17 @@ export default function HeroSlider({ slides: propSlides }: HeroSliderProps) {
               type="button"
               onClick={prevSlide}
               aria-label="Prethodni baner"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white transition hover:bg-white/20 active:scale-95"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white transition hover:bg-white/20 active:scale-95"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
               onClick={nextSlide}
               aria-label="Sledeći baner"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white transition hover:bg-white/20 active:scale-95"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white transition hover:bg-white/20 active:scale-95"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>

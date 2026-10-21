@@ -47,9 +47,9 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const productUrl = `/proizvod/${product.slug}`;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-5 sm:py-10">
+    <div className="min-h-screen bg-slate-50 py-4 sm:py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(product, productUrl)) }} />
-      <div className="container mx-auto space-y-6 px-3 sm:space-y-12 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-6 px-4 sm:space-y-8 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <div className="flex items-center gap-2 overflow-hidden text-[10px] font-medium text-slate-500 sm:text-xs">
           <Link href="/" className="hover:text-[#005B94]">Početna</Link>

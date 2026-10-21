@@ -51,7 +51,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200 shadow-sm">
       {/* Top Bar */}
       <div className="bg-slate-900 text-slate-300 text-xs py-2 px-4">
-        <div className="container mx-auto flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <p className="hidden md:block">Dobro došli u Aqua Still Shop — Deo Aqua Still Group</p>
           <div className="flex items-center space-x-6 ml-auto">
             <div className="hidden lg:flex items-center space-x-4">
@@ -72,11 +72,11 @@ export default function Header() {
       </div>
 
       {/* Main Header */}
-      <div className="container mx-auto px-4 py-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5">
         <div className="flex items-center justify-between gap-4 md:gap-8">
           {/* Logo Image */}
           <Link href="/" className="flex items-center shrink-0">
-            <div className="relative h-9 w-[132px] sm:h-12 sm:w-[200px]">
+            <div className="relative h-9 w-[132px] sm:h-11 sm:w-[185px]">
               <Image 
                 src={logoUrl}
                 alt={logoAlt} 
@@ -93,7 +93,7 @@ export default function Header() {
               type="text"
               name="q"
               placeholder="Pretražite proizvode, brendove, kategorije..."
-              className="w-full pl-4 pr-28 py-3 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-full text-sm transition-all outline-none"
+              className="w-full pl-4 pr-28 py-2.5 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-full text-sm transition-all outline-none"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -160,7 +160,7 @@ export default function Header() {
       </form>
       {/* Main category navigation */}
       <div className="relative z-40 hidden bg-slate-900 text-white md:block">
-        <div className="container mx-auto px-4 flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-3">
           <div className="relative py-2">
             <button
               type="button"

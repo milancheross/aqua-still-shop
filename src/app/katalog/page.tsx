@@ -134,9 +134,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   ].filter(Boolean).length;
 
   return (
-    <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 md:py-12">
+    <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 md:py-8">
       {/* Breadcrumb i naslov */}
-      <div className="mb-8 space-y-2">
+      <div className="mb-6 space-y-1.5">
         <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
           <Link href="/" className="hover:text-cyan-600">Početna</Link>
           <span>/</span>
@@ -144,30 +144,30 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           {activeCategory && <><span>/</span><span className="text-slate-900">{activeCategory.name}</span></>}
           {activeSubcategory && <><span>/</span><span className="font-bold text-slate-900">{activeSubcategory.name}</span></>}
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-slate-900">
+        <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
           {activeSubcategory?.name ?? activeCategory?.name ?? (selectedCategory === "akcija" ? "Akcijska ponuda" : (searchQuery ? `Rezultati pretrage za: "${searchQuery}"` : "Svi proizvodi"))}
         </h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-xs sm:text-sm text-slate-500">
           Prikazano <strong className="text-slate-900">{products.length}</strong> od <strong className="text-slate-900">{catalog.total}</strong> artikala. Strana {safePage} od {totalPages}.
         </p>
         {activeSubcategory?.description && (
-          <p className="max-w-3xl text-sm leading-relaxed text-slate-600">{activeSubcategory.description}</p>
+          <p className="max-w-3xl text-xs sm:text-sm leading-relaxed text-slate-600">{activeSubcategory.description}</p>
         )}
       </div>
 
       {/* Hero baner za selektovanu kategoriju */}
       {activeCategory?.imageUrl && (
-        <div className="relative mb-8 min-h-36 overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 sm:min-h-48">
+        <div className="relative mb-6 min-h-32 overflow-hidden rounded-xl border border-slate-200 bg-slate-900 sm:min-h-40">
           <Image src={activeCategory.imageUrl} alt="" fill sizes="100vw" className="object-cover" priority />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/45 to-transparent" />
-          <div className="relative z-10 flex min-h-36 max-w-2xl flex-col justify-center p-5 text-white sm:min-h-48 sm:p-8">
-            <h2 className="text-xl font-black sm:text-2xl">{activeCategory.name}</h2>
-            {activeCategory.description && <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/85">{activeCategory.description}</p>}
+          <div className="relative z-10 flex min-h-32 max-w-2xl flex-col justify-center p-4 text-white sm:min-h-40 sm:p-6">
+            <h2 className="text-lg font-black sm:text-xl">{activeCategory.name}</h2>
+            {activeCategory.description && <p className="mt-1.5 line-clamp-2 text-xs sm:text-sm leading-relaxed text-white/85">{activeCategory.description}</p>}
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Leva kolona: Reaktivni filter sidebar sa mobilnim drawer-om */}
         <CatalogFilterPanel activeCount={activeFilterCount}>
           <CatalogFiltersSidebar
